@@ -17,7 +17,7 @@ from dotenv import find_dotenv, load_dotenv
 
 
 load_dotenv(find_dotenv())
-# Build paths djs;aldj;sasdsadadsdasdasdas
+# Build paths djs;aldj;sasdsadasdasdas
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
