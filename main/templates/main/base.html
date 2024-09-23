@@ -1,0 +1,56 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{{title}}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Jura:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static "deps/css/reset.css" %}">
+  <link rel="stylesheet" href="{% static "deps/css/style.css" %}">
+</head>
+<body>
+  <header class="header header-general">
+    <div class="container">
+      <div class="nav nav-general">
+        <div class="header__logo">
+          <a href="{% url "main:index" %}" class="header__logo">
+            <img src="{% static "deps/images/logo.png" %}" alt="">
+          </a>
+        </div>
+
+
+        <a href="#" class="header__burger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </a>
+        <ul class="header__list">
+          <li>
+            <a href="#" class="header__list-item">Войти</a>
+          </li>
+          <li>
+            <a href="#" class="header__list-item">Услуги</a>
+          </li>
+          <li>
+            <a href="#" class="header__list-item">Новости</a>
+          </li>
+          <li>
+            <a href="#" class="header__list-item">FAQ</a>
+          </li>
+        </ul>
+      </div>
+
+      {% block content %}{% endblock content %}
+
+  </header>
+
+
+
+
+  <script src="{% static "deps/js/jquery-3.7.1.js" %}"></script>
+  <script src="{% static "deps/js/main.js" %}"></script>
+</body>
+</html>
