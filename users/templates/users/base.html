@@ -9,15 +9,17 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <link href="https://fonts.googleapis.com/css2?family=Jura:wght@500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="{% static "deps/css/reset.css" %}">
+  <link rel="stylesheet" href="{% static "deps/css/style.css" %}">
 </head>
 <body>
   <header class="header">
     <div class="container">
       <div class="nav">
         <div class="header__logo">
-          <img src="images/logo.png" alt="">
+          <a href="{% url "main:index" %}" class="header__logo">
+            <img src="{% static "deps/images/logo.png" %}" alt="">
+          </a>
         </div>
 
 
@@ -28,7 +30,7 @@
         </a>
         <ul class="header__list">
           <li>
-            <a href="#" class="header__list-item">Войти</a>
+            <a href="{% url "users:autorization" %}" class="header__list-item">Войти</a>
           </li>
           <li>
             <a href="#" class="header__list-item">Услуги</a>
@@ -50,7 +52,7 @@
 
 
 
-  <script src="js/jquery-3.7.1.js"></script>
-  <script src="js/main.js"></script>
+  <script src="{% static "deps/js/jquery-3.7.1.js" %}"></script>
+  <script src="{% static "deps/js/main.js" %}"></script>
 </body>
 </html>
