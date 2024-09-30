@@ -10,18 +10,6 @@ from users.models import User
 # Create your views here.
 
 
-def registration(request):
-    if request.method == "POST":
-        form = UserRegistrationForm(data=request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse("index"))
-    else:
-        form = UserRegistrationForm()
-    context = {"title": "Home", "content": "Главная страница", "form": form}
-    return render(request, "users/registration.html", context)
-
-
 def autorization(request):
     if request.method == "POST":
         form = UserLoginForm(data=request.POST)
@@ -36,3 +24,19 @@ def autorization(request):
         form = UserLoginForm()
     context = {"title": "Home", "content": "Главная страница", "form": form}
     return render(request, "users/authorization.html", context)
+
+
+def registration(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("index"))
+    else:
+        form = UserRegistrationForm()
+    context = {"title": "Home", "content": "Главная страница", "form": form}
+    return render(request, "users/registration.html", context)
+
+
+def profile(request):
+    return render(request, "users/profile.html")
