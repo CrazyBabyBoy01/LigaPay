@@ -1,0 +1,40 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+  <h2 class="header__title">
+    Профиль
+  </h2>
+  <div class="header__avatar">
+    <img class="avatar" src="{% static "deps/images/profile.png" %}" alt="">
+  </div>
+  <div class="header__avatar-settings">
+    <a href="#">
+      Изменить аватар
+    </a>
+  </div>
+
+  <div class="header__form-container">
+    <div class="form-container">
+      <div class="input-group">
+          <label for="username">Имя пользователя</label>
+          <input type="text" id="username" name="username">
+      </div>
+      <div class="input-group">
+          <label for="email">Адрес эл.почты</label>
+          <input type="email" id="email" name="email">
+      </div>
+      <div class="input-group">
+          <label for="first-name">Имя</label>
+          <input type="text" id="first-name" name="first-name">
+      </div>
+      <div class="input-group">
+          <label for="last-name">Фамилия</label>
+          <input type="text" id="last-name" name="last-name">
+      </div>
+    </div>
+  </div>
+    <button class="header__btn">Сохранить</button>
+  </div>
+  </div>
+{% endblock content %}
