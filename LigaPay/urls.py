@@ -19,10 +19,12 @@ from argparse import Namespace
 
 from django.contrib import admin
 from django.urls import include, path
+from main.views import index
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", index, name="index"),
     path("", include("main.urls", namespace="main")),
-    path("users/", include("users.urls")),
+    path("users/", include("users.urls", namespace="users")),
 ]

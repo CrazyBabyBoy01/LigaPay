@@ -114,7 +114,7 @@ h2{
 }
 
 .header__form div:nth-child(1){
-    margin-bottom: 28px;
+    margin-bottom: 21px;
 }
 
 .header__form div:nth-child(2){
@@ -126,6 +126,9 @@ h2{
 }
 
 .header__form div:nth-child(4){
+    margin-bottom: 28px;
+}
+.header__form div:nth-child(5){
     margin-bottom: 41px;
 }
 

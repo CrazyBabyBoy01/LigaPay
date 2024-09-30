@@ -6,32 +6,32 @@
   <h2 class="header__title">
     Вход в аккаунт
   </h2>
-  <form class="header__form">
+  <form action={% url "users:autorization" %} method='post' class="header__form">
+    {% csrf_token %}
     <div class="header__form-login form">
-      <input type="text" class="header__input" placeholder="Введите Ваш Логин">
+      {{form.username}}
     </div>
     <div class="header__form-password form">
-      <input type="text" class="header__input" placeholder="Введите Ваш Пароль">
+      {{form.password}}
     </div>
-      <div class="header__wrapper-top">
-        <label class="header__label">
-          <input type="radio" class="header__checkbox" >
-          Запомнить меня
-        </label>
-        <a href="#">
-          Забыли пароль?
-        </a>
+    <div class="header__wrapper-top">
+      <label class="header__label">
+        <input type="radio" class="header__checkbox" >
+        Запомнить меня
+      </label>
+      <a href="#">
+        Забыли пароль?
+      </a>
+    </div>
+    <button class="header__btn">Вход</button>
+    <div class="header__wrapper-bot">
+      Нет аккаунта?
+      <a href="{% url "users:registration" %}">
+        Зарегистрироваться
+      </a>
+    </div>
 
-      </div>
-      <button class="header__btn">Вход</button>
-      <div class="header__wrapper-bot">
-        Нет аккаунта?
-        <a href="#">
-          Зарегистрироваться
-        </a>
-      </div>
 
-
-      </div>
+    </div>
   </form>
 {% endblock content %}
