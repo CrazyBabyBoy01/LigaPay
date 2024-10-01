@@ -10,6 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Jura:wght@500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static "deps/css/reset.css" %}">
   <link rel="stylesheet" href="{% static "deps/css/style.css" %}">
+  <style>
+    header {
+      background-image: url('{% if background_image %}{{ background_image }}{% else %}{% static "deps/images/SB_Riven.jpg" %}{% endif %}');
+    }
+  </style>
 </head>
 <body>
   <header class="header header-general">

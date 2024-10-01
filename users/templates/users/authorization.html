@@ -4,7 +4,7 @@
 
 {% block content %}
   <h2 class="header__title">
-    Вход в аккаунт
+    {{title}}
   </h2>
   <form action={% url "users:autorization" %} method='post' class="header__form">
     {% csrf_token %}

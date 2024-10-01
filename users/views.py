@@ -1,9 +1,10 @@
 from django.contrib import auth
+from django.core import files
 from django.shortcuts import HttpResponseRedirect, render
 from django.template import context
 from django.urls import reverse
 
-from users.forms import UserLoginForm, UserRegistrationForm
+from users.forms import UserLoginForm, UserProfileForm, UserRegistrationForm
 from users.models import User
 
 
@@ -22,7 +23,7 @@ def autorization(request):
                 return HttpResponseRedirect(reverse("index"))
     else:
         form = UserLoginForm()
-    context = {"title": "Home", "content": "Главная страница", "form": form}
+    context = {"title": "Авторизация", "content": "Главная страница", "form": form}
     return render(request, "users/authorization.html", context)
 
 
@@ -34,9 +35,22 @@ def registration(request):
             return HttpResponseRedirect(reverse("index"))
     else:
         form = UserRegistrationForm()
-    context = {"title": "Home", "content": "Главная страница", "form": form}
+    context = {"title": "Регистрация", "content": "Регистрация", "form": form}
     return render(request, "users/registration.html", context)
 
 
 def profile(request):
-    return render(request, "users/profile.html")
+    if request.method == "POST":
+        form = UserProfileForm(instance=request.user, data=request.POST, files=request.FILES)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse("users:profile"))
+    else:
+        form = UserProfileForm(instance=request.user)
+    context = {
+        "title": "Профиль",
+        "content": "Профиль",
+        "background_image": "/static/deps/images/287bff71fe2c1293dbd1be864fb6537f.jpg",
+        "form": form,
+    }
+    return render(request, "users/profile.html", context)
