@@ -9,11 +9,6 @@ body{
 .header{
     min-height: 100vh;
     width: 100%;
-    background-image: url(../images/registration-backgraound.jpg);
-}
-
-.header-general{
-    background-image: url(../images/SB_Riven.jpg);
 }
 
 .container{
@@ -231,19 +226,17 @@ a:hover {
 /* Стили профиля */
 
 .header__avatar{
-    display: flex;
+    display: grid;
     justify-content: center;
     margin-bottom: 10px;
+    color:#D32F2F ;
+    gap: 10px;
 }
 
 .header__avatar-settings{
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
-}
-
-.header-profile{
-    background-image: url(../images/287bff71fe2c1293dbd1be864fb6537f.jpg);
 }
 
 .form-container {
@@ -266,11 +259,32 @@ a:hover {
     margin-bottom: 5px;
 }
 
-.input-group input{
+.input-group__input{
     padding: 10px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 5px;
     background: rgba(0, 0, 0, 0.2);
     color: white;
     outline: none;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.btn_avatar {
+    display: flex;
+    cursor: pointer;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    justify-content: center;
+}
+
+
+.btn_avatar:hover {
+    text-decoration: underline;
+}
+.btn_avatar:hover::after {
+    background-color: #D32F2F;
 }
