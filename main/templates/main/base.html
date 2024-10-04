@@ -28,17 +28,48 @@
 
         <ul class="header__list">
           <li>
-            <a href="{% url "users:profile" %}" class="header__list-item">Профиль</a>
-          </li>
-          <li>
-            <a href="#" class="header__list-item">Услуги</a>
-          </li>
-          <li>
             <a href="#" class="header__list-item">Новости</a>
           </li>
           <li>
-            <a href="#" class="header__list-item">FAQ</a>
+            <a href="#" class="header__list-item">Правила</a>
           </li>
+          {% if user.is_authenticated %}
+            <li>
+              <a href="#" class="header__list-item">Покупки</a>
+            </li>
+            <li>
+              <a href="#" class="header__list-item">Продажи</a>
+            </li>
+            <li class="profile">
+              <a href="#" class="header__list-item">
+                <div class="profile__img">
+                  <img width="40" height="40" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" id="profileIcon">
+                </div>
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" id="dropdownMenu">
+                <li>
+                  <a href="{% url "users:profile" %}">{{user.username}}</a>
+                </li>
+                <li>
+                  <a href="#">Сообщения</a>
+                </li>
+                <li>
+                  <a href="#">Финансы</a>
+                </li>
+                <li>
+                  <a href="{% url "users:logout" %}">Выйти</a>
+                </li>
+              </ul>
+            </li>
+          {% else %}
+            <li>
+              <a href="{% url "users:autorization" %}" class="header__list-item">Войти</a>
+            </li>
+            <li>
+              <a href="{% url "users:registration" %}" class="header__list-item">Зарегистрироваться</a>
+            </li>
+          {% endif %}
         </ul>
       </div>
 
@@ -47,7 +78,7 @@
   </header>
 
 
-
+  <script src="{% static "deps/js/main.js" %}"></script>
 
 </body>
 </html>

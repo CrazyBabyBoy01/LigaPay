@@ -31,6 +31,61 @@ body{
 
 .header__list{
     display: flex;
+    align-items: center;
+}
+
+.profile__img {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.profile a:hover{
+    text-decoration: none;
+}
+
+.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 2px;
+    vertical-align: middle;
+    border-top: 4px dashed;
+    border-top: 4px solid \9;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 88px;
+    /* right: 0;
+    background-color: white; */
+    color: black;
+    /* border: 1px solid #ccc; */
+    /* border-radius: 4px; */
+    /* box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); */
+    display: none;
+    width: 150px;
+    z-index: 100;
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.dropdown-menu li {
+    margin-bottom: 10px;
+}
+
+.dropdown-menu a:hover {
+    text-decoration: underline ;
+}
+
+.dropdown-menu a{
+    color: bisque;
+}
+
+
+/* Показ меню при активации */
+.show {
+    display: block;
 }
 
 .header__burger span{
@@ -50,11 +105,10 @@ body{
 }
 
 .header__list li{
-    margin-bottom: 10px;
     list-style-type: none;
 
 }
-.header__list a{
+.header__list-item{
     font-family: "Jura", sans-serif;
     font-size: 20px;
     padding-left: 35px;
