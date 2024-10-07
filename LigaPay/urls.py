@@ -21,12 +21,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from main.views import index
+from main.views import IndexView
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", index, name="index"),
+    # path("", IndexView.as_view(), name="index"),
     path("", include("main.urls", namespace="main")),
     path("users/", include("users.urls", namespace="users")),
 ]
