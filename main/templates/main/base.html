@@ -40,16 +40,16 @@
             <li>
               <a href="#" class="header__list-item">Продажи</a>
             </li>
-            <li class="profile">
+            <li class="dropdown profile" id="profileIcon">
               <a href="#" class="header__list-item">
                 <div class="profile__img">
-                  <img width="40" height="40" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" id="profileIcon">
+                  <img width="40" height="40" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
                 </div>
                 <span class="caret"></span>
               </a>
               <ul class="dropdown-menu" id="dropdownMenu">
                 <li>
-                  <a href="{% url "users:profile" %}">{{user.username}}</a>
+                  <a href="{% url "users:profile" user.id %}">{{user.username}}</a>
                 </li>
                 <li>
                   <a href="#">Сообщения</a>
@@ -57,6 +57,11 @@
                 <li>
                   <a href="#">Финансы</a>
                 </li>
+                {% if user.is_superuser or user.is_staff %}
+                  <li>
+                    <a href="{% url "admin:index" %}">Админ-панель</a>
+                  </li>
+                {% endif %}
                 <li>
                   <a href="{% url "users:logout" %}">Выйти</a>
                 </li>

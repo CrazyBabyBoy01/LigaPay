@@ -8,13 +8,13 @@
   <div class="header__avatar">
     <img width="100" height="100" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
    </div>
-  <form action={% url "users:profile" %} method='post' class="header__form-container" enctype="multipart/form-data">
+  <form action={% url "users:profile" user.id %} method='post' class="header__form-container" enctype="multipart/form-data">
     {% csrf_token %}
       {{form.image}}
       <label class="btn_avatar" for="{{form.image.id_for_label}}">Изменить аватар</label>
-      <label class="btn_avatar" for="">Изменить пароль</label>
-      <label class="btn_avatar" for="">Изменить почту</label>
-      <label class="btn_avatar" for="">Выйти из профиля</label>
+      <label class="btn_avatar" for=""><a href="#">Изменить пароль</a></label>
+      <label class="btn_avatar" for=""><a href="#">Изменить почту</a></label>
+      <label class="btn_avatar" href="" for=""> <a href="{% url "users:logout" %}">Выйти из профиля</a></label>
     <div class="form-container">
       <div class="input-group">
           <label for="{{form.username.id_for_label}}">Имя пользователя</label>
