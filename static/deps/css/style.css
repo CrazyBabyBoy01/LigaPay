@@ -264,6 +264,7 @@ a:hover {
 .header__wrapper-bot {
     display: flex;
     justify-content: space-evenly;
+    margin-bottom: 60px;
 }
 
 .header__btn:hover {
@@ -341,4 +342,22 @@ input[type="file"] {
 }
 .btn_avatar:hover::after {
     background-color: #D32F2F;
+}
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+
+    width: 335px;
+    margin: auto;
+}
+.alert-warning{
+    background-color: rgba(211, 47, 47, 0.5);
+}
+.alert-success {
+    background-color: rgba(0, 255, 0, 0.5);
+}
+.errorlist {
+    list-style-type: none;
 }

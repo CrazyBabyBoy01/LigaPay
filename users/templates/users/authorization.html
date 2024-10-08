@@ -16,7 +16,7 @@
     </div>
     <div class="header__wrapper-top">
       <label class="header__label">
-        <input type="radio" class="header__checkbox" >
+        <input type="radio" class="header__checkbox" name = 'remember_me'>
         Запомнить меня
       </label>
       <a href="#">
@@ -30,7 +30,8 @@
         Зарегистрироваться
       </a>
     </div>
-    {% if messages or form.non_field_errors %}
+
+    {% comment %} {% if messages or form.non_field_errors %}
       <div class="alert {% if messages %} alert-success {% else %} alert-warning {% endif %} alert-dismissible fade show" role="alert" style="margin-top: 50px;">
         {% if messages %}
             {% for message in messages %}
@@ -43,9 +44,21 @@
             <span aria-hidden="true">&times;</span>
         </button>
       </div>
-    {% endif %}
+    {% endif %} {% endcomment %}
 
   </form>
-
+  {% if messages or form.non_field_errors %}
+    <div id="error-message" class="alert alert-danger {% if messages %}alert-success {% else %} alert-warning{% endif %}">
+      {% if messages %}
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      {% else %}
+        {% for error in form.non_field_errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      {% endif %}
+    </div>
+  {% endif %}
 
 {% endblock content %}

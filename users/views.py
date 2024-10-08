@@ -1,8 +1,11 @@
 from email import message
 from pyexpat import model
 
-from django.contrib import auth
+from common.views import ContextMixin
+from django.contrib import auth, messages
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core import files
 from django.shortcuts import HttpResponseRedirect, render
 from django.template import context
@@ -16,41 +19,44 @@ from users.models import User
 # Create your views here.
 
 
-class UserLoginView(LoginView):
+class UserLoginView(ContextMixin, LoginView):
     form_class = UserLoginForm
     template_name = "users/authorization.html"
+    title = "Авторизация"
+    authentication_form = AuthenticationForm
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Авторизация"
-        return context
+    def form_valid(self, form):
+        # Если "Запомнить меня" не установлен, установить сессию как сессионную
+        remember_me = self.request.POST.get("remember_me")  # Получаем значение чекбокса
+
+        if not remember_me:
+            # Сессия завершится, когда пользователь закроет браузер
+            self.request.session.set_expiry(0)
+        else:
+            # Устанавливаем срок действия сессии, например, на 2 недели
+            self.request.session.set_expiry(1209600)  # 2 недели в секундах
+
+        return super().form_valid(form)
 
 
-class UserRegistrationView(CreateView):
+class UserRegistrationView(SuccessMessageMixin, ContextMixin, CreateView):
     model = User
     form_class = UserRegistrationForm
     template_name = "users/registration.html"
-    success_url = reverse_lazy("main:index")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Регистрация"
-        return context
+    success_url = reverse_lazy("users:autorization")
+    success_message = "Вы успешно зарегистрированы!"
+    title = "Регистрация"
 
 
-class UserProfileView(UpdateView):
+class UserProfileView(ContextMixin, UpdateView):
     model = User
     form_class = UserProfileForm
     template_name = "users/profile.html"
+    title = "Профиль"
+    background_image = "/static/deps/images/287bff71fe2c1293dbd1be864fb6537f.jpg"
 
     def get_success_url(self):
         return reverse_lazy("users:profile", args=(self.object.id,))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "Профиль"
-        context["background_image"] = "/static/deps/images/287bff71fe2c1293dbd1be864fb6537f.jpg"
-        return context
 
 
 def logout(request):

@@ -22,7 +22,14 @@
     <div class="header__captcha">
       reCAPTCHA
     </div>
-    <button class="header__btn">Регистрация</button>
+      <button class="header__btn">Регистрация</button>
+
     </div>
+
   </form>
+  {% if form.errors %}
+    <div  class="alert alert-danger">
+      {{form.errors}}
+    </div>
+  {% endif %}
 {% endblock content %}
