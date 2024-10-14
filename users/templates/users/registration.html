@@ -20,15 +20,16 @@
       {{form.email}}
     </div>
     <div class="header__captcha">
+      {{ form.captcha.label_tag }} {{ form.captcha }}
+    </div>
+    {% comment %} <div class="header__captcha">
       reCAPTCHA
-    </div>
+    </div> {% endcomment %}
       <button class="header__btn">Регистрация</button>
-
     </div>
-
   </form>
   {% if form.errors %}
-    <div  class="alert alert-danger">
+    <div  class="alert alert-danger alert-warning">
       {{form.errors}}
     </div>
   {% endif %}

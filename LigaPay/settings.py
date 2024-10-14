@@ -31,7 +31,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
+
+DOMAIN_NAME = "http://localhost:8000"
 
 
 # Application definition
@@ -45,6 +47,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "main",
     "users",
+    "captcha",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +66,7 @@ ROOT_URLCONF = "LigaPay.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -142,3 +146,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
 LOGIN_REDIRECT_URL = "/"
+
+
+# Sending email
+
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+
+EMAIL_HOST = "smtp.yandex.ru"  # SMTP-сервер Яндекс Почты
+EMAIL_PORT = 465  # Порт для SSL
+EMAIL_USE_SSL = True  # Использование SSL (Secure Sockets Layer)
+EMAIL_HOST_USER = "fausta19@yandex.ru"
+EMAIL_HOST_PASSWORD = "nxtcaljwbcweevaf"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Email, от которого отправляются письма
+
+
+# Настройка каптчи
+
+CAPTCHA_IMAGE_SIZE = (150, 50)
