@@ -12,3 +12,4 @@ class IndexView(ContextMixin, TemplateView):
     template_name = "main/index.html"
     title = "LigaPay"
     subtitle = "LigaPay - является гарантом на всех этапах сделки."
+

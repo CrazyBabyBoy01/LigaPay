@@ -1,11 +1,15 @@
+import uuid
+from datetime import timedelta
 from logging import PlaceHolder
 from pyexpat import model
 
+from captcha.fields import CaptchaField
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, UserCreationForm
 from django.template.defaultfilters import first
+from django.utils.timezone import now
 
-from users.models import User
+from users.models import EmailVerification, User
 
 
 class UserLoginForm(AuthenticationForm):
@@ -30,18 +34,26 @@ class UserRegistrationForm(UserCreationForm):
         widget=forms.PasswordInput(attrs={"class": "header__input", "placeholder": "Подтвердите Пароль"})
     )
     email = forms.CharField(widget=forms.EmailInput(attrs={"class": "header__input", "placeholder": "Введите Почту"}))
+    captcha = CaptchaField()
 
     class Meta:
         model = User
-        fields = ("username", "password1", "password2", "email")
+        fields = ("username", "password1", "password2", "email", "captcha")
+
+    def save(self, commit=True):
+        user = super().save(commit=True)
+        expiration = now() + timedelta(hours=48)
+        record = EmailVerification.objects.create(code=uuid.uuid4(), user=user, expiration=expiration)
+        record.send_verification_email()
+        return user
 
 
 class UserProfileForm(UserChangeForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={"class": "input-group__input", "readonly":True}))
-    email = forms.CharField(widget=forms.EmailInput(attrs={"class": "input-group__input", "readonly":True}))
+    username = forms.CharField(widget=forms.TextInput(attrs={"class": "input-group__input", "readonly": True}))
+    email = forms.CharField(widget=forms.EmailInput(attrs={"class": "input-group__input", "readonly": True}))
     first_name = forms.CharField(widget=forms.TextInput(attrs={"class": "input-group__input"}))
     last_name = forms.CharField(widget=forms.TextInput(attrs={"class": "input-group__input"}))
-    image = forms.ImageField(widget=forms.FileInput(attrs={"class": "input-group__input"}),required=False)
+    image = forms.ImageField(widget=forms.FileInput(attrs={"class": "input-group__input"}), required=False)
 
     class Meta:
         model = User

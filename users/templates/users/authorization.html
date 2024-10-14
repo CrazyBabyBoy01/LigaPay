@@ -1,7 +1,6 @@
 {% extends "users/base.html" %}
 {% load static %}
 
-
 {% block content %}
   <h2 class="header__title">
     {{title}}
@@ -19,7 +18,7 @@
         <input type="radio" class="header__checkbox" name = 'remember_me'>
         Запомнить меня
       </label>
-      <a href="#">
+      <a href="{% url 'users:password_reset' %}">
         Забыли пароль?
       </a>
     </div>
@@ -30,22 +29,6 @@
         Зарегистрироваться
       </a>
     </div>
-
-    {% comment %} {% if messages or form.non_field_errors %}
-      <div class="alert {% if messages %} alert-success {% else %} alert-warning {% endif %} alert-dismissible fade show" role="alert" style="margin-top: 50px;">
-        {% if messages %}
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        {% else %}
-            {{ form.non_field_errors }}
-        {% endif %}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-    {% endif %} {% endcomment %}
-
   </form>
   {% if messages or form.non_field_errors %}
     <div id="error-message" class="alert alert-danger {% if messages %}alert-success {% else %} alert-warning{% endif %}">

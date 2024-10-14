@@ -1,0 +1,11 @@
+{% extends "users/base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="header__text verification_title">
+    Поздравляем! Ваша почта успешно подтверждена!
+  </div>
+  <a href="{% url "users:autorization" %}">
+    <button class="header__btn header__btn-general ">Продолжить</button>
+  </a>
+{% endblock content %}

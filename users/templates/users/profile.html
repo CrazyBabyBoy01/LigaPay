@@ -12,7 +12,7 @@
     {% csrf_token %}
       {{form.image}}
       <label class="btn_avatar" for="{{form.image.id_for_label}}">Изменить аватар</label>
-      <label class="btn_avatar" for=""><a href="#">Изменить пароль</a></label>
+      <label class="btn_avatar" for=""><a href="{% url 'users:password_reset' %}">Изменить пароль</a></label>
       <label class="btn_avatar" for=""><a href="#">Изменить почту</a></label>
       <label class="btn_avatar" href="" for=""> <a href="{% url "users:logout" %}">Выйти из профиля</a></label>
     <div class="form-container">
