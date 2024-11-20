@@ -2,9 +2,18 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.urls import path, reverse_lazy
 
-from users.views import EmailVerificationView, UserLoginView, UserProfileView, UserRegistrationView, logout
-
-from . import views
+from users.views import (
+    ChangeEmailView,
+    ConfirmEmailChangeView,
+    CustomPasswordResetView,
+    EmailResetCompleteView,
+    EmailResetDoneView,
+    EmailVerificationView,
+    UserLoginView,
+    UserProfileView,
+    UserRegistrationView,
+    logout,
+)
 
 
 app_name = "users"
@@ -15,13 +24,15 @@ urlpatterns = [
     path("profile/<int:pk>/", login_required(UserProfileView.as_view()), name="profile"),
     path("logout/", logout, name="logout"),
     path("verify/<str:email>/<uuid:code>/", EmailVerificationView.as_view(), name="email_verification"),
+    path("email-reset/", ChangeEmailView.as_view(), name="email_reset"),
+    path(
+        "confirm-email-change/<uidb64>/<token>/<new_email>/",
+        ConfirmEmailChangeView.as_view(),
+        name="confirm_email_change",
+    ),
     path(
         "password-reset/",
-        auth_views.PasswordResetView.as_view(
-            template_name="users/password_reset.html",
-            email_template_name="users/password_reset_email.html",
-            success_url=reverse_lazy("users:password_reset_done"),
-        ),
+        CustomPasswordResetView.as_view(),
         name="password_reset",
     ),
     path(
@@ -38,5 +49,15 @@ urlpatterns = [
         "password-reset-complete/",
         auth_views.PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
+    ),
+    path(
+        "email-reset-complete/",
+        EmailResetCompleteView.as_view(),
+        name="email_reset_complete",
+    ),
+    path(
+        "email-reset-done/",
+        EmailResetDoneView.as_view(),
+        name="email_reset_done",
     ),
 ]
