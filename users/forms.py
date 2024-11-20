@@ -5,7 +5,7 @@ from pyexpat import model
 
 from captcha.fields import CaptchaField
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserChangeForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, UserChangeForm, UserCreationForm
 from django.template.defaultfilters import first
 from django.utils.timezone import now
 
@@ -58,3 +58,34 @@ class UserProfileForm(UserChangeForm):
     class Meta:
         model = User
         fields = ("username", "email", "first_name", "last_name", "image")
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    email = forms.CharField(label="Логин или Email", max_length=254)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        user = None
+
+        if User.objects.filter(username=email).exists():
+            user = User.objects.get(username=email)
+        elif User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+        if user is None:
+            raise forms.ValidationError("Пользователь с таким логином или email не найден.")
+        return user.email
+
+
+class EmailChangeForm(forms.ModelForm):
+    new_email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ["new_email"]
+
+    def clean_new_email(self):
+        new_email = self.cleaned_data.get("new_email")
+        if User.objects.filter(email=new_email).exists():
+            raise forms.ValidationError("Этот адрес электронной почты уже занят.")
+        return new_email

@@ -10,6 +10,8 @@ class User(AbstractUser):
     image = models.ImageField(upload_to="users_images/", null=True, blank=True)
     is_verified_email = models.BooleanField(default=False)
     email = models.EmailField(unique=True)
+    new_email = models.EmailField(null=True, blank=True)
+    email_change_token = models.CharField(max_length=32, null=True, blank=True)
 
 
 class EmailVerification(models.Model):
