@@ -11,6 +11,7 @@ from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core import files
 from django.core.mail import send_mail
+from django.db import transaction
 from django.shortcuts import HttpResponseRedirect, redirect, render
 from django.template import context
 from django.urls import reverse, reverse_lazy
@@ -22,6 +23,7 @@ from django.views.generic.edit import CreateView, UpdateView
 
 from users.forms import CustomPasswordResetForm, EmailChangeForm, UserLoginForm, UserProfileForm, UserRegistrationForm
 from users.models import EmailVerification, User
+from users.tasks import send_reset_email
 
 
 # Create your views here.
@@ -126,13 +128,13 @@ class ChangeEmailView(FormView):
             reverse("users:confirm_email_change", kwargs={"uidb64": uid, "token": token, "new_email": new_email})
         )
 
-        # Отправляем письмо на старый email
-        send_mail(
-            "Подтверждение смены электронной почты",
-            f"Перейдите по ссылке, чтобы подтвердить изменение email: {confirm_url}",
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-        )
+        # Подготовка данных для письма
+        subject = "Подтверждение смены электронной почты"
+        message = f"Перейдите по ссылке, чтобы подтвердить изменение email: {confirm_url}"
+        recipient_list = [user.email]
+
+        # Отправка письма через Celery
+        transaction.on_commit(lambda: send_reset_email.delay(subject, message, recipient_list))
 
         messages.success(self.request, "Ссылка для подтверждения отправлена на ваш старый email.")
         return redirect("users:email_reset_done")  # перенаправление после успешного запроса на изменение
@@ -140,11 +142,12 @@ class ChangeEmailView(FormView):
 
 class EmailResetCompleteView(TemplateView):
     template_name = "users/email_reset_complete.html"
-    title = ("Email reset complete")
+    title = "Email reset complete"
+
 
 class EmailResetDoneView(TemplateView):
     template_name = "users/email_reset_done.html"
-    title = ("Email reset done")
+    title = "Email reset done"
 
 
 class ConfirmEmailChangeView(View):

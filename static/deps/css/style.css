@@ -396,3 +396,66 @@ input[type="file"] {
     display: flex;
     justify-content: center;
 }
+
+/* Новости */
+
+.nav__news {
+    margin-bottom: 30px;
+}
+
+.news {
+    display: grid;
+    column-gap: 60px;
+    row-gap: 30px;
+    grid-template-columns: repeat(3, minmax(0px, 1fr));
+    padding-bottom: 20px;
+}
+
+.news a{
+    text-decoration:none;
+}
+
+.news__img img{
+    width: 366px;
+    height: 215px;
+}
+
+.news__data{
+    margin-bottom: 10px;
+}
+
+.news__title{
+    margin-bottom: 10px;
+    color: antiquewhite;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.news__subtitle {
+    color: aliceblue;
+}
+
+.pagination {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    color: darkgrey;
+}
+
+.pagination a, .pagination strong {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-decoration: none;
+    color: darkgrey;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination strong {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}

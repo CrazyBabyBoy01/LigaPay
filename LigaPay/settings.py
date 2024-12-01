@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
 from django.conf.global_settings import AUTH_USER_MODEL
 from dotenv import find_dotenv, load_dotenv
 
@@ -49,6 +50,8 @@ INSTALLED_APPS = [
     "users",
     "captcha",
     "widget_tweaks",
+    "news",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -160,7 +163,34 @@ EMAIL_HOST_USER = "fausta19@yandex.ru"
 EMAIL_HOST_PASSWORD = "nxtcaljwbcweevaf"
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Email, от которого отправляются письма
 
+# Redis
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
 
 # Настройка каптчи
 
 CAPTCHA_IMAGE_SIZE = (150, 50)
+
+# Настройка Celery
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"  # Убедитесь, что Redis запущен
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_BEAT_SCHEDULE = {
+    # Пример периодической задачи, которая запускается ежедневно
+    "update-news-every-day": {
+        "task": "news.tasks.update_news_task",
+        "schedule": crontab(minute=0, hour=0),  # Например, каждый день в полночь
+    },
+}

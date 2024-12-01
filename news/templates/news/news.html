@@ -1,0 +1,57 @@
+{% extends "news/base.html" %}
+{% load static %}
+
+{% block content %}
+    <h1 class="header__title">
+        Новости
+    </h1>
+    <div class="">
+        {% if is_paginated %}
+            <div class="pagination">
+                <span>
+                    Страница {{ page_obj.number }} из {{ paginator.num_pages }}
+                </span>
+                <div>
+                    <!-- Ссылка на предыдущую страницу -->
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                    {% endif %}
+
+                    {% comment %} <!-- Номера страниц -->
+                    {% for num in paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <strong>{{ num }}</strong>
+                        {% else %}
+                            <a href="?page={{ num }}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %} {% endcomment %}
+
+                    <!-- Ссылка на следующую страницу -->
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="news">
+        {% for item in news %}
+            <a href="{{item.url}}" class="news__wrapper">
+                <div class="news__img">
+                    <img src="{{ item.image }}">
+                </div>
+                <div class="news__data">
+                    {{ item.date }}
+                </div>
+                <div class="news__title">
+                    {{ item.title }}
+                </div>
+                <div class="news__subtitle">
+                    {{ item.description }}
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+
+{% endblock content %}
