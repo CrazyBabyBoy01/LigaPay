@@ -17,3 +17,4 @@ class NewsView(ContextMixin, ListView):
     context_object_name = "news"
     paginate_by = 6
     ordering = ("-date",)
+    background_image = "/static/deps/images/SB_Riven.jpg"
