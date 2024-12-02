@@ -13,7 +13,14 @@
   <style>
     header {
       background-image: url('{% if background_image %}{{ background_image }}{% else %}{% static "deps/images/SB_Riven.jpg" %}{% endif %}');
+
     }
+    {% if background_color %}
+      header {
+          background-color: {{background_color}};
+          background-image: None;
+      }
+    {% endif %}
   </style>
 </head>
 <body>
@@ -31,7 +38,7 @@
             <a href="{% url "news:main" %}" class="header__list-item">Новости</a>
           </li>
           <li>
-            <a href="#" class="header__list-item">Правила</a>
+            <a href="{% url "main:rules" %}" class="header__list-item">Правила</a>
           </li>
           {% if user.is_authenticated %}
             <li>
