@@ -29,7 +29,8 @@ urlpatterns = [
     # path("", IndexView.as_view(), name="index"),
     path("", include("main.urls", namespace="main")),
     path("users/", include("users.urls", namespace="users")),
-    path("news/", include("news.urls", namespace="news")),
+    path("", include("news.urls", namespace="news")),
+    path("", include("products.urls", namespace="products")),
     path("captcha/", include("captcha.urls")),
 ]
 

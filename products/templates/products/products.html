@@ -1,0 +1,142 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block content %}
+    <div class="products">
+        <div class="products__header">
+            <h2 class="products__title">
+                Riot Points League of Legends
+            </h2>
+            <div class="products__subtitle">
+                На бирже FunPay вы можете купить Риот Поинты без посредников и переплат напрямую у реальных игроков. Сделки защищаются гарантом на всех этапах (продавцы получают оплату только после выполнения заказов).
+            </div>
+        </div>
+        <div class="products-list">
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+            <button class="header__btn products-item">Riot Points</button>
+        </div>
+        <div class="products-chat"></div>
+        <div class="products-content">
+            <div class="filter-container">
+                <div class="filter-container__row-1">
+                    <select class="filter-container__server">
+                        <option value="laptop">Сервер</option>
+                        <option value="nordic">EU Nordic & East</option>
+                        <option value="west">EU West</option>
+                        <option value="japan">Japan</option>
+                        <option value="north">Latin America North</option>
+                        <option value="southер">Latin America Southер</option>
+                        <option value="namerica">North America</option>
+                        <option value="russia">Russia</option>
+                        <option value="turkey">Turkey</option>
+                        <option value="other">Другой сервер</option>
+                    </select>
+                    <div class="filter-container__btn">
+                        <button>Все</button>
+                        <button>Подарки за RP</button>
+                        <button>Карты предопаты</button>
+                        <button>Rp с заходом на аккаунт</button>
+
+                    </div>
+                    <div class="filter-container__btn sell">
+                        <button>Продать Riot Points</button>
+                    </div>
+                </div>
+                <div class="filter-container__row-2">
+                    <label class="header__label">
+                        <input type="radio" class="header__checkbox" name = 'remember_me'>
+                        Только продавцы онлайн
+                    </label>
+                    <label class="header__label">
+                        <input type="radio" class="header__checkbox" name = 'remember_me'>
+                        Автоматическая доставка
+                    </label>
+                </div>
+            </div>
+            <div class="tc table-products">
+                <div class="tc__header">
+                    <div class="tc__header-item tc-server">Сервер</div>
+                    <div class="tc__header-item tc-desc">Описание</div>
+                    <div class="tc__header-item tc-user">Продавец</div>
+                    <div class="tc__header-item tc-count">Наличие</div>
+                    <div class="tc__header-item tc-price">Цена</div>
+                </div>
+                <a href="№" class="tc-item">
+                    <div class="tc__header-item tc-server">Сервер</div>
+                    <div class="tc__header-item tc-desc">Карты предоплаты, Другое количество, 160 </div>
+                    <div class="tc__header-item tc-user">Продавец</div>
+                    <div class="tc__header-item tc-count">Наличие</div>
+                    <div class="tc__header-item tc-price">Цена</div>
+                </a>
+                <a href="№" class="tc-item">
+                    <div class="tc__header-item tc-server">Сервер</div>
+                    <div class="tc__header-item tc-desc">Описание</div>
+                    <div class="tc__header-item tc-user">Продавец</div>
+                    <div class="tc__header-item tc-count">Наличие</div>
+                    <div class="tc__header-item tc-price">Цена</div>
+                </a>
+                <a href="№" class="tc-item">
+                    <div class="tc__header-item tc-server">Сервер</div>
+                    <div class="tc__header-item tc-desc">Описание</div>
+                    <div class="tc__header-item tc-user">Продавец</div>
+                    <div class="tc__header-item tc-count">Наличие</div>
+                    <div class="tc__header-item tc-price">Цена</div>
+                </a>
+                <a href="№" class="tc-item">
+                    <div class="tc__header-item tc-server">Сервер</div>
+                    <div class="tc__header-item tc-desc">Описание</div>
+                    <div class="tc__header-item tc-user">Продавец</div>
+                    <div class="tc__header-item tc-count">Наличие</div>
+                    <div class="tc__header-item tc-price">Цена</div>
+                </a>
+                <a href="№" class="tc-item">
+                    <div class="tc__header-item tc-server">Сервер</div>
+                    <div class="tc__header-item tc-desc">Описание</div>
+                    <div class="tc__header-item tc-user">Продавец</div>
+                    <div class="tc__header-item tc-count">Наличие</div>
+                    <div class="tc__header-item tc-price">Цена</div>
+                </a>
+
+
+            </div>
+            <div class="products-content__btn">
+                <button>Показать еще предложения</button>
+            </div>
+        </div>
+        {% comment %} <div class="products__footer">
+            <p>Получить Riot Points League of Legends нельзя при помощи фарма, уничтожения противников или выполнения заданий. Это довольно редкая валюта. За нее вы можете приобрести в магазине различные предметы, которые украшают героев и делают игровой процесс более приятным, но не влияют на баланс. Цена Riot Points в магазине довольно высока, но на FunPay можно купить Риоты намного дешевле. Помимо этого важного плюса наша биржа обладает следующими преимуществами:</p>
+            <ul>
+                <li>Быстрая доставка. После внесения оплаты поинты LOL будут у вас в максимально короткий срок. Хотите, чтобы покупка прошла максимально быстро? Тогда рекомендуем заключать сделки с пользователями, которые в данный момент находятся на сайте.</li>
+                <li>Комфортные условия оплаты. Расплачивайтесь за товары на FunPay так, как вам нравится: используя возможности SMS-банкинга, банковской карты или кошелька в системах онлайн-платежей.</li>
+                <li>Надежные поставщики. Чтобы не сомневаться в продавце, перейдите на его личную страницу. В профиле представлены отзывы от предыдущих клиентов пользователя и его деловая активность.</li>
+                <li>Выбор. На нашей бирже работают разные продавцы. Нет монополий и картельных сговоров. Торговля ведется согласно принципам свободной конкуренции.</li>
+                <li>Безопасность. Мы выстроили надежную систему защиты, каждая сделка проходит через гаранта. Никто не рискует.</li>
+            </ul>
+            <p>Если у вас возникнут какие-либо сложности или вопросы по работе биржи, свяжитесь с техподдержкой через форму онлайн-чата. Вы найдете ее в правом нижнем углу.</p>
+            <h4>О гаранте</h4>
+            <p>Защита сделок заложена в самой бирже. Поэтому все чаще любители компьютерных игр решают купить Riot Points именно через наш сервис. Алгоритм безопасности:</p>
+            <ul>
+                <li>Покупатель вносит оплату, отправленные им средства на этом этапе не перечисляются продавцу, а поступают в резерв, на счет биржи.</li>
+                <li>После того как пользователь убедится, что игровая валюта была перечислена в полном объеме, он завершает сделку.</li>
+                <li>Завершение сделки сигнализирует о том, что обязательства выполнены и мы перенаправляем оплату продавцу.</li>
+            </ul>
+            <h3>Как купить</h3>
+            <p>Чтобы купить Riot Points для League of Legends на FunPay, вам потребуется:</p>
+            <ol>
+                <li>Выбрать лот, написать его владельцу, дождаться ответа.</li>
+                <li>Внести деньги и получить валюту.</li>
+                <li>Инициировать завершение сделки.</li>
+            </ol>
+            <p>Чтобы поблагодарить продавца или указать на недостатки его работы, после завершения покупки оставьте отзыв на его личной странице.</p>
+            <h4>Продавцам</h4>
+            <p>FunPay – единственное место, где можно продать Riot Points очень быстро и по той цене, которую вы сами посчитаете наиболее разумной. Мы не регулируем стоимость товаров, не устанавливаем ограничений для пользователей. При этом ежедневно нашу биржу посещают десятки тысяч игроков, поэтому здесь вы наверняка найдете себе постоянных покупателей. Любой игрок, которого интересует продажа Riot Points LOL, может зарегистрироваться на сайте и стать одним из поставщиков. Соблюдайте правила биржи, не предлагайте покупателям заключать сделки вне нашего сервиса, и ваша торговля всегда будет проходить максимально безопасно. Старайтесь внимательно следить за изменениями на рынке, быть вежливыми и доставлять валюту максимально быстро, и у вас обязательно сформируется собственный круг постоянных клиентов на FunPay.</p>
+        </div> {% endcomment %}
+    </div>
+{% endblock content %}
