@@ -1,7 +1,4 @@
 from common.views import ContextMixin
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.template import context
 from django.views.generic import ListView
 
 from news.models import News
