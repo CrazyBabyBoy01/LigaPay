@@ -4,23 +4,19 @@
 {% block content %}
     <div class="products">
         <div class="products__header">
-            <h2 class="products__title">
+            <h2 class="products__title" id="category-title">
                 Riot Points League of Legends
             </h2>
-            <div class="products__subtitle">
-                На бирже FunPay вы можете купить Риот Поинты без посредников и переплат напрямую у реальных игроков. Сделки защищаются гарантом на всех этапах (продавцы получают оплату только после выполнения заказов).
+            <div class="products__subtitle" id="category-description">
+                {{ category.description }}
             </div>
         </div>
         <div class="products-list">
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
-            <button class="header__btn products-item">Riot Points</button>
+            {% for category in categories %}
+                <button class="header__btn products-item" data-slug="{{ category.slug}}" data-title="{{ category.name }}">
+                    {{ category.name }}
+                </button>
+            {% endfor %}
         </div>
         <div class="products-chat"></div>
         <div class="products-content">
@@ -110,6 +106,7 @@
                 <button>Показать еще предложения</button>
             </div>
         </div>
+
         {% comment %} <div class="products__footer">
             <p>Получить Riot Points League of Legends нельзя при помощи фарма, уничтожения противников или выполнения заданий. Это довольно редкая валюта. За нее вы можете приобрести в магазине различные предметы, которые украшают героев и делают игровой процесс более приятным, но не влияют на баланс. Цена Riot Points в магазине довольно высока, но на FunPay можно купить Риоты намного дешевле. Помимо этого важного плюса наша биржа обладает следующими преимуществами:</p>
             <ul>
@@ -139,4 +136,5 @@
             <p>FunPay – единственное место, где можно продать Riot Points очень быстро и по той цене, которую вы сами посчитаете наиболее разумной. Мы не регулируем стоимость товаров, не устанавливаем ограничений для пользователей. При этом ежедневно нашу биржу посещают десятки тысяч игроков, поэтому здесь вы наверняка найдете себе постоянных покупателей. Любой игрок, которого интересует продажа Riot Points LOL, может зарегистрироваться на сайте и стать одним из поставщиков. Соблюдайте правила биржи, не предлагайте покупателям заключать сделки вне нашего сервиса, и ваша торговля всегда будет проходить максимально безопасно. Старайтесь внимательно следить за изменениями на рынке, быть вежливыми и доставлять валюту максимально быстро, и у вас обязательно сформируется собственный круг постоянных клиентов на FunPay.</p>
         </div> {% endcomment %}
     </div>
+
 {% endblock content %}
