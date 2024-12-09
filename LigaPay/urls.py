@@ -30,7 +30,7 @@ urlpatterns = [
     path("", include("main.urls", namespace="main")),
     path("users/", include("users.urls", namespace="users")),
     path("", include("news.urls", namespace="news")),
-    path("", include("products.urls", namespace="products")),
+    path("products/", include("products.urls", namespace="products")),
     path("captcha/", include("captcha.urls")),
 ]
 
