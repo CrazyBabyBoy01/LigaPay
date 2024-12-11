@@ -24,20 +24,50 @@ class Category(models.Model):
         return self.name
 
 
+class Filter(models.Model):
+    category = models.ForeignKey(Category, related_name="filters", on_delete=models.CASCADE)
+
+    # Фильтры
+    server = models.CharField(max_length=100, null=True, blank=True)
+    all = models.BooleanField(default=False)
+    gifts_for_rp = models.BooleanField(default=False)
+    prepaid_cards = models.BooleanField(default=False)
+    rp_account = models.BooleanField(default=False)
+    sell = models.BooleanField(default=False)
+    rent = models.BooleanField(default=False)
+    chests = models.BooleanField(default=False)
+    chests_with_keys = models.BooleanField(default=False)
+    skins = models.BooleanField(default=False)
+    spheres = models.BooleanField(default=False)
+    other = models.BooleanField(default=False)
+    service_type = models.CharField(max_length=100, null=True, blank=True)
+    price_range = models.CharField(max_length=100, null=True, blank=True)
+    service_position = models.CharField(max_length=100, null=True, blank=True)
+    rp_1650 = models.BooleanField(default=False)
+    rp_2650 = models.BooleanField(default=False)
+    rp_3650 = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Filters for {self.category.name}"
+
+
 class BaseService(models.Model):
     """
     Базовая модель для услуг.
     """
 
-    title = models.CharField(max_length=255, verbose_name="Название")
-    description = models.TextField(verbose_name="Описание", blank=True)
+    title = models.CharField(max_length=255, verbose_name="Краткое описание")
+    description = models.TextField(verbose_name="Подробное описание", blank=True)
+    message = models.TextField(verbose_name="Сообщение покупателю после оплаты", blank=True)
     seller = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="%(class)s_services", verbose_name="Продавец"
     )
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
-    category = models.ForeignKey(to=Category, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата изменения")
+    is_active = models.BooleanField(
+        default=True, verbose_name="Активное", help_text="Пометить, если предложение активно"
+    )
 
     class Meta:
         abstract = True  # Это базовая модель, она не создаст таблицу в БД.
@@ -49,25 +79,58 @@ class BaseService(models.Model):
         return self.title
 
 
+class AutoDeliveryFilter(models.Model):
+    """
+    Базовая модель для услуг, связанных с автовыдачей.
+    """
+
+    auto_delivery = models.BooleanField(default=False, verbose_name="Автоматическая выдача")
+
+    class Meta:
+        abstract = True  # Эта модель не будет создавать таблицу в базе данных, она только для наследования
+
+
 class ServerBasedService(BaseService):
     """
     Базовая модель для услуг, связанных с сервером.
     """
 
-    server = models.CharField(
-        max_length=255, verbose_name="Сервер", help_text="Сервер, на котором предоставляется услуга"
-    )
+    SERVER_CHOICES = [
+        ("laptop", "Сервер"),
+        ("nordic", "EU Nordic & East"),
+        ("west", "EU West"),
+        ("japan", "Japan"),
+        ("north", "Latin America North"),
+        ("south", "Latin America South"),
+        ("namerica", "North America"),
+        ("russia", "Russia"),
+        ("turkey", "Turkey"),
+        ("other", "Другой сервер"),
+    ]
+
+    server = models.CharField(max_length=50, choices=SERVER_CHOICES, verbose_name="Сервер", help_text="Выберите сервер")
 
     class Meta:
         abstract = True
 
 
-class RPService(ServerBasedService):
+class RPService(ServerBasedService, AutoDeliveryFilter):
     """
     Модель услуги для продажи RP (внутриигровой валюты).
     Наследуется от базовой модели BaseService.
     """
 
+    FILTER_CHOICES = [
+        ("gifts_for_rp", "Подарки за RP"),
+        ("prepaid_cards", "Карты предоплаты"),
+        ("rp_account", "RP с заходом на аккаунт"),
+    ]
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+    )
     quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество валюты в наличии")
 
     class Meta:
@@ -78,11 +141,46 @@ class RPService(ServerBasedService):
         return f"{self.title} - {self.server} - {self.quantity} доступно"
 
 
-class AccountService(ServerBasedService):
+class AccountService(ServerBasedService, AutoDeliveryFilter):
     """
     Модель услуги для продажи игровых аккаунтов.
     Наследуется от базовой модели BaseService.
     """
+
+    FILTER_CHOICES = [
+        ("sell", "Продажа"),
+        ("rent", "Аренда"),
+    ]
+    RANK_CHOICES = [
+        ("IRON", "Железо"),
+        ("BRONZE", "Бронза"),
+        ("SILVER", "Серебро"),
+        ("GOLD", "Золото"),
+        ("PLATINUM", "Платина"),
+        ("EMERALD", "Изумруд"),
+        ("DIAMOND", "Алмаз"),
+        ("MASTER", "Мастер"),
+        ("GRANDMASTER", "Гранмастер"),
+        ("CHALLENGER", "Претендент"),
+        ("NO_RANK", "Нет ранга"),
+    ]
+
+    rank = models.CharField(
+        max_length=20,
+        choices=RANK_CHOICES,
+        default="NO_RANK",  # Значение по умолчанию
+        verbose_name="Ранг аккаунта",
+    )
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
+    skin_count = models.PositiveIntegerField(verbose_name="Количество скинов", default=0)
+    account_level = models.PositiveIntegerField(verbose_name="Уровень аккаунта", default=1)
+    character_count = models.PositiveIntegerField(verbose_name="Количество персонажей", default=1)
 
     class Meta:
         verbose_name = "Продажа аккаунтов"
@@ -98,6 +196,32 @@ class DonationService(ServerBasedService):
     Наследуется от базовой модели BaseService.
     """
 
+    FILTER_CHOICES = [
+        ("chests", "Сундуки"),
+        ("chests_with_keys", "Сундуки+ключи"),
+        ("skins", "Скины"),
+        ("spheres", "Сферы"),
+        ("other", "Прочее"),
+    ]
+    RECEIVING_METHOD_CHOICES = [
+        ("GIFT", "Подарком"),
+        ("LOGIN", "С заходом на аккаунт"),
+    ]
+
+    receiving_method = models.CharField(
+        max_length=10,
+        choices=RECEIVING_METHOD_CHOICES,
+        default="GIFT",  # Значение по умолчанию
+        verbose_name="Способ получения",
+    )
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
+
     class Meta:
         verbose_name = "Услуга доната"
         verbose_name_plural = "Услуги доната"
@@ -111,6 +235,34 @@ class BoostService(ServerBasedService):
     Модель услуги для буста.
     Наследуется от ServerBasedService.
     """
+
+    FILTER_CHOICES = [
+        ("solo", "Соло буст"),
+        ("duo", "Дуо буст"),
+    ]
+    RANK_RANGE_CHOICES = [
+        ("IRON_BRONZE", "Железо 4 - Бронза 4"),
+        ("BRONZE_SILVER", "Бронза 4 - Серебро 4"),
+        ("SILVER_GOLD", "Серебро 4 - Золото 4"),
+        ("GOLD_PLATINUM", "Золото 4 - Платина 4"),
+        ("PLATINUM_EMERALD", "Платина 4 - Изумруд 4"),
+        ("EMERALD_DIAMOND", "Изумруд 4 - Алмаз 4"),
+        ("DIAMOND_MASTER", "Алмаз 4 - Мастер"),
+        ("MASTER_GRANDMASTER", "Мастер - Грандмастер"),
+        ("GRANDMASTER_PRETENDER", "Грандмастер - Претендент"),
+    ]
+
+    rank_range = models.CharField(
+        max_length=21, choices=RANK_RANGE_CHOICES, default="IRON_BRONZE", verbose_name="Диапазон"
+    )
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
+
     class Meta:
         verbose_name = "Услуга буста"
         verbose_name_plural = "Услуги буста"
@@ -124,6 +276,28 @@ class GeneralService(BaseService):
     Модель универсальной услуги.
     Наследуется от BaseService.
     """
+
+    FILTER_CHOICES = [
+        ("battle_pass_boost", "Прокачка боевого пропуска"),
+        ("champion_mastery_boost", "Прокачка мастерства чемпиона"),
+        ("aram", "ARAM"),
+        ("clash", "Clash"),
+        ("normal_game", "Обычная игра"),
+        ("cooperative_game", "Совместная игра"),
+        ("leaverbuster_recovery", "Отыгрыш ливбустера"),
+        ("chat_ban_recovery", "Отыгрыш банчата"),
+        ("account_leveling", "Прокачка уровня аккаунта"),
+        ("mastery_token_farm", "Фарм жетонов мастерства"),
+        ("deboost", "Дебуст"),
+    ]
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
+
     class Meta:
         verbose_name = "Общая услуга"
         verbose_name_plural = "Общие услуги"
@@ -137,6 +311,7 @@ class QualificationService(ServerBasedService):
     Модель услуги квалификации.
     Наследуется от ServerBasedService.
     """
+
     class Meta:
         verbose_name = "Услуга квалификации"
         verbose_name_plural = "Услуги квалификации"
@@ -144,11 +319,29 @@ class QualificationService(ServerBasedService):
     def __str__(self):
         return f"{self.title} - {self.server}"
 
+
 class TrainingService(BaseService):
     """
     Модель услуги обучения.
     Наследуется от BaseService.
     """
+
+    FILTER_CHOICES = [
+        ("top", "Топ"),
+        ("jungle", "Лес"),
+        ("mid", "Мид"),
+        ("adc", "АДК"),
+        ("support", "Сап"),
+        ("any role", "Любая роль"),
+    ]
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Позиция",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
+
     class Meta:
         verbose_name = "Услуга обучения"
         verbose_name_plural = "Услуги обучения"
@@ -162,6 +355,20 @@ class BattlePassService(BaseService):
     Модель услуги по продаже боевого пропуска.
     Наследуется от BaseService.
     """
+
+    FILTER_CHOICES = [
+        ("1650 RP", "1650 RP"),
+        ("2650 RP", "2650 RP"),
+        ("3650 RP", "3650 RP"),
+    ]
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
+
     class Meta:
         verbose_name = "Продажа боевого пропуска"
         verbose_name_plural = "Продажа боевых пропусков"
@@ -170,15 +377,25 @@ class BattlePassService(BaseService):
         return self.title
 
 
-class OtherService(BaseService):
+class OtherService(BaseService, AutoDeliveryFilter):
     """
     Модель услуги для прочих товаров или услуг.
     Наследуется от BaseService.
     """
+
+    FILTER_CHOICES = [
+        ("guides", "Гайды"),
+        ("other", "Прочее"),
+    ]
+    filter_type = models.CharField(
+        max_length=50,
+        choices=FILTER_CHOICES,
+        verbose_name="Тип фильтра",
+        help_text="Выберите, к какому фильтру относится эта запись",
+        default="default_value",
+    )
     quantity = models.PositiveIntegerField(
-        default=1,
-        verbose_name="Количество",
-        help_text="Количество товара/услуги в наличии"
+        default=1, verbose_name="Количество", help_text="Количество товара/услуги в наличии"
     )
 
     class Meta:
