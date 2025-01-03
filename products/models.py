@@ -24,33 +24,6 @@ class Category(models.Model):
         return self.name
 
 
-class Filter(models.Model):
-    category = models.ForeignKey(Category, related_name="filters", on_delete=models.CASCADE)
-
-    # Фильтры
-    server = models.CharField(max_length=100, null=True, blank=True)
-    all = models.BooleanField(default=False)
-    gifts_for_rp = models.BooleanField(default=False)
-    prepaid_cards = models.BooleanField(default=False)
-    rp_account = models.BooleanField(default=False)
-    sell = models.BooleanField(default=False)
-    rent = models.BooleanField(default=False)
-    chests = models.BooleanField(default=False)
-    chests_with_keys = models.BooleanField(default=False)
-    skins = models.BooleanField(default=False)
-    spheres = models.BooleanField(default=False)
-    other = models.BooleanField(default=False)
-    service_type = models.CharField(max_length=100, null=True, blank=True)
-    price_range = models.CharField(max_length=100, null=True, blank=True)
-    service_position = models.CharField(max_length=100, null=True, blank=True)
-    rp_1650 = models.BooleanField(default=False)
-    rp_2650 = models.BooleanField(default=False)
-    rp_3650 = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Filters for {self.category.name}"
-
-
 class BaseService(models.Model):
     """
     Базовая модель для услуг.
@@ -67,6 +40,17 @@ class BaseService(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата изменения")
     is_active = models.BooleanField(
         default=True, verbose_name="Активное", help_text="Пометить, если предложение активно"
+    )
+    search_description = models.TextField(
+        verbose_name="Описание для поиска", blank=True, help_text="Введите текст, который будет использован для поиска"
+    )
+    is_auto_delivery = models.BooleanField(
+        default=False,
+        verbose_name="Автоматическая доставка",
+        help_text="Пометить, если услуга поддерживает автоматическую доставку",
+    )
+    seller_is_online = models.BooleanField(
+        default=False, verbose_name="Продавец онлайн", help_text="Пометить, если продавец находится в сети"
     )
 
     class Meta:
@@ -121,6 +105,7 @@ class RPService(ServerBasedService, AutoDeliveryFilter):
     """
 
     FILTER_CHOICES = [
+        ("ALL", "Все"),
         ("gifts_for_rp", "Подарки за RP"),
         ("prepaid_cards", "Карты предоплаты"),
         ("rp_account", "RP с заходом на аккаунт"),
@@ -148,6 +133,7 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     """
 
     FILTER_CHOICES = [
+        ("ALL", "Все"),
         ("sell", "Продажа"),
         ("rent", "Аренда"),
     ]
@@ -181,6 +167,7 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     skin_count = models.PositiveIntegerField(verbose_name="Количество скинов", default=0)
     account_level = models.PositiveIntegerField(verbose_name="Уровень аккаунта", default=1)
     character_count = models.PositiveIntegerField(verbose_name="Количество персонажей", default=1)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="account_services", default=1)
 
     class Meta:
         verbose_name = "Продажа аккаунтов"
@@ -306,7 +293,7 @@ class GeneralService(BaseService):
         return self.title
 
 
-class QualificationService(ServerBasedService):
+class QualificationService(ServerBasedService, BaseService):
     """
     Модель услуги квалификации.
     Наследуется от ServerBasedService.
@@ -357,6 +344,7 @@ class BattlePassService(BaseService):
     """
 
     FILTER_CHOICES = [
+        ("ALL", "Все"),
         ("1650 RP", "1650 RP"),
         ("2650 RP", "2650 RP"),
         ("3650 RP", "3650 RP"),

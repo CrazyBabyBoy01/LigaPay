@@ -1,0 +1,81 @@
+{% extends "products/products.html" %}
+{% block subcontent %}
+    <div class="filter-container">
+        <div class="filter-container__row-1">
+            <select class="filter-container__server">
+                <option value="">Сервер</option>
+                    {% for server in servers %}
+                        <option value="{{ server.0 }}">{{ server.1 }}</option>
+                    {% endfor %}
+            </select>
+             <!-- Поле для поиска -->
+             <form method="get" class="filter-container__search-form">
+                <div class="search-input-container">
+                    <input type="text" name="q" placeholder="Поиск по описанию" value="{{ request.GET.q }}">
+                    <span class="search-icon">&#128269;</span> <!-- Иконка лупы -->
+                </div>
+            </form>
+             <!-- Переключатель "Только продавцы онлайн" -->
+            <label class="switch">
+                <input type="checkbox" name="online_sellers" {% if request.GET.online_sellers %}checked{% endif %}>
+                <span class="slider"></span>
+            </label>
+            <span class="filter-label">Только продавцы онлайн</span>
+
+
+            <div class="filter-container__btn sell">
+                <button>Продать {{ category.name }}</button>
+            </div>
+        </div>
+        <div class="filter-container__row-2">
+
+        </div>
+    </div>
+    <div class="tc table-products">
+        <div class="tc__header">
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Описание</div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </div>
+        <a href="№" class="tc-item">
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Карты предоплаты, Другое количество, 160 </div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </a>
+        <a href="№" class="tc-item">
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Описание</div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </a>
+        <a href="№" class="tc-item">
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Описание</div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </a>
+        <a href="№" class="tc-item">
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Описание</div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </a>
+        <a href="№" class="tc-item">
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Описание</div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </a>
+    </div>
+    <div class="products-content__btn">
+        <button>Показать еще предложения</button>
+    </div>
+{% endblock subcontent %}

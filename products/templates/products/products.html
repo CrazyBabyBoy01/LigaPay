@@ -5,104 +5,62 @@
     <div class="products">
         <div class="products__header">
             <h2 class="products__title" id="category-title">
-                Riot Points League of Legends
+                {{ category.name }} League of Legends
             </h2>
             <div class="products__subtitle" id="category-description">
                 {{ category.description }}
             </div>
         </div>
         <div class="products-list">
-            {% for category in categories %}
-                <button class="header__btn products-item" data-slug="{{ category.slug}}" data-title="{{ category.name }}">
-                    {{ category.name }}
-                </button>
-            {% endfor %}
+                <a href="{% url 'products:account' slug='account' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'account' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Аккаунты
+                    </button>
+                </a>
+                <a href="{% url 'products:riot-points' slug='riot-points' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'riot-points' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Riot Points
+                    </button>
+                </a>
+                <a href="{% url 'products:boost' slug='boosting' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'boost' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Буст
+                    </button>
+                </a>
+                <a href="{% url 'products:training' slug='training' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'training' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Обучение
+                    </button>
+                </a>
+                <a href="{% url 'products:battlepass' slug='battlepass' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'battlepass' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Боевой пропуск
+                    </button>
+                </a>
+                <a href="{% url 'products:donation' slug='donation' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'donation' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Донат
+                    </button>
+                </a>
+                <a href="{% url 'products:services' slug='services' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'services' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Услуги
+                    </button>
+                </a>
+                <a href="{% url 'products:qualification' slug='qualification' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'qualification' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Квалификация
+                    </button>
+                </a>
+                <a href="{% url 'products:other' slug='other' %}" class="category-link">
+                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'other' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                        Прочее
+                    </button>
+                </a>
         </div>
         <div class="products-chat"></div>
         <div class="products-content">
-            <div class="filter-container">
-                <div class="filter-container__row-1">
-                    <select class="filter-container__server">
-                        <option value="laptop">Сервер</option>
-                        <option value="nordic">EU Nordic & East</option>
-                        <option value="west">EU West</option>
-                        <option value="japan">Japan</option>
-                        <option value="north">Latin America North</option>
-                        <option value="southер">Latin America Southер</option>
-                        <option value="namerica">North America</option>
-                        <option value="russia">Russia</option>
-                        <option value="turkey">Turkey</option>
-                        <option value="other">Другой сервер</option>
-                    </select>
-                    <div class="filter-container__btn">
-                        <button>Все</button>
-                        <button>Подарки за RP</button>
-                        <button>Карты предопаты</button>
-                        <button>Rp с заходом на аккаунт</button>
-
-                    </div>
-                    <div class="filter-container__btn sell">
-                        <button>Продать Riot Points</button>
-                    </div>
-                </div>
-                <div class="filter-container__row-2">
-                    <label class="header__label">
-                        <input type="radio" class="header__checkbox" name = 'remember_me'>
-                        Только продавцы онлайн
-                    </label>
-                    <label class="header__label">
-                        <input type="radio" class="header__checkbox" name = 'remember_me'>
-                        Автоматическая доставка
-                    </label>
-                </div>
-            </div>
-            <div class="tc table-products">
-                <div class="tc__header">
-                    <div class="tc__header-item tc-server">Сервер</div>
-                    <div class="tc__header-item tc-desc">Описание</div>
-                    <div class="tc__header-item tc-user">Продавец</div>
-                    <div class="tc__header-item tc-count">Наличие</div>
-                    <div class="tc__header-item tc-price">Цена</div>
-                </div>
-                <a href="№" class="tc-item">
-                    <div class="tc__header-item tc-server">Сервер</div>
-                    <div class="tc__header-item tc-desc">Карты предоплаты, Другое количество, 160 </div>
-                    <div class="tc__header-item tc-user">Продавец</div>
-                    <div class="tc__header-item tc-count">Наличие</div>
-                    <div class="tc__header-item tc-price">Цена</div>
-                </a>
-                <a href="№" class="tc-item">
-                    <div class="tc__header-item tc-server">Сервер</div>
-                    <div class="tc__header-item tc-desc">Описание</div>
-                    <div class="tc__header-item tc-user">Продавец</div>
-                    <div class="tc__header-item tc-count">Наличие</div>
-                    <div class="tc__header-item tc-price">Цена</div>
-                </a>
-                <a href="№" class="tc-item">
-                    <div class="tc__header-item tc-server">Сервер</div>
-                    <div class="tc__header-item tc-desc">Описание</div>
-                    <div class="tc__header-item tc-user">Продавец</div>
-                    <div class="tc__header-item tc-count">Наличие</div>
-                    <div class="tc__header-item tc-price">Цена</div>
-                </a>
-                <a href="№" class="tc-item">
-                    <div class="tc__header-item tc-server">Сервер</div>
-                    <div class="tc__header-item tc-desc">Описание</div>
-                    <div class="tc__header-item tc-user">Продавец</div>
-                    <div class="tc__header-item tc-count">Наличие</div>
-                    <div class="tc__header-item tc-price">Цена</div>
-                </a>
-                <a href="№" class="tc-item">
-                    <div class="tc__header-item tc-server">Сервер</div>
-                    <div class="tc__header-item tc-desc">Описание</div>
-                    <div class="tc__header-item tc-user">Продавец</div>
-                    <div class="tc__header-item tc-count">Наличие</div>
-                    <div class="tc__header-item tc-price">Цена</div>
-                </a>
-            </div>
-            <div class="products-content__btn">
-                <button>Показать еще предложения</button>
-            </div>
+            {% block subcontent %}{% endblock subcontent %}
         </div>
 
         {% comment %} <div class="products__footer">
