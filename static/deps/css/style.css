@@ -277,8 +277,10 @@ a:hover {
 	background-color: #808080;
 }
 
-
-
+.header__btn.active {
+	background-color: #fff;
+    color: #000;
+}
 /* Стили профиля */
 
 .header__avatar{
@@ -509,6 +511,11 @@ th {
     margin: 0;
 }
 
+/* .products-item.active {
+    background-color: #fff;
+    color: #000;
+} */
+
 .products-list {
     display: grid;
     grid-template-columns: repeat(6, minmax(0px, 1fr));
@@ -525,13 +532,22 @@ th {
     margin-bottom: 30px;
 }
 
-.filter-container__row-1{
+.filter-container__row-1, .filter-container__row-3, .filter-container__row-2{
     display: flex;
     margin-bottom: 10px;
+    align-items: center;
 }
 
-.filter-container__server{
+.filter-container__server, .filter-container__type , .filter-container__range, .filter-container__position, .filter-container__way, .filter-container__services{
     padding: 8px 12px;
+    margin-right: 10px;
+}
+
+.filter-container__row-2 {
+
+}
+
+.filter-container__btn {
     margin-right: 10px;
 }
 
@@ -572,4 +588,130 @@ th {
 
 .products-content__btn button{
     padding: 8px 12px;
+}
+.filter-container__search-form{
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.filter-container__search-form input {
+    padding: 8px 12px;
+    width: 140px;
+}
+
+/* Общий стиль переключателей */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* Стиль метки */
+.filter-label {
+    font-size: 14px;
+    margin-right: 20px;
+}
+
+/* Поиск */
+/* Контейнер для поля ввода и иконки */
+.search-input-container {
+    position: relative;
+    display: inline-block;
+    width: 100%; /* Ширина контейнера может быть настроена */
+}
+
+.search-input-container input[type="text"] {
+    width: 100%; /* Поле ввода займет всю ширину контейнера */
+    padding-right: 30px; /* Увеличиваем отступ справа, чтобы не перекрыть иконку */
+    box-sizing: border-box;
+    height: 40px; /* Задайте высоту по вашему вкусу */
+}
+
+/* Стили для иконки */
+.search-input-container .search-icon {
+    position: absolute;
+    right: 10px; /* Отступ от правого края */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px; /* Размер иконки */
+    color: #888; /* Цвет иконки */
+    pointer-events: none; /* Иконка не будет интерактивной */
+}
+
+/* Продукты аккунт */
+
+/* Для Webkit-браузеров (Chrome, Safari, Edge) */
+div.filter-container__lvl input[type="number"]::-webkit-outer-spin-button,
+div.filter-container__lvl input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Для Firefox */
+div.filter-container__lvl input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+/* Для всех браузеров */
+div.filter-container__lvl input[type="number"] {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    margin: 0 !important;
+}
+
+div.filter-container__lvl input{
+    width: 45px;
+    padding: 8px 12px;
+}
+
+.character, .skin {
+    margin-right: 10px;
+}
+
+
+/* БУСТ */
+
+.filter-container__type {
+    margin-right: 10px;
 }

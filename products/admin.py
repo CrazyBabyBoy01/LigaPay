@@ -8,6 +8,7 @@ from .models import (
     Category,
     DonationService,
     OtherService,
+    QualificationService,
     RPService,
     TrainingService,
 )
@@ -21,3 +22,4 @@ admin.site.register(BoostService)
 admin.site.register(TrainingService)
 admin.site.register(BattlePassService)
 admin.site.register(OtherService)
+admin.site.register(QualificationService)
