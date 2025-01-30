@@ -12,54 +12,55 @@
             </div>
         </div>
         <div class="products-list">
-                <a href="{% url 'products:account' slug='account' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'account' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:account' %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/accounts/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Аккаунты
                     </button>
                 </a>
-                <a href="{% url 'products:riot-points' slug='riot-points' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'riot-points' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:riot-points' %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/riot-points/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Riot Points
                     </button>
                 </a>
-                <a href="{% url 'products:boost' slug='boosting' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'boost' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:boost' %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/boost/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Буст
                     </button>
                 </a>
-                <a href="{% url 'products:training' slug='training' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'training' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:training'  %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/training/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Обучение
                     </button>
                 </a>
-                <a href="{% url 'products:battlepass' slug='battlepass' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'battlepass' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:battlepass'  %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/battlepass/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Боевой пропуск
                     </button>
                 </a>
-                <a href="{% url 'products:donation' slug='donation' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'donation' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:donation'  %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/donation/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Донат
                     </button>
                 </a>
-                <a href="{% url 'products:services' slug='services' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'services' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:services'  %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/services/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Услуги
                     </button>
                 </a>
-                <a href="{% url 'products:qualification' slug='qualification' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'qualification' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:qualification'  %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/qualification/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Квалификация
                     </button>
                 </a>
-                <a href="{% url 'products:other' slug='other' %}" class="category-link">
-                    <button class="header__btn products-item {% if request.resolver_match.url_name == 'other' %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
+                <a href="{% url 'products:other' %}" class="category-link">
+                    <button class="header__btn products-item {% if '/products/other/' in request.path %}active{% endif %}" data-slug="{{ category.slug }}" data-title="{{ category.name }}">
                         Прочее
                     </button>
                 </a>
         </div>
         <div class="products-chat"></div>
         <div class="products-content">
+            <input type="hidden" id="isAuthenticated" value="{{ user.is_authenticated }}">
             {% block subcontent %}{% endblock subcontent %}
         </div>
 

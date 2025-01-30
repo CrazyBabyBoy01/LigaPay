@@ -170,7 +170,7 @@ h2{
     margin-bottom: 41px;
 }
 
-.form input{
+.form input {
     width: 300px;
     height: 39px;
     border-radius: 10px;
@@ -529,7 +529,7 @@ th {
 }
 
 .filter-container{
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .filter-container__row-1, .filter-container__row-3, .filter-container__row-2{
@@ -538,7 +538,7 @@ th {
     align-items: center;
 }
 
-.filter-container__server, .filter-container__type , .filter-container__range, .filter-container__position, .filter-container__way, .filter-container__services{
+.filter-container__server, .filter-container__type , .filter-container__range, .filter-container__position, .filter-container__way, .filter-container__services, .filter-container__btn, .filter-container__rank {
     padding: 8px 12px;
     margin-right: 10px;
 }
@@ -556,7 +556,10 @@ th {
 }
 
 .sell{
-    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+    display: flex;
+    justify-content: end;
 }
 
 .tc{
@@ -586,7 +589,7 @@ th {
     justify-content: space-around;
 }
 
-.products-content__btn button{
+.products-content__btn button, .products-content__filter button{
     padding: 8px 12px;
 }
 .filter-container__search-form{
@@ -605,7 +608,8 @@ th {
     display: inline-block;
     width: 40px;
     height: 20px;
-    margin-right: 10px;
+    margin-right: 15px;
+    margin-left: 5px;
 }
 
 .switch input {
@@ -709,9 +713,96 @@ div.filter-container__lvl input{
     margin-right: 10px;
 }
 
+.tc-user {
+    display: flex;
+    align-items: center;
+}
 
 /* БУСТ */
 
 .filter-container__type {
     margin-right: 10px;
+}
+
+/* Добавление предложения */
+.modal {
+    display: none; /* Скрыто */
+    position: fixed;
+    z-index: 1; /* Слишком высокий индекс, чтобы оно было поверх других элементов */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+    justify-content: center;
+    align-items: center;
+}
+
+.offer {
+    background-color: brown;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+
+}
+
+.offer form , .offer__title{
+    width: 450px;
+    margin: auto;
+}
+
+.offer form div {
+    margin-bottom: 10px;
+}
+
+.offer__form input, .offer__form select, .offer__form textarea {
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    opacity: 40%;
+    background: #342020;
+    border: #FFE9E9;
+    font-family: "Jura", sans-serif;
+    font-size: 16px;
+    padding-left: 35px;
+    color: #FFFFFF;
+}
+
+.offer__form{
+    display: grid;
+}
+
+.offer__form-bool {
+    display: flex;
+}
+
+
+.offer .header__btn{
+    margin-bottom: 0px;
+}
+
+.offer__form label{
+    margin-bottom: 5px;
+}
+
+.offer__title {
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+/* Кнопка для закрытия модального окна */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }

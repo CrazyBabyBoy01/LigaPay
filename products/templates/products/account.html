@@ -1,13 +1,15 @@
 {% extends "products/products.html" %}
+{% load static %}
     {% block subcontent %}
-        <div class="filter-container">
+        <form method="get" class="filter-container">
             <div class="filter-container__row-1">
-                <select class="filter-container__server">
+                <select class="filter-container__server" name="server">
                     <option value="">Сервер</option>
                         {% for server in servers %}
-                            <option value="{{ server.0 }}">{{ server.1 }}</option>
+                            <option value="{{ server.0 }}" {% if request.GET.server == server.0 %}selected{% endif %}>{{ server.1 }}</option>
                         {% endfor %}
                 </select>
+
                 <div class="filter-container__btn">
                     {% for filter_option in filter_options %}
                         <button value="{{ filter_option.value }}">{{ filter_option.label }}</button>
@@ -17,16 +19,6 @@
                     <label for="skin_count_min">Уровень:</label>
                     <input type="number" id="account_level_min" name="account_level_min" placeholder="От">
                     <input type="number" id="account_level_max" name="account_level_max" placeholder="До">
-                </div>
-                {% comment %} <div class="filter-container__btn">
-                    <button>Все</button>
-                    <button>Подарки за RP</button>
-                    <button>Карты предопаты</button>
-                    <button>Rp с заходом на аккаунт</button>
-
-                </div> {% endcomment %}
-                <div class="filter-container__btn sell">
-                    <button>Продать {{ category.name }}</button>
                 </div>
             </div>
             <div class="filter-container__row-3">
@@ -40,21 +32,23 @@
                     <input type="number" id="character_count_min" name="character_count_min" placeholder="От" value="{{ character_count_min }}">
                      <input type="number" id="character_count_max" name="character_count_max" placeholder="До" value="{{ character_count_max }}">
                 </div>
-                <select class="filter-container__rank">
+                <select class="filter-container__rank" name="rank">
                     <option value="">Ранг</option>
-                        {% for rank in ranks %}
-                            <option value="{{ rank.0 }}">{{ rank.1 }}</option>
-                        {% endfor %}
+                    {% for rank in ranks %}
+                        <option value="{{ rank.0 }}" {% if request.GET.rank == rank.0 %}selected{% endif %}>
+                            {{ rank.1 }}
+                        </option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="filter-container__row-2">
                 <!-- Поле для поиска -->
-                <form method="get" class="filter-container__search-form">
+                <div class="filter-container__search-form">
                     <div class="search-input-container">
                         <input type="text" name="q" placeholder="Поиск по описанию" value="{{ request.GET.q }}">
                         <span class="search-icon">&#128269;</span> <!-- Иконка лупы -->
                     </div>
-                </form>
+                </div>
 
                 <!-- Переключатель "Только продавцы онлайн" -->
                 <label class="switch">
@@ -69,55 +63,95 @@
                     <span class="slider"></span>
                 </label>
                 <span class="filter-label">Автоматическая доставка</span>
-
-
             </div>
+            <button type="submit">Применить фильтр</button>
+        </form>
+        <div class="filter-container__btn sell">
+            <button id="openModalBtn">Продать {{ category.name }}</button>
         </div>
         <div class="tc table-products">
             <div class="tc__header">
                 <div class="tc__header-item tc-server">Сервер</div>
                 <div class="tc__header-item tc-desc">Описание</div>
                 <div class="tc__header-item tc-user">Продавец</div>
-                <div class="tc__header-item tc-count">Наличие</div>
                 <div class="tc__header-item tc-price">Цена</div>
             </div>
-            <a href="№" class="tc-item">
-                <div class="tc__header-item tc-server">Сервер</div>
-                <div class="tc__header-item tc-desc">Карты предоплаты, Другое количество, 160 </div>
-                <div class="tc__header-item tc-user">Продавец</div>
-                <div class="tc__header-item tc-count">Наличие</div>
-                <div class="tc__header-item tc-price">Цена</div>
-            </a>
-            <a href="№" class="tc-item">
-                <div class="tc__header-item tc-server">Сервер</div>
-                <div class="tc__header-item tc-desc">Описание</div>
-                <div class="tc__header-item tc-user">Продавец</div>
-                <div class="tc__header-item tc-count">Наличие</div>
-                <div class="tc__header-item tc-price">Цена</div>
-            </a>
-            <a href="№" class="tc-item">
-                <div class="tc__header-item tc-server">Сервер</div>
-                <div class="tc__header-item tc-desc">Описание</div>
-                <div class="tc__header-item tc-user">Продавец</div>
-                <div class="tc__header-item tc-count">Наличие</div>
-                <div class="tc__header-item tc-price">Цена</div>
-            </a>
-            <a href="№" class="tc-item">
-                <div class="tc__header-item tc-server">Сервер</div>
-                <div class="tc__header-item tc-desc">Описание</div>
-                <div class="tc__header-item tc-user">Продавец</div>
-                <div class="tc__header-item tc-count">Наличие</div>
-                <div class="tc__header-item tc-price">Цена</div>
-            </a>
-            <a href="№" class="tc-item">
-                <div class="tc__header-item tc-server">Сервер</div>
-                <div class="tc__header-item tc-desc">Описание</div>
-                <div class="tc__header-item tc-user">Продавец</div>
-                <div class="tc__header-item tc-count">Наличие</div>
-                <div class="tc__header-item tc-price">Цена</div>
-            </a>
+            {% for service in services %}
+                <a href="{% url 'products:account' %}" class="tc-item">
+                    <div class="tc__header-item tc-server">{{ service.server }}</div>
+                    <div class="tc__header-item tc-desc">{{ service.description }}</div>
+                    <div class="tc__header-item tc-user">
+                        <img width="20" height="20" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
+                        {{ service.seller }}
+                    </div>
+                    <div class="tc__header-item tc-price">{{ service.price }}</div>
+                </a>
+            {% empty %}
+                <div class="tc-item">
+                    <div class="tc__header-item" colspan="5">Нет доступных услуг для отображения.</div>
+                </div>
+            {% endfor %}
         </div>
         <div class="products-content__btn">
             <button>Показать еще предложения</button>
         </div>
+        {% comment %} Модальное окно {% endcomment %}
+        <div id="modal" class="modal">
+            <div class="offer">
+                <span id="closeModalBtn" class="close">&times;</span>
+                <h3 class="offer__title">
+                    Добавьте оффер
+                </h3>
+                <form action={% url "products:account" %} method='post' class="offer__form">
+                    {% csrf_token %}
+                    <div class="offer__form form">
+                        <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>
+                        {{ form.server }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.filter_type.id_for_label }}">{{ form.filter_type.label }}</label>
+                        {{ form.filter_type }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.rank.id_for_label }}">{{ form.rank.label }}</label>
+                        {{ form.rank }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.skin_count.id_for_label }}">{{ form.skin_count.label }}</label>
+                        {{ form.skin_count }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.character_count.id_for_label }}">{{ form.character_count.label }}</label>
+                        {{ form.character_count }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.account_level.id_for_label }}">{{ form.account_level.label }}</label>
+                        {{ form.account_level }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                        {{ form.title }}
+                    </div>
+
+                    <div class="offer__form form">
+                        <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="offer__form form">
+                        <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+                        {{ form.message }}
+                    </div>
+
+                    <div class="offer__form form">
+                        <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                        {{ form.price }}
+                        {{form.is_auto_delivery}}
+                    </div>
+                    <button class="header__btn" type="submit">Отправить</button>
+                  </form>
+
+            </div>
+        </div>
+
+
     {% endblock subcontent %}

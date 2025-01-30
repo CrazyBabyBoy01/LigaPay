@@ -1,65 +1,37 @@
+// Получаем элементы
+var modal = document.getElementById("modal");
+var openModalBtn = document.getElementById("openModalBtn");
+var closeModalBtn = document.getElementById("closeModalBtn");
+
+// Получаем значение из скрытого элемента, который мы передали из шаблона
+var isAuthenticated = document.getElementById("isAuthenticated").value;
+
+// Открываем модальное окно при клике на кнопку
+openModalBtn.onclick = function() {
+    console.log("Кнопка нажата");
+    console.log("isAuthenticated:", isAuthenticated);
+
+    if (isAuthenticated === "True") {
+        console.log("Пользователь авторизован");
+        modal.style.display = "flex";
+    } else {
+        console.log("Пользователь не авторизован");
+        window.location.href = "/users/autorization/"; // Убедитесь, что URL верный
+    }
+};
 
 
+// Закрываем модальное окно при клике на крестик
+closeModalBtn.onclick = function() {
+    modal.style.display = "none";
+}
 
-
-// document.addEventListener('DOMContentLoaded', function () {
-//     const buttons = document.querySelectorAll('.products-item');
-
-//     buttons.forEach(function (button) {
-//         button.addEventListener('click', function () {
-//             const categorySlug = button.getAttribute('data-slug');
-//             const categoryTitle = button.getAttribute('data-title'); // Получаем название категории
-//             console.log('Клик по категории:', categorySlug);
-
-//             // Изменяем заголовок с добавлением "League of Legends"
-//             const titleElement = document.getElementById('category-title');
-//             if (titleElement) {
-//                 titleElement.innerText = `${categoryTitle} League of Legends`; // Добавляем текст
-//             } else {
-//                 console.error('Элемент #category-title не найден.');
-//             }
-
-//             // Получаем описание категории
-//             fetch(`/products/category-description/${categorySlug}/`)
-//                 .then(response => {
-//                     if (!response.ok) {
-//                         throw new Error('Ошибка сети');
-//                     }
-//                     return response.json();
-//                 })
-//                 .then(data => {
-//                     const descriptionElement = document.getElementById('category-description');
-//                     if (descriptionElement) {
-//                         descriptionElement.innerText = data.description; // Обновляем описание
-//                     } else {
-//                         console.error('Элемент #category-description не найден.');
-//                     }
-//                 })
-//                 .catch(error => console.error('Ошибка:', error));
-
-//                 // Получаем контент категории (товары, фильтры и т.д.)
-//             fetch(`/products/products/${categorySlug}/`)
-//                 .then(response => {
-//                     if (!response.ok) {
-//                         throw new Error('Ошибка сети при получении контента');
-//                     }
-//                     return response.json();
-//                 })
-//                 .then(data => {
-//                     const contentElement = document.getElementById('products-content');
-//                     if (contentElement) {
-//                         contentElement.innerHTML = data.content; // Обновляем содержимое
-//                     }
-//                 })
-//                 .catch(error => console.error('Ошибка:', error));
-
-//             // Обновляем URL в адресной строке
-//             const newUrl = `/products/products/${categorySlug}/`;  // Новый URL с slug категории
-//             window.history.pushState({ path: newUrl }, '', newUrl);
-
-//         });
-//     });
-// });
+// Закрываем модальное окно при клике вне области окна
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+}
 
 // Получаем элементы иконки и меню
 const profileIcon = document.getElementById('profileIcon');
@@ -75,4 +47,9 @@ window.addEventListener('click', function(event) {
     if (!profileIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
         dropdownMenu.classList.remove('show'); // Скрыть меню
     }
+});
+
+document.getElementById('resetFiltersBtn').addEventListener('click', function() {
+    var url = this.getAttribute('data-url');
+    window.location.href = url;  // Перенаправление на URL
 });

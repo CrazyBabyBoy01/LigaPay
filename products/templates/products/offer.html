@@ -6,6 +6,67 @@
         <h2 class="offer__title">
             Добавление предложения
         </h2>
+        <form method="POST">
+            {% csrf_token %}
+            {% if category_slug == "accounts"  %}
+                <div class="offer__form form">
+                    <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>
+                    {{ form.server }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.filter_options_acc.id_for_label }}">{{ form.filter_options_acc.label }}</label>
+                    {{ form.filter_options_acc }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.rank.id_for_label }}">{{ form.rank.label }}</label>
+                    {{ form.rank }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.skin_count.id_for_label }}">{{ form.skin_count.label }}</label>
+                    {{ form.skin_count }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.character_count.id_for_label }}">{{ form.character_count.label }}</label>
+                    {{ form.character_count }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.account_level.id_for_label }}">{{ form.account_level.label }}</label>
+                    {{ form.account_level }}
+                </div>
 
+            {% elif category_slug == "training" %}
+                <div>
+                    <label for="id_position">Должность</label>
+                    {{ form.position }}
+                </div>
+            {% elif category_slug == "donation" %}
+                <div>
+                    <label for="id_receiving_method">Способ получения</label>
+                    {{ form.receiving_method }}
+                </div>
+            {% endif %}
+
+            <div class="offer__form form">
+                <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                {{ form.title }}
+            </div>
+
+            <div class="offer__form form">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+            <div class="offer__form form">
+                <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+                {{ form.message }}
+            </div>
+
+            <div class="offer__form form">
+                <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                {{ form.price }}
+            </div>
+
+
+            <button class="header__btn" type="submit">Отправить</button>
+        </form>
     </div>
 {% endblock content %}
