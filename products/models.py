@@ -80,7 +80,6 @@ class ServerBasedService(BaseService):
     """
 
     SERVER_CHOICES = [
-        ("laptop", "Сервер"),
         ("nordic", "EU Nordic & East"),
         ("west", "EU West"),
         ("japan", "Japan"),
@@ -167,7 +166,7 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     skin_count = models.PositiveIntegerField(verbose_name="Количество скинов", default=0)
     account_level = models.PositiveIntegerField(verbose_name="Уровень аккаунта", default=1)
     character_count = models.PositiveIntegerField(verbose_name="Количество персонажей", default=1)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="account_services", default=1)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="account_services", default=2)
 
     class Meta:
         verbose_name = "Продажа аккаунтов"

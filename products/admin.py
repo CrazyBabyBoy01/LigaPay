@@ -14,7 +14,7 @@ from .models import (
 )
 
 
-admin.site.register(Category)
+# admin.site.register(Category)
 admin.site.register(RPService)
 admin.site.register(AccountService)
 admin.site.register(DonationService)
@@ -23,3 +23,8 @@ admin.site.register(TrainingService)
 admin.site.register(BattlePassService)
 admin.site.register(OtherService)
 admin.site.register(QualificationService)
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    prepopulated_fields = {"slug": ("name",)}

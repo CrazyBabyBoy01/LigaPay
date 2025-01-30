@@ -6,11 +6,11 @@ from products.views import (
     BoostServiceListView,
     CategoryView,
     DonationServiceListView,
-    RPServiceListView,
-    TrainingServiceListView,
     GeneralServiceListView,
     OtherServiceListView,
     QualificationServiceListView,
+    RPServiceListView,
+    TrainingServiceListView,
 )
 
 
@@ -18,15 +18,13 @@ app_name = "products"
 
 urlpatterns = [
     path("category/<slug:category_slug>/", CategoryView.as_view(), name="category"),
-    path("account/<slug:slug>/", AccountServiceListView.as_view(), name="account"),
-    path("riot-points/<slug:slug>/", RPServiceListView.as_view(), name="riot-points"),
-    path("boost/<slug:slug>/", BoostServiceListView.as_view(), name="boost"),
-    path("training/<slug:slug>/", TrainingServiceListView.as_view(), name="training"),
-    path("battlepass/<slug:slug>/", BattlePassServiceListView.as_view(), name="battlepass"),
-    path("donation/<slug:slug>/", DonationServiceListView.as_view(), name="donation"),
-    path("services/<slug:slug>/", GeneralServiceListView.as_view(), name="services"),
-    path("other/<slug:slug>/", OtherServiceListView.as_view(), name="other"),
-    path("qualification/<slug:slug>/", QualificationServiceListView.as_view(), name="qualification"),
-    # path("products/<slug:category_slug>/", ProductsView.as_view(), name="products_detail"),
-    # path("account/", AccountView.as_view(), name="account"),
+    path("products/accounts/", AccountServiceListView.as_view(), name="account"),
+    path("products/riot-points/", RPServiceListView.as_view(), name="riot-points"),
+    path("products/boost/", BoostServiceListView.as_view(), name="boost"),
+    path("products/training/", TrainingServiceListView.as_view(), name="training"),
+    path("products/battlepass/", BattlePassServiceListView.as_view(), name="battlepass"),
+    path("products/donation/", DonationServiceListView.as_view(), name="donation"),
+    path("products/services/", GeneralServiceListView.as_view(), name="services"),
+    path("products/other/", OtherServiceListView.as_view(), name="other"),
+    path("products/qualification/", QualificationServiceListView.as_view(), name="qualification"),
 ]

@@ -1,13 +1,18 @@
 import logging
 from itertools import product
 from pyexpat import model
+from urllib import request
 from venv import logger
 
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views import View
-from django.views.generic import ListView, TemplateView
+from django.views.generic import FormView, ListView, TemplateView
+
+from products.filters import RpFilter
+from products.forms import AccountServiceForm, RPServiceFilterForm, RPServiceForm
 
 from .mixins import CategoryMixin, SearchDescriptionMixin, ServerMixin
 from .models import (
@@ -34,27 +39,78 @@ class CategoryView(View):
     template_name = "products/products.html"
     context_object_name = "categories"
 
+    def get(self, request, slug=None):
+        if slug:
+            # Если слаг передан, получаем соответствующую категорию
+            category = get_object_or_404(Category, slug=slug)
+            return render(
+                request,
+                self.template_name,
+                {
+                    "categories": category,
+                    "title": self.title,
+                },
+            )
+
 
 class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Аккаунты"
     model = AccountService
     template_name = "products/account.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
-    def get_context_data(self, **kwargs):
-        # Сюда передаем slug, чтобы миксин мог правильно его обработать
-        kwargs["slug"] = "accounts"  # или динамически передавайте нужный слаг
+    def get_context_data(self, **kwargs):  # для передачи контекста в шаблон
+        kwargs["slug"] = "accounts"  # для отображения на странице заголовка и опсиания для категории (динамически)
         context = super().get_context_data(**kwargs)
+        context["form"] = AccountServiceForm()
         context["filter_options"] = [{"value": key, "label": label} for key, label in AccountService.FILTER_CHOICES]
         context["ranks"] = AccountService.RANK_CHOICES
         return context
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        filters = {}
 
-class RPServiceListView(CategoryMixin, ServerMixin, ListView):
+        # Фильтрация по серверу
+        server = self.request.GET.get("server", None)
+        if server:
+            queryset = queryset.filter(server=server)
+
+        # Фильтрация по рангу
+        rank = self.request.GET.get("rank", None)
+        if rank:
+            queryset = queryset.filter(rank=rank)
+        # Фильтрация по кнопочному фильтру
+        filter_value = self.request.GET.get("filter", None)
+        if filter_value:
+            queryset = queryset.filter(
+                filter_field=filter_value
+            )  # Например, если фильтруем по какому-то полю, скажем, `filter_field`
+
+        return queryset
+
+    def post(self, request, *args, **kwargs):
+        form = AccountServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:account")  # Здесь можно перенаправить на страницу успеха
+
+        # Добавление ошибок в лог или отладочную информацию
+        # Логируем ошибки
+        logger.error(f"Ошибка в форме: {form.errors}")
+        return self.get(request, *args, **kwargs)  # Возвращаем форму с ошибками
+        # Если форма не валидна, возвращаем ее с ошибками
+        return self.get(request, *args, **kwargs)  # В данном случае, снова вызываем get и передаем форму с ошибками
+
+
+class RPServiceListView(CategoryMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -64,13 +120,30 @@ class RPServiceListView(CategoryMixin, ServerMixin, ListView):
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = RPServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = RpFilter(self.request.GET, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "riot-points"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["filter_options"] = [{"value": key, "label": label} for key, label in RPService.FILTER_CHOICES]
+        context["filter_form"] = RPServiceFilterForm(self.request.GET)
+        context["form"] = RPServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = RPServiceForm(request.POST)
+        print("ldjlsajdlsajl")
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
 
 
 class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
@@ -206,68 +279,31 @@ class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, ListVi
         return context
 
 
-# class ProductsView(TemplateView):
-#     template_name = "products/products.html"
-#     title = "Услуги"
-
-#     def get_context_data(self, **kwargs):
-#         # Получаем все категории
-#         context = super().get_context_data(**kwargs)
-#         category_slug = self.kwargs.get("category_slug")  # Передаем slug категории в URL
-
-#         # Если slug не передан, перенаправляем на первую категорию
-#         if category_slug:
-#             category = get_object_or_404(Category, slug=category_slug)
-#         else:
-#             category = Category.objects.first()  # Выбираем первую категорию по умолчанию
-
-#         # Если категория указана, берем ее
-#         context["category"] = category  # Передаем выбранную категорию
-#         context["categories"] = Category.objects.all()  # Добавляем все категории в контекст
-#         context["servers"] = ServerBasedService.SERVER_CHOICES
-#         context["filter_options_rp"] = [{"value": key, "label": label} for key, label in RPService.FILTER_CHOICES]
-#         context["filter_options_accounts"] = [
-#             {"value": key, "label": label} for key, label in AccountService.FILTER_CHOICES
-#         ]
-#         return context
-
-#     def get_category_content(request, category_slug):
-#         category = get_object_or_404(Category, slug=category_slug)
-
-#         # Рендерим нужный шаблон в зависимости от категории
-#         if category.slug == "riot-points":
-#             content = render_to_string("products/riot-points.html", {"category": category})
-#         elif category.slug == "another-category":
-#             content = render_to_string("products/another-category.html", {"category": category})
-#         else:
-#             content = "<p>Контент для этой категории еще не доступен.</p>"
-
-#         return JsonResponse({"content": content})
-
-
-# class AccountView(ProductsView):
-#     template_name = "products/account.html"
-#     title = "Покупка аккаунта"
-
-
-# class CategoryDescriptionView(View):
-#     def get(self, request, category_slug):
-#         logging.info(f"Получен запрос на категорию с slug: {category_slug}")
-
-#         category = get_object_or_404(Category, slug=category_slug)
-
-#         logging.info(f"Описание категории: {category.description}")
-
-#         # Просто возвращаем описание категории как JSON
-#         return JsonResponse({"description": category.description})
-
-
-# class BaseServiceView(View):
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context["servers"] = ServerBasedService.SERVER_CHOICES  # Добавляем серверы в общий контекст
-#         return context
+# class OfferView(TemplateView):
+#     template_name = "products/offer.html"
+#     context_object_name = "offers"
 
 #     def get(self, request, *args, **kwargs):
-#         context = self.get_context_data(**kwargs)  # Получаем контекст
-#         return render(request, "products.html", context)
+#         # Получаем выбранную категорию из URL или из запроса
+#         category_slug = self.kwargs.get("slug", None)  # Или используй kwargs, если передаешь через URL
+
+#         # Создаем форму
+#         form = GeneralOfferForm()
+
+#         # Динамически скрываем или показываем поля в зависимости от категории
+#         if category_slug == "accounts":
+#             form.fields["rank"].required = True
+#             form.fields["server"].required = True
+#             form.fields["position"].required = False
+#         return render(request, self.template_name, {"form": form, "category_slug": category_slug})
+#     def post(self, request, *args, **kwargs):
+#         category_slug = self.kwargs.get("slug")
+#         category = get_object_or_404(Category, slug=category_slug)
+#         form = GeneralOfferForm(request.POST, category=category)
+
+#         if form.is_valid():
+#             offer = form.save(commit=False)
+#             offer.category = category  # Привязываем категорию
+#             offer.save()
+#             return redirect("products:account")  # Укажите URL успеха
+#         return render(request, self.template_name, {"form": form, "category": category})
