@@ -11,8 +11,15 @@ from django.template.loader import render_to_string
 from django.views import View
 from django.views.generic import FormView, ListView, TemplateView
 
-from products.filters import RpFilter
-from products.forms import AccountServiceForm, RPServiceFilterForm, RPServiceForm
+from products.filters import AccountFilter, BoostFilter, RpFilter
+from products.forms import (
+    AccountServiceFilterForm,
+    AccountServiceForm,
+    BoostServiceFilterForm,
+    BoostServiceForm,
+    RPServiceFilterForm,
+    RPServiceForm,
+)
 
 from .mixins import CategoryMixin, SearchDescriptionMixin, ServerMixin
 from .models import (
@@ -64,35 +71,19 @@ class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin,
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = AccountServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = AccountFilter(self.request.GET, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):  # для передачи контекста в шаблон
         kwargs["slug"] = "accounts"  # для отображения на странице заголовка и опсиания для категории (динамически)
         context = super().get_context_data(**kwargs)
+        context["filter_form"] = AccountServiceFilterForm(self.request.GET)
         context["form"] = AccountServiceForm()
-        context["filter_options"] = [{"value": key, "label": label} for key, label in AccountService.FILTER_CHOICES]
-        context["ranks"] = AccountService.RANK_CHOICES
         return context
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        filters = {}
-
-        # Фильтрация по серверу
-        server = self.request.GET.get("server", None)
-        if server:
-            queryset = queryset.filter(server=server)
-
-        # Фильтрация по рангу
-        rank = self.request.GET.get("rank", None)
-        if rank:
-            queryset = queryset.filter(rank=rank)
-        # Фильтрация по кнопочному фильтру
-        filter_value = self.request.GET.get("filter", None)
-        if filter_value:
-            queryset = queryset.filter(
-                filter_field=filter_value
-            )  # Например, если фильтруем по какому-то полю, скажем, `filter_field`
-
-        return queryset
 
     def post(self, request, *args, **kwargs):
         form = AccountServiceForm(request.POST)
@@ -148,7 +139,7 @@ class RPServiceListView(CategoryMixin, ListView):
 
 class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
     """
-    Вьюха для отображения списка услуг категории "Account".
+    Вьюха для отображения списка услуг категории "Boost".
     """
 
     model = BoostService
@@ -156,14 +147,30 @@ class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, L
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = BoostServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = BoostFilter(self.request.GET, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "boosting"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["filter_options"] = BoostService.FILTER_CHOICES
-        context["ranges"] = BoostService.RANK_RANGE_CHOICES
+        context["filter_form"] = BoostServiceFilterForm(self.request.GET)
+        context["form"] = BoostServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = BoostServiceForm(request.POST)
+        print("ldjlsajdlsajl")
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:boost")  # Здесь можно перенаправить на страницу успеха
 
 
 class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):

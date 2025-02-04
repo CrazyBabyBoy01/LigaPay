@@ -1,6 +1,7 @@
 import django_filters
+from django.db.models import Q
 
-from products.models import RPService
+from products.models import AccountService, BoostService, RPService
 
 
 class RpFilter(django_filters.FilterSet):
@@ -20,3 +21,53 @@ class RpFilter(django_filters.FilterSet):
     class Meta:
         model = RPService
         fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery"]
+
+
+class AccountFilter(django_filters.FilterSet):
+    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    character_count = django_filters.RangeFilter()
+    account_level = django_filters.RangeFilter()
+    skin_count = django_filters.RangeFilter()
+    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+
+    def filter_auto_delivery(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(is_auto_delivery=True)
+        return queryset
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
+
+    class Meta:
+        model = AccountService
+        fields = [
+            "server",
+            "filter_type",
+            "rank",
+            "seller_is_online",
+            "is_auto_delivery",
+            "search",
+            "character_count",
+            "account_level",
+            "skin_count",
+        ]
+
+class BoostFilter(django_filters.FilterSet):
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+
+
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+
+    class Meta:
+        model = BoostService
+        fields = ["server", "filter_type", "seller_is_online", "rank_range"]

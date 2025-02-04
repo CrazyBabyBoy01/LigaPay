@@ -91,7 +91,9 @@ class ServerBasedService(BaseService):
         ("other", "Другой сервер"),
     ]
 
-    server = models.CharField(max_length=50, choices=SERVER_CHOICES, verbose_name="Сервер", help_text="Выберите сервер")
+    server = models.CharField(
+        max_length=50, choices=SERVER_CHOICES, verbose_name="Сервер", default="other", help_text="Выберите сервер"
+    )
 
     class Meta:
         abstract = True
@@ -104,7 +106,6 @@ class RPService(ServerBasedService, AutoDeliveryFilter):
     """
 
     FILTER_CHOICES = [
-        ("ALL", "Все"),
         ("gifts_for_rp", "Подарки за RP"),
         ("prepaid_cards", "Карты предоплаты"),
         ("rp_account", "RP с заходом на аккаунт"),
@@ -113,6 +114,7 @@ class RPService(ServerBasedService, AutoDeliveryFilter):
         max_length=50,
         choices=FILTER_CHOICES,
         verbose_name="Тип фильтра",
+        default="gifts_for_rp",
         help_text="Выберите, к какому фильтру относится эта запись",
     )
     quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество валюты в наличии")
@@ -132,7 +134,6 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     """
 
     FILTER_CHOICES = [
-        ("ALL", "Все"),
         ("sell", "Продажа"),
         ("rent", "Аренда"),
     ]
@@ -161,7 +162,7 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
         choices=FILTER_CHOICES,
         verbose_name="Тип фильтра",
         help_text="Выберите, к какому фильтру относится эта запись",
-        default="default_value",
+        default="sell",
     )
     skin_count = models.PositiveIntegerField(verbose_name="Количество скинов", default=0)
     account_level = models.PositiveIntegerField(verbose_name="Уровень аккаунта", default=1)
@@ -205,7 +206,7 @@ class DonationService(ServerBasedService):
         choices=FILTER_CHOICES,
         verbose_name="Тип фильтра",
         help_text="Выберите, к какому фильтру относится эта запись",
-        default="default_value",
+        default="chests",
     )
 
     class Meta:
@@ -343,7 +344,6 @@ class BattlePassService(BaseService):
     """
 
     FILTER_CHOICES = [
-        ("ALL", "Все"),
         ("1650 RP", "1650 RP"),
         ("2650 RP", "2650 RP"),
         ("3650 RP", "3650 RP"),
