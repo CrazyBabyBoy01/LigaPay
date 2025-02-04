@@ -3,68 +3,52 @@
     {% block subcontent %}
         <form method="get" class="filter-container">
             <div class="filter-container__row-1">
-                <select class="filter-container__server" name="server">
-                    <option value="">Сервер</option>
-                        {% for server in servers %}
-                            <option value="{{ server.0 }}" {% if request.GET.server == server.0 %}selected{% endif %}>{{ server.1 }}</option>
-                        {% endfor %}
-                </select>
-
-                <div class="filter-container__btn">
-                    {% for filter_option in filter_options %}
-                        <button value="{{ filter_option.value }}">{{ filter_option.label }}</button>
-                    {% endfor %}
-                </div>
+                {{filter_form.server}}
+                {{filter_form.filter_type}}
                 <div class="filter-container__lvl form-control">
                     <label for="skin_count_min">Уровень:</label>
-                    <input type="number" id="account_level_min" name="account_level_min" placeholder="От">
-                    <input type="number" id="account_level_max" name="account_level_max" placeholder="До">
+                    {{filter_form.account_level_min}}
+                    {{filter_form.account_level_max}}
                 </div>
             </div>
             <div class="filter-container__row-3">
                 <div class="filter-container__lvl form-control skin">
                     <label for="skin_count_min">Количество скинов:</label>
-                    <input type="number" id="skin_count_min" name="skin_count_min" placeholder="От">
-                    <input type="number" id="skin_count_max" name="skin_count_max" placeholder="До">
+                    {{filter_form.skin_count_min}}
+                    {{filter_form.skin_count_max}}
                 </div>
                 <div class="filter-container__lvl form-control character">
                     <label for="skin_count_min">Количество персонажей:</label>
-                    <input type="number" id="character_count_min" name="character_count_min" placeholder="От" value="{{ character_count_min }}">
-                     <input type="number" id="character_count_max" name="character_count_max" placeholder="До" value="{{ character_count_max }}">
+                    {{filter_form.character_count_min}}
+                    {{filter_form.character_count_max}}
                 </div>
-                <select class="filter-container__rank" name="rank">
-                    <option value="">Ранг</option>
-                    {% for rank in ranks %}
-                        <option value="{{ rank.0 }}" {% if request.GET.rank == rank.0 %}selected{% endif %}>
-                            {{ rank.1 }}
-                        </option>
-                    {% endfor %}
-                </select>
+                {{filter_form.rank}}
             </div>
             <div class="filter-container__row-2">
                 <!-- Поле для поиска -->
+
                 <div class="filter-container__search-form">
                     <div class="search-input-container">
-                        <input type="text" name="q" placeholder="Поиск по описанию" value="{{ request.GET.q }}">
+                        {{ filter_form.search }}
                         <span class="search-icon">&#128269;</span> <!-- Иконка лупы -->
                     </div>
                 </div>
 
-                <!-- Переключатель "Только продавцы онлайн" -->
+                {{filter_form.is_auto_delivery.label}}
                 <label class="switch">
-                    <input type="checkbox" name="online_sellers" {% if request.GET.online_sellers %}checked{% endif %}>
+                    {{ filter_form.is_auto_delivery }}
                     <span class="slider"></span>
                 </label>
-                <span class="filter-label">Только продавцы онлайн</span>
-
-                <!-- Переключатель "Автоматическая доставка" -->
+                {{filter_form.seller_is_online.label}}
                 <label class="switch">
-                    <input type="checkbox" name="auto_delivery" {% if request.GET.auto_delivery %}checked{% endif %}>
+                    {{ filter_form.seller_is_online }}
                     <span class="slider"></span>
                 </label>
-                <span class="filter-label">Автоматическая доставка</span>
             </div>
-            <button type="submit">Применить фильтр</button>
+            <div class="products-content__filter">
+                <button type="submit">Применить фильтр</button>
+                <button id="resetFiltersBtn" data-url='{%url "products:account"%}' type="reset" class="reset-btn" onclick="resetFilters() ">Сбросить фильтр</button>
+            </div>
         </form>
         <div class="filter-container__btn sell">
             <button id="openModalBtn">Продать {{ category.name }}</button>
@@ -145,7 +129,10 @@
                     <div class="offer__form form">
                         <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
                         {{ form.price }}
-                        {{form.is_auto_delivery}}
+                    </div>
+                    <div class="offer__form offer__form-bool form">
+                        <label for="{{ form.is_auto_delivery.id_for_label }}">{{ form.is_auto_delivery.label }}</label>
+                        {{ form.is_auto_delivery }}
                     </div>
                     <button class="header__btn" type="submit">Отправить</button>
                   </form>
