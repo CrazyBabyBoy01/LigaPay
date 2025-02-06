@@ -7,9 +7,6 @@
                     {{filter_form.server}}
                     {{filter_form.filter_type}}
                     {{filter_form.rank_range}}
-                <div class="filter-container__btn sell">
-                    <button>Продать {{ category.name }}</button>
-                </div>
             </div>
             <div class="filter-container__row-2">
                 <!-- Поле для поиска -->
@@ -29,7 +26,7 @@
         </div>
         <div class="products-content__filter">
             <button type="submit">Применить фильтр</button>
-            <button id="resetFiltersBtn" data-url='{%url "products:account"%}' type="reset" class="reset-btn" onclick="resetFilters() ">Сбросить фильтр</button>
+            <button id="resetFiltersBtn" data-url='{%url "products:boost"%}' type="reset" class="reset-btn" onclick="resetFilters() ">Сбросить фильтр</button>
         </div>
     </form>
     <div class="filter-container__btn sell">
@@ -93,10 +90,6 @@
                 <div class="offer__form form">
                     <label for="{{ form.rank_range.id_for_label }}">{{ form.rank_range.label }}</label>
                     {{ form.rank_range }}
-                </div>
-                <div class="offer__form offer__form-bool form">
-                    <label for="{{ form.is_auto_delivery.id_for_label }}">{{ form.is_auto_delivery.label }}</label>
-                    {{ form.is_auto_delivery }}
                 </div>
                 <button class="header__btn" type="submit">Отправить</button>
             </form>

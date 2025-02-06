@@ -101,12 +101,12 @@ class RPServiceFilterForm(forms.Form):
     )
     is_auto_delivery = forms.BooleanField(
         help_text="Пометить, если услуга поддерживает автоматическую доставку",
-        label="Только продавцы онлайн",
+        label="Автоматическая доставка",
         required=False,
         widget=forms.CheckboxInput(attrs={"value": "True"}),
     )
     seller_is_online = forms.BooleanField(
-        label="Автоматическая доставка",
+        label="Только продавцы онлайн",
         help_text="Пометить, если продавец находится в сети",
         required=False,
         widget=forms.CheckboxInput(attrs={"value": "True"}),
@@ -157,12 +157,12 @@ class AccountServiceFilterForm(forms.Form):
     )
     is_auto_delivery = forms.BooleanField(
         help_text="Пометить, если услуга поддерживает автоматическую доставку",
-        label="Только продавцы онлайн",
+        label="Автоматическая доставка",
         required=False,
         widget=forms.CheckboxInput(attrs={"value": "True"}),
     )
     seller_is_online = forms.BooleanField(
-        label="Автоматическая доставка",
+        label="Только продавцы онлайн",
         help_text="Пометить, если продавец находится в сети",
         required=False,
         widget=forms.CheckboxInput(attrs={"value": "True"}),
@@ -210,8 +210,10 @@ class BoostServiceFilterForm(forms.Form):
             ("japan", "Japan"),
             ("north", "Latin America North"),
             ("south", "Latin America South"),
+            ("namerica", "North America"),
             ("russia", "Russia"),
             ("turkey", "Turkey"),
+            ("other", "Другой сервер"),
         ],
         required=False,
         widget=forms.Select(attrs={"id": "server", "class": "filter-container__server"}),
@@ -242,7 +244,7 @@ class BoostServiceFilterForm(forms.Form):
         widget=forms.Select(attrs={"id": "serversdsd", "class": "filter-container__btn"}),
     )
     seller_is_online = forms.BooleanField(
-        label="Автоматическая доставка",
+        label="Только продавцы онлайн",
         help_text="Пометить, если продавец находится в сети",
         required=False,
         widget=forms.CheckboxInput(attrs={"value": "True"}),
@@ -263,4 +265,40 @@ class BoostServiceForm(forms.ModelForm):
             "server",
             "is_auto_delivery",
             "rank_range",
+        ]
+
+
+class TrainingServiceFilterForm(forms.Form):
+    filter_type = forms.ChoiceField(
+        choices=[
+            ("top", "Топ"),
+            ("jungle", "Лес"),
+            ("mid", "Мид"),
+            ("adc", "АДК"),
+            ("support", "Сап"),
+            ("any role", "Любая роль"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"class": "filter-container__btn"}),
+    )
+    seller_is_online = forms.BooleanField(
+        label="Только продавцы онлайн",
+        help_text="Пометить, если продавец находится в сети",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    search = forms.CharField(
+        required=False, label="Поиск", widget=forms.TextInput(attrs={"placeholder": "Введите название или описание"})
+    )
+
+
+class TrainingServiceForm(forms.ModelForm):
+    class Meta:
+        model = TrainingService
+        fields = [
+            "title",  # Из BaseService
+            "description",  # Из BaseService
+            "price",  # Из BaseService
+            "filter_type",
+            "seller_is_online",
         ]

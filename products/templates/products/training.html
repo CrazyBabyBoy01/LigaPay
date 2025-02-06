@@ -1,75 +1,80 @@
 {% extends "products/products.html" %}
+{% load static %}
 {% block subcontent %}
-    <div class="filter-container">
+    <form method="get" class="filter-container">
         <div class="filter-container__row-2">
-            <select class="filter-container__position">
-                <option value="">Позиция</option>
-                    {% for position in positions %}
-                        <option value="{{ position.0 }}">{{ position.1 }}</option>
-                    {% endfor %}
-            </select>
-            <label class="switch">
-                <input type="checkbox" name="online_sellers" {% if request.GET.online_sellers %}checked{% endif %}>
-                <span class="slider"></span>
-            </label>
-            <span class="filter-label">Только продавцы онлайн</span>
-
-            <!-- Переключатель "Автоматическая доставка" -->
-            <label class="switch">
-                <input type="checkbox" name="auto_delivery" {% if request.GET.auto_delivery %}checked{% endif %}>
-                <span class="slider"></span>
-            </label>
-            <span class="filter-label">Автоматическая доставка</span>
-            <div class="filter-container__btn sell">
-                <button>Продать {{ category.name }}</button>
+            <div class="filter-container__search-form">
+                <div class="search-input-container">
+                    {{ filter_form.search }}
+                    <span class="search-icon">&#128269;</span> <!-- Иконка лупы -->
+                </div>
             </div>
+            {{filter_form.filter_type}}
+            {{filter_form.seller_is_online.label}}
+            <label class="switch">
+                {{ filter_form.seller_is_online }}
+                <span class="slider"></span>
+            </label>
         </div>
+        <div class="products-content__filter">
+            <button type="submit">Применить фильтр</button>
+            <button id="resetFiltersBtn" data-url='{%url "products:account"%}' type="reset" class="reset-btn" onclick="resetFilters() ">Сбросить фильтр</button>
+        </div>
+    </form>
+    <div class="filter-container__btn sell">
+        <button id="openModalBtn">Продать {{ category.name }}</button>
     </div>
     <div class="tc table-products">
         <div class="tc__header">
-            <div class="tc__header-item tc-server">Сервер</div>
             <div class="tc__header-item tc-desc">Описание</div>
             <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
             <div class="tc__header-item tc-price">Цена</div>
         </div>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Карты предоплаты, Другое количество, 160 </div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
+        {% for service in services %}
+            <a href="{% url 'products:account' %}" class="tc-item">
+                <div class="tc__header-item tc-server">{{ service.description }}</div>
+                <div class="tc__header-item tc-user">
+                    <img width="20" height="20" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
+                    {{ service.seller }}
+                </div>
+                <div class="tc__header-item tc-price">{{ service.price }}</div>
+            </a>
+        {% empty %}
+            <div class="tc-item">
+                <div class="tc__header-item" colspan="5">Нет доступных услуг для отображения.</div>
+            </div>
+        {% endfor %}
     </div>
     <div class="products-content__btn">
         <button>Показать еще предложения</button>
+    </div>
+    {% comment %} Модальное окно {% endcomment %}
+    <div id="modal" class="modal">
+        <div class="offer">
+            <span id="closeModalBtn" class="close">&times;</span>
+            <h3 class="offer__title">
+                Добавьте оффер
+            </h3>
+            <form action={% url "products:training" %} method='post' class="offer__form">
+                {% csrf_token %}
+                <div class="offer__form form">
+                    <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                    {{ form.title }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.filter_type.id_for_label }}">{{ form.filter_type.label }}</label>
+                    {{ form.filter_type }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                    {{ form.price }}
+                </div>
+                <button class="header__btn" type="submit">Отправить</button>
+            </form>
+        </div>
     </div>
 {% endblock subcontent %}
