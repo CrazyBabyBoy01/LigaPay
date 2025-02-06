@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from django.views import View
 from django.views.generic import FormView, ListView, TemplateView
 
-from products.filters import AccountFilter, BoostFilter, RpFilter
+from products.filters import AccountFilter, BoostFilter, RpFilter, TrainingFilter
 from products.forms import (
     AccountServiceFilterForm,
     AccountServiceForm,
@@ -19,6 +19,8 @@ from products.forms import (
     BoostServiceForm,
     RPServiceFilterForm,
     RPServiceForm,
+    TrainingServiceFilterForm,
+    TrainingServiceForm,
 )
 
 from .mixins import CategoryMixin, SearchDescriptionMixin, ServerMixin
@@ -75,7 +77,7 @@ class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin,
         queryset = self.model.objects.all()
         filter_form = AccountServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
-            queryset = AccountFilter(self.request.GET, queryset=queryset, request=self.request).qs
+            queryset = AccountFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
         return queryset
 
     def get_context_data(self, **kwargs):  # для передачи контекста в шаблон
@@ -115,7 +117,7 @@ class RPServiceListView(CategoryMixin, ListView):
         queryset = self.model.objects.all()
         filter_form = RPServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
-            queryset = RpFilter(self.request.GET, queryset=queryset, request=self.request).qs
+            queryset = RpFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -151,7 +153,7 @@ class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, L
         queryset = self.model.objects.all()
         filter_form = BoostServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
-            queryset = BoostFilter(self.request.GET, queryset=queryset, request=self.request).qs
+            queryset = BoostFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -183,13 +185,29 @@ class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = TrainingServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = TrainingFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "training"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["positions"] = TrainingService.FILTER_CHOICES
+        context["filter_form"] = TrainingServiceFilterForm(self.request.GET)
+        context["form"] = TrainingServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = TrainingServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:training")  # Здесь можно перенаправить на страницу успеха
 
 
 class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
