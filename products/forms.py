@@ -302,3 +302,246 @@ class TrainingServiceForm(forms.ModelForm):
             "filter_type",
             "seller_is_online",
         ]
+
+
+class BattlePassServiceFilterForm(forms.Form):
+    server = forms.ChoiceField(
+        choices=[
+            ("", "Выберите сервер"),
+            ("nordic", "EU Nordic & East"),
+            ("west", "EU West"),
+            ("japan", "Japan"),
+            ("north", "Latin America North"),
+            ("south", "Latin America South"),
+            ("russia", "Russia"),
+            ("turkey", "Turkey"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "server", "class": "filter-container__server"}),
+    )
+    filter_type = forms.ChoiceField(
+        choices=[
+            ("", "Количество RP"),
+            ("1650 RP", "1650 RP"),
+            ("2650 RP", "2650 RP"),
+            ("3650 RP", "3650 RP"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "serversdsd", "class": "filter-container__btn"}),
+    )
+    is_auto_delivery = forms.BooleanField(
+        help_text="Пометить, если услуга поддерживает автоматическую доставку",
+        label="Автоматическая доставка",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    seller_is_online = forms.BooleanField(
+        label="Только продавцы онлайн",
+        help_text="Пометить, если продавец находится в сети",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+
+
+class BattlePassServiceForm(forms.ModelForm):
+    class Meta:
+        model = BattlePassService
+        fields = [
+            "title",  # Из BaseService
+            "description",  # Из BaseService
+            "price",  # Из BaseService
+            "filter_type",
+            "seller_is_online",
+            "is_auto_delivery",
+            "server",
+            "quantity",
+        ]
+
+
+class DonationServiceFilterForm(forms.Form):
+    server = forms.ChoiceField(
+        choices=[
+            ("", "Выберите сервер"),
+            ("nordic", "EU Nordic & East"),
+            ("west", "EU West"),
+            ("japan", "Japan"),
+            ("north", "Latin America North"),
+            ("south", "Latin America South"),
+            ("russia", "Russia"),
+            ("turkey", "Turkey"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "server", "class": "filter-container__server"}),
+    )
+    filter_type = forms.ChoiceField(
+        choices=[
+            ("", "Выберите категорию"),
+            ("chests", "Сундуки"),
+            ("chests_with_keys", "Сундуки+ключи"),
+            ("skins", "Скины"),
+            ("spheres", "Сферы"),
+            ("other", "Прочее"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "serversdsd", "class": "filter-container__btn"}),
+    )
+    receiving_method = forms.ChoiceField(
+        choices=[
+            ("", "Способ получения"),
+            ("GIFT", "Подарком"),
+            ("LOGIN", "С заходом на аккаунт"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "serversdsd", "class": "filter-container__btn"}),
+    )
+    is_auto_delivery = forms.BooleanField(
+        help_text="Пометить, если услуга поддерживает автоматическую доставку",
+        label="Автоматическая доставка",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    seller_is_online = forms.BooleanField(
+        label="Только продавцы онлайн",
+        help_text="Пометить, если продавец находится в сети",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    search = forms.CharField(
+        required=False, label="Поиск", widget=forms.TextInput(attrs={"placeholder": "Введите название или описание"})
+    )
+
+
+class DonationServiceForm(forms.ModelForm):
+    class Meta:
+        model = DonationService
+        fields = [
+            "title",  # Из BaseService
+            "description",  # Из BaseService
+            "price",  # Из BaseService
+            "filter_type",
+            "seller_is_online",
+            "is_auto_delivery",
+            "server",
+            "receiving_method",
+        ]
+
+
+class GeneralServiceFilterForm(forms.Form):
+    filter_type = forms.ChoiceField(
+        choices=[
+            ("", "Выберите категорию"),
+            ("battle_pass_boost", "Прокачка боевого пропуска"),
+            ("champion_mastery_boost", "Прокачка мастерства чемпиона"),
+            ("aram", "ARAM"),
+            ("clash", "Clash"),
+            ("normal_game", "Обычная игра"),
+            ("cooperative_game", "Совместная игра"),
+            ("leaverbuster_recovery", "Отыгрыш ливбустера"),
+            ("chat_ban_recovery", "Отыгрыш банчата"),
+            ("account_leveling", "Прокачка уровня аккаунта"),
+            ("mastery_token_farm", "Фарм жетонов мастерства"),
+            ("deboost", "Дебуст"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "serversdsd", "class": "filter-container__btn"}),
+    )
+    seller_is_online = forms.BooleanField(
+        label="Только продавцы онлайн",
+        help_text="Пометить, если продавец находится в сети",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    search = forms.CharField(
+        required=False, label="Поиск", widget=forms.TextInput(attrs={"placeholder": "Введите название или описание"})
+    )
+
+
+class GeneralServiceForm(forms.ModelForm):
+    class Meta:
+        model = GeneralService
+        fields = [
+            "title",  # Из BaseService
+            "description",  # Из BaseService
+            "price",  # Из BaseService
+            "filter_type",
+            "seller_is_online",
+        ]
+
+
+class QualificationServiceFilterForm(forms.Form):
+    server = forms.ChoiceField(
+        choices=[
+            ("", "Выберите сервер"),
+            ("nordic", "EU Nordic & East"),
+            ("west", "EU West"),
+            ("japan", "Japan"),
+            ("north", "Latin America North"),
+            ("south", "Latin America South"),
+            ("namerica", "North America"),
+            ("russia", "Russia"),
+            ("turkey", "Turkey"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"id": "server", "class": "filter-container__server"}),
+    )
+    seller_is_online = forms.BooleanField(
+        label="Только продавцы онлайн",
+        help_text="Пометить, если продавец находится в сети",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    search = forms.CharField(
+        required=False, label="Поиск", widget=forms.TextInput(attrs={"placeholder": "Введите название или описание"})
+    )
+
+
+class QualificationServiceForm(forms.ModelForm):
+    class Meta:
+        model = QualificationService
+        fields = [
+            "title",  # Из BaseService
+            "description",  # Из BaseService
+            "price",  # Из BaseService
+            "server",
+            "seller_is_online",
+        ]
+
+
+class OtherServiceFilterForm(forms.Form):
+    filter_type = forms.ChoiceField(
+        choices=[
+            ("", "Выберите категорию"),
+            ("guides", "Гайды"),
+            ("other", "Прочее"),
+        ],
+        required=False,
+        widget=forms.Select(attrs={"class": "filter-container__btn"}),
+    )
+    is_auto_delivery = forms.BooleanField(
+        help_text="Пометить, если услуга поддерживает автоматическую доставку",
+        label="Автоматическая доставка",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    seller_is_online = forms.BooleanField(
+        label="Только продавцы онлайн",
+        help_text="Пометить, если продавец находится в сети",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"value": "True"}),
+    )
+    search = forms.CharField(
+        required=False, label="Поиск", widget=forms.TextInput(attrs={"placeholder": "Введите название или описание"})
+    )
+
+
+class OtherServiceForm(forms.ModelForm):
+    class Meta:
+        model = OtherService
+        fields = [
+            "title",  # Из BaseService
+            "description",  # Из BaseService
+            "price",  # Из BaseService
+            "filter_type",
+            "is_auto_delivery",
+            "quantity",
+        ]

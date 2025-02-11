@@ -1,109 +1,103 @@
 {% extends "products/products.html" %}
+{% load static %}
 {% block subcontent %}
-    <div class="filter-container">
+    <form method="get" class="filter-container" action="{% url 'products:donation' %}" >
         <div class="filter-container__row-1">
-            <select class="filter-container__server">
-                <option value="">Сервер</option>
-                    {% for server in servers %}
-                        <option value="{{ server.0 }}">{{ server.1 }}</option>
-                    {% endfor %}
-            </select>
-            <div class="filter-container__btn">
-                {% for filter_option in filter_options %}
-                    <a href="#" class="ds">
-                        <button value="{{ filter_option.value }}">{{ filter_option.label }}</button>
-                    </a>
-
-                {% endfor %}
-            </div>
-            {% comment %} <div class="filter-container__btn">
-                <button>Все</button>
-                <button>Подарки за RP</button>
-                <button>Карты предопаты</button>
-                <button>Rp с заходом на аккаунт</button>
-
-            </div> {% endcomment %}
-            <div class="filter-container__btn sell">
-                <button>Продать {{ category.name }}</button>
-            </div>
+            {{filter_form.server}}
+            {{filter_form.filter_type}}
+            {{filter_form.receiving_method}}
         </div>
         <div class="filter-container__row-2">
-            <select class="filter-container__way">
-                <option value="">Способ получения</option>
-                    {% for way in ways %}
-                        <option value="{{ way.0 }}">{{ way.1 }}</option>
-                    {% endfor %}
-            </select>
-            <!-- Поле для поиска -->
-            <form method="get" class="filter-container__search-form">
+            <div class="filter-container__search-form">
                 <div class="search-input-container">
-                    <input type="text" name="q" placeholder="Поиск по описанию" value="{{ request.GET.q }}">
+                    {{ filter_form.search }}
                     <span class="search-icon">&#128269;</span> <!-- Иконка лупы -->
                 </div>
-            </form>
-
-            <!-- Переключатель "Только продавцы онлайн" -->
+            </div>
+            {{filter_form.is_auto_delivery.label}}
             <label class="switch">
-                <input type="checkbox" name="online_sellers" {% if request.GET.online_sellers %}checked{% endif %}>
+                {{ filter_form.is_auto_delivery }}
                 <span class="slider"></span>
             </label>
-            <span class="filter-label">Только продавцы онлайн</span>
-
-            <!-- Переключатель "Автоматическая доставка" -->
+            {{filter_form.seller_is_online.label}}
             <label class="switch">
-                <input type="checkbox" name="auto_delivery" {% if request.GET.auto_delivery %}checked{% endif %}>
+                {{ filter_form.seller_is_online }}
                 <span class="slider"></span>
             </label>
-            <span class="filter-label">Автоматическая доставка</span>
-
-
         </div>
+        <div class="products-content__filter">
+            <button type="submit">Применить фильтр</button>
+            <button id="resetFiltersBtn" data-url='{%url "products:donation"%}' type="reset" class="reset-btn" onclick="resetFilters() ">Сбросить фильтр</button>
+        </div>
+    </form>
+    <div class="filter-container__btn sell">
+        <button id="openModalBtn">Продать {{ category.name }}</button>
     </div>
     <div class="tc table-products">
         <div class="tc__header">
             <div class="tc__header-item tc-server">Сервер</div>
             <div class="tc__header-item tc-desc">Описание</div>
             <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
             <div class="tc__header-item tc-price">Цена</div>
         </div>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Карты предоплаты, Другое количество, 160 </div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
-        <a href="№" class="tc-item">
-            <div class="tc__header-item tc-server">Сервер</div>
-            <div class="tc__header-item tc-desc">Описание</div>
-            <div class="tc__header-item tc-user">Продавец</div>
-            <div class="tc__header-item tc-count">Наличие</div>
-            <div class="tc__header-item tc-price">Цена</div>
-        </a>
+        {% for service in services %}
+            <a href="{% url 'products:account' %}" class="tc-item">
+                <div class="tc__header-item tc-server">{{ service.server }}</div>
+                <div class="tc__header-item tc-desc">{{ service.description }}</div>
+                <div class="tc__header-item tc-user">
+                    <img width="20" height="20" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
+                    {{ service.seller }}
+                </div>
+                <div class="tc__header-item tc-price">{{ service.price }}</div>
+            </a>
+        {% empty %}
+            <div class="tc-item">
+                <div class="tc__header-item" colspan="5">Нет доступных услуг для отображения.</div>
+            </div>
+        {% endfor %}
     </div>
     <div class="products-content__btn">
         <button>Показать еще предложения</button>
+    </div>
+    <div id="modal" class="modal">
+        <div class="offer">
+            <span id="closeModalBtn" class="close">&times;</span>
+            <h3 class="offer__title">
+                Добавьте оффер
+            </h3>
+            <form action={% url "products:donation" %} method='post' class="offer__form">
+                {% csrf_token %}
+                <div class="offer__form form">
+                    <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
+                    {{ form.title }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                    {{ form.description }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>
+                    {{ form.server }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.filter_type.id_for_label }}">{{ form.filter_type.label }}</label>
+                    {{ form.filter_type }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.receiving_method.id_for_label }}">{{ form.receiving_method.label }}</label>
+                    {{ form.receiving_method }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
+                    {{ form.price }}
+                </div>
+                <div class="offer__form offer__form-bool form">
+                    <label for="{{ form.is_auto_delivery.id_for_label }}">{{ form.is_auto_delivery.label }}</label>
+                    {{ form.is_auto_delivery }}
+                </div>
+                <button class="header__btn" type="submit">Отправить</button>
+            </form>
+
+        </div>
     </div>
 {% endblock subcontent %}

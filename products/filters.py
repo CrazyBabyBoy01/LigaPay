@@ -2,7 +2,7 @@ import django_filters
 from attr import fields
 from django.db.models import Q
 
-from products.models import AccountService, BoostService, RPService, TrainingService
+from products.models import AccountService, BattlePassService, BoostService, DonationService, GeneralService, OtherService, QualificationService, RPService, TrainingService
 
 
 class RpFilter(django_filters.FilterSet):
@@ -94,3 +94,100 @@ class TrainingFilter(django_filters.FilterSet):
     class Meta:
         model = TrainingService
         fields = ["filter_type", "seller_is_online", "search"]
+
+
+class BattlePassFilter(django_filters.FilterSet):
+    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+
+    def filter_auto_delivery(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(is_auto_delivery=True)
+        return queryset
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+
+    class Meta:
+        model = BattlePassService
+        fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery"]
+
+
+class DonationFilter(django_filters.FilterSet):
+    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+
+    def filter_auto_delivery(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(is_auto_delivery=True)
+        return queryset
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
+
+    class Meta:
+        model = DonationService
+        fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery", "receiving_method", "search"]
+
+class GeneralFilter(django_filters.FilterSet):
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
+
+    class Meta:
+        model = GeneralService
+        fields = [ "filter_type", "seller_is_online", "search"]
+
+class QualificationFilter(django_filters.FilterSet):
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
+
+    class Meta:
+        model = QualificationService
+        fields = [ "server", "seller_is_online", "search"]
+
+
+
+class OtherFilter(django_filters.FilterSet):
+    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
+    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+
+    def filter_auto_delivery(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(is_auto_delivery=True)
+        return queryset
+
+    def filter_seller_online(self, queryset, name, value):
+        if value:  # Если чекбокс включен
+            return queryset.filter(seller_is_online=True)
+        return queryset
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
+
+    class Meta:
+        model = OtherService
+        fields = [  "seller_is_online", "is_auto_delivery","search","filter_type" ]
