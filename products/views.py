@@ -11,12 +11,22 @@ from django.template.loader import render_to_string
 from django.views import View
 from django.views.generic import FormView, ListView, TemplateView
 
-from products.filters import AccountFilter, BoostFilter, RpFilter, TrainingFilter
+from products.filters import AccountFilter, BattlePassFilter, BoostFilter, DonationFilter, GeneralFilter, OtherFilter, QualificationFilter, RpFilter, TrainingFilter
 from products.forms import (
     AccountServiceFilterForm,
     AccountServiceForm,
+    BattlePassServiceFilterForm,
+    BattlePassServiceForm,
     BoostServiceFilterForm,
     BoostServiceForm,
+    DonationServiceFilterForm,
+    DonationServiceForm,
+    GeneralServiceFilterForm,
+    GeneralServiceForm,
+    OtherServiceFilterForm,
+    OtherServiceForm,
+    QualificationServiceFilterForm,
+    QualificationServiceForm,
     RPServiceFilterForm,
     RPServiceForm,
     TrainingServiceFilterForm,
@@ -131,7 +141,6 @@ class RPServiceListView(CategoryMixin, ListView):
 
     def post(self, request, *args, **kwargs):
         form = RPServiceForm(request.POST)
-        print("ldjlsajdlsajl")
         if form.is_valid():
             offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
@@ -220,13 +229,29 @@ class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, ListView)
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = BattlePassServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = BattlePassFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "battle-pass"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["filter_options"] = [{"value": key, "label": label} for key, label in BattlePassService.FILTER_CHOICES]
+        context["filter_form"] = BattlePassServiceFilterForm(self.request.GET)
+        context["form"] = BattlePassServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = BattlePassServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:battlepass")  # Здесь можно перенаправить на страницу успеха
 
 
 class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
@@ -239,14 +264,29 @@ class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = DonationServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = DonationFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "donation"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["filter_options"] = [{"value": key, "label": label} for key, label in DonationService.FILTER_CHOICES]
-        context["ways"] = DonationService.RECEIVING_METHOD_CHOICES
+        context["filter_form"] = DonationServiceFilterForm(self.request.GET)
+        context["form"] = DonationServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = DonationServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:donation")  # Здесь можно перенаправить на страницу успеха
 
 
 class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
@@ -259,13 +299,29 @@ class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = GeneralServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = GeneralFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "services"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["filter_options"] = GeneralService.FILTER_CHOICES
+        context["filter_form"] = GeneralServiceFilterForm(self.request.GET)
+        context["form"] = GeneralServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = GeneralServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:services")  # Здесь можно перенаправить на страницу успеха
 
 
 class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
@@ -278,13 +334,29 @@ class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = OtherServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = OtherFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "other"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["filter_options"] = OtherService.FILTER_CHOICES
+        context["filter_form"] = OtherServiceFilterForm(self.request.GET)
+        context["form"] = OtherServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = OtherServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:other")  # Здесь можно перенаправить на страницу успеха
 
 
 class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
@@ -297,11 +369,29 @@ class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, ListVi
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
+    def get_queryset(self):
+        queryset = self.model.objects.all()
+        filter_form = QualificationServiceFilterForm(self.request.GET)
+        if filter_form.is_valid():
+            queryset = QualificationFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
+        return queryset
+
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
         kwargs["slug"] = "qualification"  # или динамически передавайте нужный слаг
+
         context = super().get_context_data(**kwargs)
+        context["filter_form"] = QualificationServiceFilterForm(self.request.GET)
+        context["form"] = QualificationServiceForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        form = QualificationServiceForm(request.POST)
+        if form.is_valid():
+            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
+            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
+            form.save()  # Сохраняем данные формы
+            return redirect("products:qualification")  # Здесь можно перенаправить на страницу успеха
 
 
 # class OfferView(TemplateView):

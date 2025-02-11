@@ -337,7 +337,7 @@ class TrainingService(BaseService):
         return self.title
 
 
-class BattlePassService(BaseService):
+class BattlePassService(ServerBasedService):
     """
     Модель услуги по продаже боевого пропуска.
     Наследуется от BaseService.
@@ -355,7 +355,7 @@ class BattlePassService(BaseService):
         help_text="Выберите, к какому фильтру относится эта запись",
         default="default_value",
     )
-
+    quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество валюты в наличии")
     class Meta:
         verbose_name = "Продажа боевого пропуска"
         verbose_name_plural = "Продажа боевых пропусков"
