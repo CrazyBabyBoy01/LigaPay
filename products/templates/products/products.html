@@ -62,6 +62,23 @@
         <div class="products-content">
             <input type="hidden" id="isAuthenticated" value="{{ user.is_authenticated }}">
             {% block subcontent %}{% endblock subcontent %}
+            {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+
+                        <a href="?page={{ page_obj.previous_page_number }}" class="page-link">Назад</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Страница {{ page_obj.number }} из {{ paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="page-link">Вперед</a>
+
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
 
         {% comment %} <div class="products__footer">

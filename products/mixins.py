@@ -11,8 +11,7 @@ class CategoryMixin:
 
     def get_category(self, slug):
         try:
-            category = Category.objects.get(slug=slug)
-            return category
+            return Category.objects.get(slug=slug)
         except Category.DoesNotExist:
             return None
 
@@ -32,23 +31,8 @@ class CategoryMixin:
         return context
 
 
-class ServerMixin:
-    """
-    Миксин для добавления информации о сервере в контекст.
-    """
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Получаем серверы для данного типа услуги
-        context["servers"] = ServerBasedService.SERVER_CHOICES  # Передаем список всех серверов
-
-        # Если текущая модель имеет поле server, передаем его значение
-        # Например, если у нас есть конкретная услуга, связанная с сервером
-        if hasattr(self, "object") and hasattr(self.object, "server"):
-            context["selected_server"] = self.object.server
-
-        return context
+class PaginateMixin:
+    paginate_by = 3
 
 
 class SearchDescriptionMixin:
@@ -83,9 +67,7 @@ class SearchDescriptionMixin:
 
         # Фильтрация по полям `title` и `search_description`
         if query:
-            queryset = queryset.filter(
-                Q(title__icontains=query) | Q(search_description__icontains=query)
-            )
+            queryset = queryset.filter(Q(title__icontains=query) | Q(search_description__icontains=query))
 
         # Применение фильтра "Только продавцы онлайн"
         if filters["online_sellers"]:
