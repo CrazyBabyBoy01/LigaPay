@@ -806,3 +806,24 @@ div.filter-container__lvl input{
     text-decoration: none;
     cursor: pointer;
 }
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    align-items: center;
+}
+
+.page-link {
+    padding: 5px 10px;
+    margin: 0 5px;
+
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.current {
+    margin: 0 10px;
+}

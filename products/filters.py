@@ -1,8 +1,19 @@
 import django_filters
 from attr import fields
 from django.db.models import Q
+from django.utils.timezone import now, timedelta
 
-from products.models import AccountService, BattlePassService, BoostService, DonationService, GeneralService, OtherService, QualificationService, RPService, TrainingService
+from products.models import (
+    AccountService,
+    BattlePassService,
+    BoostService,
+    DonationService,
+    GeneralService,
+    OtherService,
+    QualificationService,
+    RPService,
+    TrainingService,
+)
 
 
 class RpFilter(django_filters.FilterSet):
@@ -16,7 +27,7 @@ class RpFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     class Meta:
@@ -39,7 +50,7 @@ class AccountFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     def filter_search(self, queryset, name, value):
@@ -67,7 +78,7 @@ class BoostFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     def filter_search(self, queryset, name, value):
@@ -85,7 +96,7 @@ class TrainingFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     def filter_search(self, queryset, name, value):
@@ -107,7 +118,7 @@ class BattlePassFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     class Meta:
@@ -127,7 +138,7 @@ class DonationFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     def filter_search(self, queryset, name, value):
@@ -137,13 +148,14 @@ class DonationFilter(django_filters.FilterSet):
         model = DonationService
         fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery", "receiving_method", "search"]
 
+
 class GeneralFilter(django_filters.FilterSet):
     seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
     search = django_filters.CharFilter(method="filter_search", label="Поиск")
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     def filter_search(self, queryset, name, value):
@@ -151,7 +163,8 @@ class GeneralFilter(django_filters.FilterSet):
 
     class Meta:
         model = GeneralService
-        fields = [ "filter_type", "seller_is_online", "search"]
+        fields = ["filter_type", "seller_is_online", "search"]
+
 
 class QualificationFilter(django_filters.FilterSet):
     seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
@@ -159,7 +172,7 @@ class QualificationFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
 
     def filter_search(self, queryset, name, value):
@@ -167,8 +180,7 @@ class QualificationFilter(django_filters.FilterSet):
 
     class Meta:
         model = QualificationService
-        fields = [ "server", "seller_is_online", "search"]
-
+        fields = ["server", "seller_is_online", "search"]
 
 
 class OtherFilter(django_filters.FilterSet):
@@ -183,11 +195,12 @@ class OtherFilter(django_filters.FilterSet):
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
-            return queryset.filter(seller_is_online=True)
+            return queryset.filter(seller__last_activity__gte=now() - timedelta(minutes=5))
         return queryset
+
     def filter_search(self, queryset, name, value):
         return queryset.filter(Q(title__icontains=value) | Q(description__icontains=value))
 
     class Meta:
         model = OtherService
-        fields = [  "seller_is_online", "is_auto_delivery","search","filter_type" ]
+        fields = ["seller_is_online", "is_auto_delivery", "search", "filter_type"]

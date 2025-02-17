@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.mail import send_mail
 from django.db import models
 from django.urls import reverse
-from django.utils.timezone import now
+from django.utils.timezone import now, timedelta
 
 
 class User(AbstractUser):
@@ -12,7 +12,12 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     new_email = models.EmailField(null=True, blank=True)
     email_change_token = models.CharField(max_length=32, null=True, blank=True)
+    last_activity = models.DateTimeField(null=True, blank=True)
 
+    def is_online(self):
+        if self.last_activity:
+            return now() - self.last_activity < timedelta(minutes=5)
+        return False
 
 class EmailVerification(models.Model):
     code = models.UUIDField(unique=True)

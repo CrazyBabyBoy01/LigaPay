@@ -65,6 +65,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "users.middleware.UpdateLastActivityMiddleware",
 ]
 
 ROOT_URLCONF = "LigaPay.urls"

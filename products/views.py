@@ -11,7 +11,17 @@ from django.template.loader import render_to_string
 from django.views import View
 from django.views.generic import FormView, ListView, TemplateView
 
-from products.filters import AccountFilter, BattlePassFilter, BoostFilter, DonationFilter, GeneralFilter, OtherFilter, QualificationFilter, RpFilter, TrainingFilter
+from products.filters import (
+    AccountFilter,
+    BattlePassFilter,
+    BoostFilter,
+    DonationFilter,
+    GeneralFilter,
+    OtherFilter,
+    QualificationFilter,
+    RpFilter,
+    TrainingFilter,
+)
 from products.forms import (
     AccountServiceFilterForm,
     AccountServiceForm,
@@ -33,7 +43,7 @@ from products.forms import (
     TrainingServiceForm,
 )
 
-from .mixins import CategoryMixin, SearchDescriptionMixin, ServerMixin
+from .mixins import CategoryMixin, PaginateMixin, SearchDescriptionMixin
 from .models import (
     AccountService,
     BattlePassService,
@@ -72,7 +82,7 @@ class CategoryView(View):
             )
 
 
-class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
+class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -81,10 +91,9 @@ class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin,
     model = AccountService
     template_name = "products/account.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = AccountServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = AccountFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -113,18 +122,13 @@ class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin,
         return self.get(request, *args, **kwargs)  # В данном случае, снова вызываем get и передаем форму с ошибками
 
 
-class RPServiceListView(CategoryMixin, ListView):
-    """
-    Вьюха для отображения списка услуг категории "Account".
-    """
-
+class RPServiceListView(CategoryMixin, PaginateMixin, ListView):
     model = RPService
     template_name = "products/riot-points.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = RPServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = RpFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -148,7 +152,7 @@ class RPServiceListView(CategoryMixin, ListView):
             return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
 
 
-class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
+class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Boost".
     """
@@ -156,10 +160,9 @@ class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, L
     model = BoostService
     template_name = "products/boost.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = BoostServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = BoostFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -176,7 +179,6 @@ class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, L
 
     def post(self, request, *args, **kwargs):
         form = BoostServiceForm(request.POST)
-        print("ldjlsajdlsajl")
         if form.is_valid():
             offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
@@ -184,7 +186,7 @@ class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, L
             return redirect("products:boost")  # Здесь можно перенаправить на страницу успеха
 
 
-class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
+class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -192,10 +194,9 @@ class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
     model = TrainingService
     template_name = "products/training.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = TrainingServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = TrainingFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -219,7 +220,7 @@ class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
             return redirect("products:training")  # Здесь можно перенаправить на страницу успеха
 
 
-class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
+class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -227,10 +228,9 @@ class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, ListView)
     model = BattlePassService
     template_name = "products/battlepass.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = BattlePassServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = BattlePassFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -254,7 +254,7 @@ class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, ListView)
             return redirect("products:battlepass")  # Здесь можно перенаправить на страницу успеха
 
 
-class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin, ListView):
+class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -262,10 +262,9 @@ class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin
     model = DonationService
     template_name = "products/donation.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = DonationServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = DonationFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -289,7 +288,7 @@ class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, ServerMixin
             return redirect("products:donation")  # Здесь можно перенаправить на страницу успеха
 
 
-class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
+class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -297,10 +296,9 @@ class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
     model = GeneralService
     template_name = "products/services.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = GeneralServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = GeneralFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -324,7 +322,7 @@ class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
             return redirect("products:services")  # Здесь можно перенаправить на страницу успеха
 
 
-class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
+class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -332,10 +330,9 @@ class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
     model = OtherService
     template_name = "products/other.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = OtherServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = OtherFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -359,7 +356,7 @@ class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
             return redirect("products:other")  # Здесь можно перенаправить на страницу успеха
 
 
-class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, ListView):
+class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -367,10 +364,9 @@ class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, ListVi
     model = QualificationService
     template_name = "products/qualification.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
-    paginate_by = 10  # Если нужна пагинация, можно задать количество записей на страницу
 
     def get_queryset(self):
-        queryset = self.model.objects.all()
+        queryset = self.model.objects.all().order_by("id")
         filter_form = QualificationServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = QualificationFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
