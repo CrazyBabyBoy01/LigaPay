@@ -7,14 +7,15 @@ from captcha.fields import CaptchaField
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, UserChangeForm, UserCreationForm
 from django.contrib.auth.tokens import default_token_generator
+from django.db import transaction
 from django.template.defaultfilters import first
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.timezone import now
-from django.db import transaction
+
 from users.models import EmailVerification, User
-from users.tasks import send_email_verification,send_reset_email
+from users.tasks import send_email_verification, send_reset_email
 
 
 class UserLoginForm(AuthenticationForm):
@@ -85,10 +86,9 @@ class CustomPasswordResetForm(PasswordResetForm):
         """
         user_email = self.cleaned_data["email"]
         # Вызываем отправку email через Celery или другую логику
-        transaction.on_commit(lambda:send_reset_email.delay(user_email))
+        transaction.on_commit(lambda: send_reset_email.delay(user_email))
         super().save(*args, **kwargs)  # Не забываем вызвать оригинальный метод
         # Отправка письма через Celery
-
 
 
 class EmailChangeForm(forms.ModelForm):

@@ -9,7 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views import View
-from django.views.generic import FormView, ListView, TemplateView
+from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from products.filters import (
     AccountFilter,
@@ -35,6 +35,7 @@ from products.forms import (
     GeneralServiceForm,
     OtherServiceFilterForm,
     OtherServiceForm,
+    PurchaseForm,
     QualificationServiceFilterForm,
     QualificationServiceForm,
     RPServiceFilterForm,
@@ -150,6 +151,31 @@ class RPServiceListView(CategoryMixin, PaginateMixin, ListView):
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
             form.save()  # Сохраняем данные формы
             return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
+
+
+class RPServiceDetailView(CategoryMixin, DetailView):
+    """Представление для отображения деталей услуги (RPService)."""
+
+    model = RPService
+    template_name = "products/riot-points_detail.html"  # Путь к шаблону
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект RPService по ID или возвращает 404."""
+        return get_object_or_404(RPService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "riot-points"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        context["form"] = RPService()
+        context["form_purchase"]=PurchaseForm()
+        return context
+
+    def post (self, request, *args, **kwargs):
+        pass
+
 
 
 class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):

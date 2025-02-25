@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "news",
     "django_celery_beat",
     "products",
+    "wallet",
 ]
 
 MIDDLEWARE = [

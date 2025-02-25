@@ -1,3 +1,5 @@
+from cProfile import label
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -92,7 +94,11 @@ class ServerBasedService(BaseService):
     ]
 
     server = models.CharField(
-        max_length=50, choices=SERVER_CHOICES, verbose_name="Сервер", default="other", help_text="Выберите сервер"
+        max_length=50,
+        choices=SERVER_CHOICES,
+        verbose_name="Сервер",
+        default="other",
+        help_text="Выберите сервер",
     )
 
     class Meta:
@@ -113,7 +119,7 @@ class RPService(ServerBasedService, AutoDeliveryFilter):
     filter_type = models.CharField(
         max_length=50,
         choices=FILTER_CHOICES,
-        verbose_name="Тип фильтра",
+        verbose_name="Тип",
         default="gifts_for_rp",
         help_text="Выберите, к какому фильтру относится эта запись",
     )
@@ -356,6 +362,7 @@ class BattlePassService(ServerBasedService):
         default="default_value",
     )
     quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество валюты в наличии")
+
     class Meta:
         verbose_name = "Продажа боевого пропуска"
         verbose_name_plural = "Продажа боевых пропусков"

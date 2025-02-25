@@ -52,6 +52,9 @@
                   <a href="{% url "users:profile" user.id %}">{{user.username}}</a>
                 </li>
                 <li>
+                  <a href="#">Баланс: {{ request.user.wallet.balance }} ₽</a>
+                </li>
+                <li>
                   <a href="#">Сообщения</a>
                 </li>
                 <li>

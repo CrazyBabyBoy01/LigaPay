@@ -545,3 +545,27 @@ class OtherServiceForm(forms.ModelForm):
             "is_auto_delivery",
             "quantity",
         ]
+
+
+class PurchaseForm(forms.Form):
+    payment_method = forms.ChoiceField(
+        choices=[("", "Не выбран"), ("method1", "Банковская карта RU"), ("method2", "СБП (оплата по QR)")],
+        label="Способ оплаты",
+        required=True,
+        widget=forms.Select(attrs={"class": "details-form__item"}),
+    )
+    amount = forms.IntegerField(
+        label="Получу",
+        required=True,
+        widget=forms.NumberInput(attrs={"class": "details-form__item", "placeholder": "Введите количество"}),
+    )
+    price = forms.DecimalField(
+        label="Заплачу",
+        required=True,
+        widget=forms.NumberInput(attrs={"class": "details-form__item", "placeholder": "Стоимость в рублях"}),
+    )
+    player_id = forms.CharField(
+        label="Идентификатор игрока",
+        required=True,
+        widget=forms.TextInput(attrs={"class": "details-form__item", "placeholder": "Введите идентификатор игрока"}),
+    )
