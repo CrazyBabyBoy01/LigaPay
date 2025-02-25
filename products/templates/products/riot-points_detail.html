@@ -1,0 +1,91 @@
+{% extends "main/base.html" %}
+{% block content  %}
+    <div class="details">
+        <div class="back-link">
+            <div class="arrow">&lt;</div>
+            <a id="">Вернуться</a>
+        </div>
+        <div class="details-content">
+            <h2>Оформление заказа</h2>
+            <div class="details-content__row">
+                <div class="details-content__item">
+                    <span class="label">СЕРВЕР</span>
+                    <span class="value">{{ service.get_server_display }}</span>
+                </div>
+                <div class="details-content__item">
+                    <span class="label">ТИП</span>
+                    <span class="value">{{ service.get_filter_type_display }}</span>
+                </div>
+                <div class="details-content__item">
+                    <span class="label">Количество RP</span>
+                    <span class="value">{{ service.price }}</span>
+                </div>
+                <div class="details-content__item">
+                    <span class="label">Наличие</span>
+                    <span class="value">{{ service.quantity }}</span>
+                </div>
+            </div>
+            <div class="details-content__item">
+                <span class="label">Подробное описание</span>
+                <span class="value">{{ service.description }}</span>
+            </div>
+            <form action={% url "products:riot-points_detail"  service.id %} method='post' class="details-form">
+                {% csrf_token %}
+                <div class="details-form__method ">
+                    <div class="label">
+                        {{ form_purchase.payment_method.label }}
+                    </div>
+
+                    {{form_purchase.payment_method}}
+                </div>
+                <div class="details-form__quantity">
+                    <div class="details-form__quantity_left">
+                        <div class="label">
+                            {{form_purchase.amount.label}}
+                        </div>
+                        {{form_purchase.amount}}
+                    </div>
+                    <span class="arrow-icon">⇄</span>
+                    <div class="details-form__quantity_right">
+                        <div class="label">
+                            {{form_purchase.price.label}}
+                        </div>
+                        {{form_purchase.price}}
+                    </div>
+                </div>
+                <div class="details-form__name">
+                    <div class="label">
+                        {{form_purchase.player_id.label}}
+                    </div>
+                    {{form_purchase.player_id}}
+                </div>
+            </form>
+        </div>
+        {% comment %} <div class="details__chat"> {% endcomment %}
+            <div class="chat-header">
+                <img src="user-avatar.jpg" alt="User Avatar" class="chat-avatar">
+                <div class="chat-user-info">
+                    <div class="chat-username">xSTARMANx</div>
+                    <div class="chat-status">🟢 Онлайн</div>
+                </div>
+                <div class="chat-actions">
+                    <button class="chat-btn">🔔 Включить уведомления</button>
+                    <button class="chat-btn">⚠️</button>
+                </div>
+            </div>
+
+            <div class="chat-rating">
+                <div class="stars">⭐⭐⭐⭐⭐</div>
+                <div class="chat-reviews">4218 отзывов за 2 года</div>
+                <div class="chat-note">Напишите продавцу перед оплатой</div>
+            </div>
+
+            <div class="chat-messages">
+                <input type="text" class="chat-input" placeholder="Написать...">
+                <button class="chat-attach">📎</button>
+                <button class="chat-send">➡️</button>
+            </div>
+        </div>
+
+    </div>
+{% endblock content %}
