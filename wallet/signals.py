@@ -13,3 +13,4 @@ from .models import Wallet
 def create_wallet(sender, instance, created, **kwargs):
     if created:  # Если пользователь только что создан
         Wallet.objects.create(user=instance)
+        print(f"Кошелек создан для пользователя {instance.username}")

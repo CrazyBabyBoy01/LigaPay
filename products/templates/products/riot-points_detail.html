@@ -29,7 +29,8 @@
                 <span class="label">Подробное описание</span>
                 <span class="value">{{ service.description }}</span>
             </div>
-            <form action={% url "products:riot-points_detail"  service.id %} method='post' class="details-form">
+            <div>Товар ID: {{ service.id }}</div>
+            <form action={% url 'orders:create_order' model_name service.id %} method='post' class="details-form">
                 {% csrf_token %}
                 <div class="details-form__method ">
                     <div class="label">
@@ -59,6 +60,9 @@
                     </div>
                     {{form_purchase.player_id}}
                 </div>
+                <button type="submit" class="details-form__submit">
+                    Купить
+                </button>
             </form>
         </div>
         {% comment %} <div class="details__chat"> {% endcomment %}

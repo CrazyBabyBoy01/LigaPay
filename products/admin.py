@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
 from .models import (
     AccountService,
     BattlePassService,
@@ -14,15 +13,21 @@ from .models import (
 )
 
 
-# admin.site.register(Category)
-admin.site.register(RPService)
-admin.site.register(AccountService)
-admin.site.register(DonationService)
-admin.site.register(BoostService)
-admin.site.register(TrainingService)
-admin.site.register(BattlePassService)
-admin.site.register(OtherService)
-admin.site.register(QualificationService)
+class BaseServiceAdmin(admin.ModelAdmin):
+    list_display = ("id", "title", "price", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("title",)
+
+
+# Регистрируем все модели с этим классом
+admin.site.register(RPService, BaseServiceAdmin)
+admin.site.register(AccountService, BaseServiceAdmin)
+admin.site.register(DonationService, BaseServiceAdmin)
+admin.site.register(BoostService, BaseServiceAdmin)
+admin.site.register(TrainingService, BaseServiceAdmin)
+admin.site.register(BattlePassService, BaseServiceAdmin)
+admin.site.register(OtherService, BaseServiceAdmin)
+admin.site.register(QualificationService, BaseServiceAdmin)
 
 
 @admin.register(Category)

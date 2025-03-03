@@ -35,6 +35,7 @@ urlpatterns = [
     path("products/", include("products.urls", namespace="products")),
     path("captcha/", include("captcha.urls")),
     path("wallet/", include("wallet.urls", namespace="wallet")),
+    path("orders/", include("orders.urls", namespace="orders")),
 ]
 
 if settings.DEBUG:
