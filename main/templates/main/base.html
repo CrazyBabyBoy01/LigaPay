@@ -42,10 +42,10 @@
           </li>
           {% if user.is_authenticated %}
             <li>
-              <a href="#" class="header__list-item">Покупки</a>
+              <a href="{% url "orders:my_orders" %}" class="header__list-item">Покупки</a>
             </li>
             <li>
-              <a href="#" class="header__list-item">Продажи</a>
+              <a href="{% url "orders:my_sales" %}" class="header__list-item">Продажи</a>
             </li>
             <li class="dropdown profile" id="profileIcon">
               <a href="#" class="header__list-item">

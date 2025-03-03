@@ -1,0 +1,45 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block content %}
+<h2 class="mb-4">История заказов</h2>
+
+{% if orders %}
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Дата</th>
+                <th>Описание</th>
+                <th>Продавец</th>
+                <th>Статус</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ order.description|truncatechars:300 }}</td>
+                    <td class="seller">
+                        <img src="{% if order.seller.image %}{{ order.seller.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}" alt="Avatar">
+                        <span>{{ order.seller.username }}</span>
+                        {% comment %} <span class="status-dot {% if order.seller.is_online %}online{% else %}offline{% endif %}"></span> {% endcomment %}
+                    </td>
+                    <td>
+                        {% if order.status == "paid" %}
+                            <span class="status success">Оплачено</span>
+                        {% else %}
+                            <span class="status pending">Ожидание оплаты</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.price }} ₽</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="alert alert-info">Вы ещё ничего не покупали.</p>
+{% endif %}
+
+{% endblock %}

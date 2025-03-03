@@ -170,12 +170,12 @@ class RPServiceDetailView(CategoryMixin, DetailView):
 
         context = super().get_context_data(**kwargs)
         context["form"] = RPService()
-        context["form_purchase"]=PurchaseForm()
+        context["form_purchase"] = PurchaseForm()
+        context["model_name"] = self.model._meta.model_name
         return context
 
-    def post (self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         pass
-
 
 
 class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "products",
     "wallet",
+    "orders",
 ]
 
 MIDDLEWARE = [

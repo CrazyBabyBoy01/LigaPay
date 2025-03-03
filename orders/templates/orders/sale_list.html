@@ -1,0 +1,45 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block content %}
+<h2 class="mb-4">История продаж</h2>
+
+{% if sales %}
+    <table class="order-table">
+        <thead>
+            <tr>
+                <th>№</th>
+                <th>Дата</th>
+                <th>Описание</th>
+                <th>Продавец</th>
+                <th>Статус</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+                <tr>
+                    <td>#{{ sale.id }}</td>
+                    <td>{{ sale.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ sale.description|truncatechars:300 }}</td>
+                    <td class="seller">
+                        <img src="{% if sale.user.image %}{{ sale.user.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}" alt="Avatar">
+                        <span>{{ sale.user.username }}</span>
+                        {% comment %} <span class="status-dot {% if sale.seller.is_online %}online{% else %}offline{% endif %}"></span> {% endcomment %}
+                    </td>
+                    <td>
+                        {% if sale.status == "paid" %}
+                            <span class="status success">Оплачено</span>
+                        {% else %}
+                            <span class="status pending">Ожидание оплаты</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ sale.price }} ₽</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p class="alert alert-info">Вы ещё ничего не продавали.</p>
+{% endif %}
+
+{% endblock %}

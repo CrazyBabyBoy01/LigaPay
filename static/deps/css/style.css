@@ -990,3 +990,94 @@ div.filter-container__lvl input{
     font-size: 20px;
     margin-left: 5px;
 }
+
+
+/* Стили для шаблона покупок */
+
+/* Основная таблица */
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Стили только для таблицы заказов */
+.order-table td {
+    vertical-align: middle;
+    padding: 10px; /* Чуть увеличим отступы для лучшего вида */
+}
+
+.order-table th {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px;
+}
+
+/* Чередование строк (зебра) */
+.order-table tbody tr:nth-child(odd) {
+
+}
+
+/* Заголовки */
+.order-table thead {
+
+    font-weight: bold;
+}
+
+/* Колонка с продавцом */
+.seller {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 8px;
+    white-space: nowrap; /* Чтобы не переносилось на новую строку */
+}
+
+.seller img {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 5px;
+}
+
+.seller img,
+.seller span,
+.seller .status-dot {
+    display: inline-block; /* Элементы идут в ряд */
+    vertical-align: middle; /* Выравниваем их относительно друг друга */
+}
+
+
+/* Статус продавца(онлайн или нет) */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 5px;
+}
+
+.online {
+    background-color: #28a745; /* Зеленый - онлайн */
+}
+
+.offline {
+    background-color: #dc3545; /* Красный - офлайн */
+}
+
+/* Стилизация статуса */
+.status {
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status.success {
+    background-color: #28a745;
+    color: white;
+}
+
+.status.pending {
+    background-color: #ffc107;
+    color: #333;
+}

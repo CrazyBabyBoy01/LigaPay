@@ -557,7 +557,7 @@ class PurchaseForm(forms.Form):
     amount = forms.IntegerField(
         label="Получу",
         required=True,
-        widget=forms.NumberInput(attrs={"class": "details-form__item", "placeholder": "Введите количество"}),
+        widget=forms.NumberInput(attrs={"class": "details-form__item", "placeholder": "Введите количество", "value": "1"}),
     )
     price = forms.DecimalField(
         label="Заплачу",
