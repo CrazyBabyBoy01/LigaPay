@@ -207,3 +207,26 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "INFO",  # Показывает только важные сообщения
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "WARNING",  # Показывает только предупреждения и ошибки Django
+            "propagate": True,
+        },
+        "orders": {  # Логгер для твоего приложения
+            "handlers": ["console"],
+            "level": "DEBUG",  # Можно INFO, если слишком много логов
+            "propagate": False,
+        },
+    },
+}
