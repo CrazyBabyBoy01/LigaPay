@@ -22,7 +22,7 @@ class Order(models.Model):
     # Поля для GenericForeignKey
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    price = models.DecimalField(max_digits=10,default=0.0, decimal_places=2, verbose_name="Цена на момент покупки")
+    price = models.DecimalField(max_digits=10, default=0.0, decimal_places=2, verbose_name="Цена на момент покупки")
     description = models.TextField(
         default="Описание недоступно", verbose_name="Описание заказа"
     )  # ✔ Это текст, здесь все ОК
@@ -30,6 +30,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending", verbose_name="Статус заказа")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    amount = models.PositiveIntegerField()
     seller = models.ForeignKey(
         settings.AUTH_USER_MODEL,  # Связываем с моделью пользователя
         on_delete=models.SET_NULL,  # Если продавец удалится, заказ останется, но без продавца
@@ -40,44 +41,36 @@ class Order(models.Model):
     )
 
     def process_payment(self):
-        """Метод обработки оплаты"""
-
-        # Получаем кошелек покупателя
-        buyer_wallet = Wallet.objects.get(user=self.user)
-
-        # Проверяем, есть ли продавец (на всякий случай)
-        if not self.seller:
-            print("Ошибка: у товара нет продавца.")
-            return False
+        """Метод обработки оплаты с учетом количества товара"""
 
         try:
-            # Получаем кошелек продавца
-            seller_wallet = Wallet.objects.get(user=self.seller)
+            buyer_wallet = Wallet.objects.get(user=self.user)  # Кошелек покупателя
+            seller_wallet = Wallet.objects.get(user=self.seller)  # Кошелек продавца
         except Wallet.DoesNotExist:
-            print("Ошибка: у продавца нет кошелька.")
+            print("Ошибка: у одного из пользователей нет кошелька.")
             return False
 
-        # Проверяем, хватает ли у покупателя денег
-        if buyer_wallet.balance >= self.price:
-            # Используем "атомарную" транзакцию, чтобы избежать ошибок при переводе
-            with transaction.atomic():
-                # 1. Списываем деньги у покупателя
-                buyer_wallet.withdraw(self.price)
+        total_price = self.price * self.amount  # Общая стоимость заказа
 
-                # 2. Начисляем деньги продавцу
-                seller_wallet.deposit(self.price)
+        if buyer_wallet.balance < total_price:
+            print("Ошибка: недостаточно средств.")
+            return False  # Покупка невозможна
 
-                # 3. Меняем статус заказа на "оплачено"
-                self.status = "paid"
-                self.save()
+        with transaction.atomic():
+            # 1. Списываем деньги у покупателя
+            buyer_wallet.balance -= total_price
+            buyer_wallet.save()
 
-                # 4. Если товар одноразовый (например, аккаунт), делаем его недоступным
-                if hasattr(self.product, "is_active"):
-                    self.product.is_active = False
-                    self.product.save()
+            # 2. Зачисляем деньги продавцу
+            seller_wallet.balance += total_price
+            seller_wallet.save()
 
-            print(f"Покупка успешна! {self.price}₽ переведены от {self.user.username} к {self.seller.username}.")
-            return True  # Возвращаем True – всё прошло успешно
+            # 4. Меняем статус заказа на "оплачено"
+            self.status = "paid"
+            self.save()
+
+        print(f"Покупка успешна! {total_price}₽ переведены от {self.user.username} к {self.seller.username}.")
+        return True  # Покупка успешно завершена
 
     def __str__(self):
         return f"Заказ {self.id} - {self.product} ({self.status})"
