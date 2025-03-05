@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
@@ -54,7 +55,7 @@ class CreateOrderView(LoginRequiredMixin, View):
                 model = apps.get_model("products", model_name)
                 if not model:
                     messages.error(request, "Некорректная категория товара!")
-                    return redirect("users:profile", pk=request.user.pk)
+                    return JsonResponse({"success": False, "message": "Некорректные данные!"})
 
                 try:
                     product = model.objects.select_for_update().get(
@@ -62,12 +63,12 @@ class CreateOrderView(LoginRequiredMixin, View):
                     )  # Блокируем запись для других транзакций
                 except model.DoesNotExist:
                     messages.error(request, "Товар не найден!")
-                    return redirect("users:profile", pk=request.user.pk)
+                    return JsonResponse({"success": False, "message": "Товар не найден!"})
                 logger.info(f"✅ Найден товар: {product.title} (остаток: {product.quantity})")
                 # 🔴 Проверка: достаточно ли товара на складе?
                 if amount > product.quantity:
                     messages.error(request, "Недостаточное количество товара в наличии!")
-                    return redirect("users:profile", pk=request.user.pk)
+                    return JsonResponse({"success": False, "message": "Недостаточное количество товара в наличии!"})
 
                 # Вычисляем финальную стоимость (цена за штуку * количество)
                 total_price = product.price * amount
@@ -95,17 +96,15 @@ class CreateOrderView(LoginRequiredMixin, View):
                     order.save()
                     messages.success(request, f"Вы купили {amount} шт. товара! 🎉")
                     logger.info("✅ Оплата прошла успешно. Баланс обновлён.")
-                else:
-                    raise ValueError("Недостаточно средств!")
+                    return JsonResponse({"success": True, "message": f"Вы купили {amount} шт. товара!"})
+                raise ValueError("Недостаточно средств!")
 
         except ValueError as e:
             logger.error(f"❌ Ошибка: {e}")
-            messages.error(request, str(e))  # Сообщаем пользователю об ошибке
+            return JsonResponse({"success": False, "message": str(e)})
         except Exception as e:
             logger.error(f"❌ Непредвиденная ошибка: {e}")
-            messages.error(request, "Произошла ошибка при оформлении заказа!")
-
-        return redirect("users:profile", pk=request.user.pk)
+            return JsonResponse({"success": False, "message": "Произошла ошибка при оформлении заказа!"})
 
 
 class OrderListView(LoginRequiredMixin, ListView):
