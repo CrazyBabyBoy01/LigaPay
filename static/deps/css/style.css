@@ -1063,7 +1063,7 @@ div.filter-container__lvl input{
     background-color: #dc3545; /* Красный - офлайн */
 }
 
-/* Стилизация статуса */
+/* Стилизация статуса в заказах */
 .status {
     padding: 4px 10px;
     border-radius: 5px;
@@ -1080,4 +1080,37 @@ div.filter-container__lvl input{
 .status.pending {
     background-color: #ffc107;
     color: #333;
+}
+
+/* Всплывающие сообщения при заказе */
+/* Основные стили для уведомлений */
+/* Контейнер для уведомлений */
+#notifications {
+    position: fixed;  /* Фиксируем контейнер в правом нижнем углу */
+    bottom: 20px;     /* Отступ снизу */
+    right: 20px;      /* Отступ справа */
+    z-index: 9999;    /* Чтобы он был поверх других элементов */
+    max-width: 300px; /* Максимальная ширина контейнера */
+    height: auto;     /* Высота будет зависеть от контента */
+    padding: 10px;    /* Немного отступов внутри контейнера */
+    display: flex;    /* Используем flex для управления размещением уведомлений */
+    flex-direction: column; /* Уведомления будут располагаться сверху вниз */
+}
+
+.notification {
+    background-color: #4CAF50;  /* Зеленый для успеха */
+    color: white;
+    padding: 15px;
+    margin: 10px 0;  /* Отступ между уведомлениями */
+    border-radius: 5px;
+    font-weight: bold;
+    opacity: 0;      /* Изначально делаем уведомление невидимым */
+    transform: translateY(20px); /* Сдвигаем уведомление вниз */
+    transition: opacity 0.5s ease, transform 0.5s ease; /* Анимация появления */
+}
+
+/* Когда уведомление появляется */
+.notification.show {
+    opacity: 1;  /* Устанавливаем прозрачность 1 */
+    transform: translateY(0); /* Убираем сдвиг */
 }
