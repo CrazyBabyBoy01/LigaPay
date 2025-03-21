@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from common.views import ContextMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
@@ -9,9 +10,10 @@ from django.views import View
 from wallet.models import Wallet
 
 
-class DepositView(LoginRequiredMixin, View):
+class DepositView(ContextMixin, LoginRequiredMixin, View):
     """Обрабатывает пополнение баланса"""
 
+    title = "Пополнение кошелька"
     template_name = "wallet/deposit.html"
 
     def get(self, request):

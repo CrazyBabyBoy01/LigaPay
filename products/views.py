@@ -4,6 +4,8 @@ from pyexpat import model
 from urllib import request
 from venv import logger
 
+from chat.models import ChatMessage
+from common.views import ContextMixin
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -44,7 +46,7 @@ from products.forms import (
     TrainingServiceForm,
 )
 
-from .mixins import CategoryMixin, PaginateMixin, SearchDescriptionMixin
+from .mixins import CategoryMixin, ChatMixin, PaginateMixin, SearchDescriptionMixin
 from .models import (
     AccountService,
     BattlePassService,
@@ -83,7 +85,7 @@ class CategoryView(View):
             )
 
 
-class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class AccountServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
@@ -123,10 +125,11 @@ class AccountServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixi
         return self.get(request, *args, **kwargs)  # В данном случае, снова вызываем get и передаем форму с ошибками
 
 
-class RPServiceListView(CategoryMixin, PaginateMixin, ListView):
+class RPServiceListView(CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, ListView):
     model = RPService
     template_name = "products/riot-points.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
+    title = "RP"
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
@@ -153,9 +156,10 @@ class RPServiceListView(CategoryMixin, PaginateMixin, ListView):
             return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
 
 
-class RPServiceDetailView(CategoryMixin, DetailView):
+class RPServiceDetailView(CategoryMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (RPService)."""
 
+    title = "Покупка RP"
     model = RPService
     template_name = "products/riot-points_detail.html"  # Путь к шаблону
     context_object_name = "service"
@@ -178,11 +182,12 @@ class RPServiceDetailView(CategoryMixin, DetailView):
         pass
 
 
-class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class BoostServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Boost".
     """
 
+    title = "Буст"
     model = BoostService
     template_name = "products/boost.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
@@ -212,11 +217,12 @@ class BoostServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin,
             return redirect("products:boost")  # Здесь можно перенаправить на страницу успеха
 
 
-class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class TrainingServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Обучение"
     model = TrainingService
     template_name = "products/training.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
@@ -246,11 +252,14 @@ class TrainingServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMix
             return redirect("products:training")  # Здесь можно перенаправить на страницу успеха
 
 
-class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class BattlePassServiceListView(
+    CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView
+):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Боевой пропуск"
     model = BattlePassService
     template_name = "products/battlepass.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
@@ -280,11 +289,12 @@ class BattlePassServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateM
             return redirect("products:battlepass")  # Здесь можно перенаправить на страницу успеха
 
 
-class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Донат"
     model = DonationService
     template_name = "products/donation.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
@@ -314,11 +324,12 @@ class DonationServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMix
             return redirect("products:donation")  # Здесь можно перенаправить на страницу успеха
 
 
-class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class GeneralServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Услуги"
     model = GeneralService
     template_name = "products/services.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
@@ -348,11 +359,12 @@ class GeneralServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixi
             return redirect("products:services")  # Здесь можно перенаправить на страницу успеха
 
 
-class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class OtherServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Прочее"
     model = OtherService
     template_name = "products/other.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
@@ -382,11 +394,14 @@ class OtherServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin,
             return redirect("products:other")  # Здесь можно перенаправить на страницу успеха
 
 
-class QualificationServiceListView(CategoryMixin, SearchDescriptionMixin, PaginateMixin, ListView):
+class QualificationServiceListView(
+    CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView
+):
     """
     Вьюха для отображения списка услуг категории "Account".
     """
 
+    title = "Квалификация"
     model = QualificationService
     template_name = "products/qualification.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне

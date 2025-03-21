@@ -1,5 +1,6 @@
 import logging
 
+from common.views import ContextMixin
 from django.apps import apps
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -107,24 +108,26 @@ class CreateOrderView(LoginRequiredMixin, View):
             return JsonResponse({"success": False, "message": "Произошла ошибка при оформлении заказа!"})
 
 
-class OrderListView(LoginRequiredMixin, ListView):
+class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
     """Вывод списка заказов пользователя"""
 
     model = Order
     template_name = "orders/order_list.html"
     context_object_name = "orders"
+    title = "История покупок"
 
     def get_queryset(self):
         """Фильтруем заказы только для текущего пользователя"""
         return Order.objects.filter(user=self.request.user).order_by("-created_at")
 
 
-class SaleListView(LoginRequiredMixin, ListView):
+class SaleListView(LoginRequiredMixin, ContextMixin, ListView):
     """Вывод списка продаж пользователя"""
 
     model = Order
     template_name = "orders/sale_list.html"
     context_object_name = "sales"
+    title = "История продаж"
 
     def get_queryset(self):
         """Фильтруем заказы, где текущий пользователь является продавцом"""

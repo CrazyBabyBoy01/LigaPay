@@ -36,11 +36,15 @@ urlpatterns = [
     path("captcha/", include("captcha.urls")),
     path("wallet/", include("wallet.urls", namespace="wallet")),
     path("orders/", include("orders.urls", namespace="orders")),
+    path("chat/", include("chat.urls", namespace="chat")),
 ]
 
 if settings.DEBUG:
+    # Обработка статических файлов
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+    # Обработка медиа-файлов (если нужно)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-
-if DEBUG:
+    # Подключение debug-toolbar
     urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]

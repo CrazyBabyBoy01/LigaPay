@@ -557,12 +557,21 @@ class PurchaseForm(forms.Form):
     amount = forms.IntegerField(
         label="Получу",
         required=True,
-        widget=forms.NumberInput(attrs={"class": "details-form__item", "placeholder": "Введите количество", "value": "1"}),
+        widget=forms.NumberInput(
+            attrs={"class": "details-form__item", "id": "amount", "placeholder": "Введите количество"}
+        ),
     )
     price = forms.DecimalField(
         label="Заплачу",
         required=True,
-        widget=forms.NumberInput(attrs={"class": "details-form__item", "placeholder": "Стоимость в рублях"}),
+        widget=forms.NumberInput(
+            attrs={
+                "class": "details-form__item",
+                "id": "price",
+                "placeholder": "Стоимость в рублях",
+                "readonly": "readonly",
+            }
+        ),
     )
     player_id = forms.CharField(
         label="Идентификатор игрока",

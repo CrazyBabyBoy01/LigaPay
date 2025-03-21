@@ -527,6 +527,7 @@ th {
 .products-content {
     background-color: rgba(0, 0, 0, 0.5);
     padding: 24px;
+    border-radius: 10px;
 }
 
 .filter-container{
@@ -544,9 +545,7 @@ th {
     margin-right: 10px;
 }
 
-.filter-container__row-2 {
 
-}
 
 .filter-container__btn {
     margin-right: 10px;
@@ -871,7 +870,7 @@ div.filter-container__lvl input{
 
 .details-content__item .label {
     font-size: 12px;
-    color: gray;
+    color: antiquewhite;
     text-transform: uppercase;
     margin-bottom: 5px;
 }
@@ -1012,10 +1011,6 @@ div.filter-container__lvl input{
     padding: 12px;
 }
 
-/* Чередование строк (зебра) */
-.order-table tbody tr:nth-child(odd) {
-
-}
 
 /* Заголовки */
 .order-table thead {
@@ -1113,4 +1108,88 @@ div.filter-container__lvl input{
 .notification.show {
     opacity: 1;  /* Устанавливаем прозрачность 1 */
     transform: translateY(0); /* Убираем сдвиг */
+}
+/* ЧАТ */
+
+#chat-box {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 150px; /* Устанавливаем максимальную высоту */
+    margin-bottom: 10px;
+    border-radius: 10px;
+}
+
+#chat-log {
+    overflow-y: scroll;  /* Это добавит скроллинг */
+    scroll-behavior: smooth;
+}
+
+#chat-log p {
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+#chat-log p {
+
+    word-wrap: break-word;
+}
+
+#chat-log p strong {
+    color: #007bff;
+}
+
+#chat-log p.user-message {
+    background-color: #d1f7c4; /* Светлый зеленый для сообщений пользователя */
+}
+
+#chat-log p.system-message {
+    background-color: #f2f2f2; /* Светло-серый для системных сообщений */
+    font-style: italic;
+}
+#chat-message-input {
+    width: 90%;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+
+    opacity: 30%;
+    box-sizing: border-box;
+}
+
+#send-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+#send-button:hover {
+    background-color: #0056b3;
+}
+/* Стили для всего скролл-бара */
+#chat-log::-webkit-scrollbar {
+    width: 8px; /* Ширина полосы прокрутки */
+}
+
+/* Стили для трека (фона) полосы прокрутки */
+#chat-log::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Цвет фона трека */
+    border-radius: 10px;
+}
+
+/* Стили для ручки полосы прокрутки */
+#chat-log::-webkit-scrollbar-thumb {
+    background-color: #888; /* Цвет самой полосы */
+    border-radius: 10px;
+    border: 2px solid #f1f1f1; /* Легкая рамка вокруг полосы */
+}
+
+/* Стили для ручки при наведении */
+#chat-log::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Цвет полосы при наведении */
 }
