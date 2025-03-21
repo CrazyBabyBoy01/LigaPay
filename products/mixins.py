@@ -1,6 +1,8 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
+from chat.models import ChatMessage
+
 from .models import Category, ServerBasedService
 
 
@@ -78,3 +80,13 @@ class SearchDescriptionMixin:
             queryset = queryset.filter(is_auto_delivery=True)
 
         return queryset
+
+class ChatMixin:
+    def get_chat_messages(self):
+        return ChatMessage.objects.all().order_by("timestamp")
+
+    def get_context_data(self, **kwargs):
+        # Получаем сообщения и добавляем их в контекст
+        context = super().get_context_data(**kwargs)
+        context["messages"] = self.get_chat_messages()
+        return context

@@ -58,7 +58,20 @@
                     </button>
                 </a>
         </div>
-        <div class="products-chat"></div>
+        <div id="chat-box">
+            <h3>Общий чат</h3>
+            <div id="chat-log">
+                {% for message in messages %}
+                    <p><strong>{{ message.sender }}:</strong> {{ message.message }}</p>
+                {% endfor %}
+            </div>
+            <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
+
+        </div>
+        {% comment %} <div class="products-chat chat-box">
+            <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br/>
+            <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
+        </div> {% endcomment %}
         <div class="products-content">
             <input type="hidden" id="isAuthenticated" value="{{ user.is_authenticated }}">
             {% block subcontent %}{% endblock subcontent %}

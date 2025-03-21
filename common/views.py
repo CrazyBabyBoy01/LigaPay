@@ -14,12 +14,8 @@
 # print(stats_table.text)
 
 
-
-
-
-
 class ContextMixin:
-    title = None
+    title = "LigaPay"
     background_image = None
     subtitle = None
 

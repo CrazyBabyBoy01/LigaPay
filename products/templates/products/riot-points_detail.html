@@ -2,8 +2,7 @@
 {% block content  %}
     <div class="details">
         <div class="back-link">
-            <div class="arrow">&lt;</div>
-            <a id="">Вернуться</a>
+            <a href="{% url "products:riot-points" %}" id="">&lt Вернуться</a>
         </div>
         <div class="details-content">
             <h2>Оформление заказа</h2>
@@ -17,8 +16,8 @@
                     <span class="value">{{ service.get_filter_type_display }}</span>
                 </div>
                 <div class="details-content__item">
-                    <span class="label">Количество RP</span>
-                    <span class="value">{{ service.price }}</span>
+                    <span class="label">Цена</span>
+                    <span id="item-price" class="value" data-price="{{ service.price|floatformat:2 }}">{{ service.price }}</span>
                 </div>
                 <div class="details-content__item">
                     <span class="label">Наличие</span>
@@ -60,7 +59,7 @@
                     </div>
                     {{form_purchase.player_id}}
                 </div>
-                <button type="submit" class="details-form__submit">
+                <button type="submit" class="details-form__submit header__btn">
                     Купить
                 </button>
             </form>

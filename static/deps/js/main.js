@@ -61,14 +61,19 @@ const profileIcon = document.getElementById('profileIcon');
 const dropdownMenu = document.getElementById('dropdownMenu');
 
 // Добавляем событие на клик по иконке профиля
-profileIcon.addEventListener('click', function() {
-    dropdownMenu.classList.toggle('show'); // Показать/скрыть меню
-});
+if (profileIcon && dropdownMenu) {
+    profileIcon.addEventListener('click', function() {
+        dropdownMenu.classList.toggle('show'); // Показать/скрыть меню
+    });
+}
 
 // Закрытие меню при клике вне области меню
 window.addEventListener('click', function(event) {
-    if (!profileIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
-        dropdownMenu.classList.remove('show'); // Скрыть меню
+    // Проверяем, существуют ли profileIcon и dropdownMenu, прежде чем обращаться к ним
+    if (profileIcon && dropdownMenu) {
+        if (!profileIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
+            dropdownMenu.classList.remove('show'); // Скрыть меню
+        }
     }
 });
 
@@ -137,5 +142,68 @@ function showNotification(type, message) {
         }, 500);
     }, 5000);  // Уведомление исчезнет через 5 секунд
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    let amountInput = document.getElementById("amount");
+    let priceInput = document.getElementById("price");
+    let itemElement = document.getElementById("item-price");
+
+    // Проверяем, найден ли элемент с id "item-price"
+    let itemPrice = itemElement ? parseFloat(itemElement.getAttribute("data-price")) : 0;
+
+    // Проверяем, найдены ли input'ы перед добавлением обработчика
+    if (amountInput && priceInput) {
+        amountInput.addEventListener("input", function() {
+            let amount = parseInt(amountInput.value) || 0;
+            priceInput.value = (amount * itemPrice).toFixed(2); // Умножаем на количество и округляем до 2 знаков
+        });
+    }
+});
+
+// Подключаемся к WebSocket на текущем сайте (должен быть путь к чату)
+const chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/socket-server/');
+
+// Обработка входящих сообщений
+// chatSocket.onmessage = function(e) {
+//     const data = JSON.parse(e.data);
+//     document.querySelector('#chat-log').value += (data.message + '\n');  // Добавляем новое сообщение в чат
+// };
+chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    if (data.error) {
+        // Если пришла ошибка (пользователь не авторизован), перенаправляем на страницу авторизации
+        alert(data.error);
+        window.location.href = "/users/autorization/";  // Перенаправляем на страницу авторизации
+        return;
+    }
+    // Добавление нового сообщения в #chat-log
+    const chatLog = document.querySelector('#chat-log');
+    const messageElement = document.createElement('p');
+    messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+    chatLog.appendChild(messageElement);
+    // Ограничиваем количество сообщений, например, до 10 последних
+    const maxMessages = 4;
+    const messages = chatLog.querySelectorAll('p');
+    if (messages.length > maxMessages) {
+        chatLog.removeChild(messages[0]);  // Удаляем старое сообщение
+    }
+    // Прокрутка вниз, чтобы показывать новые сообщения
+    chatLog.scrollTop = chatLog.scrollHeight;
+};
+// Обработка закрытия соединения
+chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly');
+};
+
+// Отправка сообщений по нажатию Enter
+document.querySelector('#chat-message-input').onkeyup = function(e) {
+    if (e.keyCode === 13) {  // Нажат Enter
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({'message': message}));  // Отправляем сообщение на сервер
+        messageInputDom.value = '';  // Очищаем поле ввода
+    }
+};
 
 console.log("JS загружен!");
