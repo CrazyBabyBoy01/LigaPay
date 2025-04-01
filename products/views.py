@@ -46,7 +46,7 @@ from products.forms import (
     TrainingServiceForm,
 )
 
-from .mixins import CategoryMixin, ChatMixin, PaginateMixin, SearchDescriptionMixin
+from .mixins import CategoryMixin, ChatMixin, PaginateMixin, SearchDescriptionMixin, ServiceChatMixin
 from .models import (
     AccountService,
     BattlePassService,
@@ -156,7 +156,7 @@ class RPServiceListView(CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, L
             return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
 
 
-class RPServiceDetailView(CategoryMixin, ContextMixin, DetailView):
+class RPServiceDetailView(CategoryMixin,ServiceChatMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (RPService)."""
 
     title = "Покупка RP"

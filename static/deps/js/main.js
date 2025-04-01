@@ -159,9 +159,39 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+// Функция для закрытия текущего WebSocket
+function closeSocket() {
+    if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+        console.log('Закрытие старого соединения WebSocket...');
+        chatSocket.close();  // Закрыть соединение
+    }
+}
 
+
+
+const serviceTypeElement = document.querySelector("#service-type");
+const serviceIdElement = document.querySelector("#service-id");
+
+let chatSocket;
+let roomName;
+
+
+// Закрываем WebSocket перед открытием нового соединения
+closeSocket();  // Закрываем старое соединение, если оно есть
+
+// Проверяем, находимся ли мы в общем чате или в чате услуги
+if (serviceTypeElement && serviceIdElement) {
+    const serviceType = serviceTypeElement.dataset.type;
+    const serviceId = serviceIdElement.dataset.id;
+    roomName = `${serviceType}/${serviceId}`;
+} else {
+    roomName = "global_chat";  // Это общий чат
+}
+
+// Формируем URL для WebSocket
+chatSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomName}/`);
 // Подключаемся к WebSocket на текущем сайте (должен быть путь к чату)
-const chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/socket-server/');
+// const chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/chat/global_chat/');
 
 // Обработка входящих сообщений
 // chatSocket.onmessage = function(e) {
