@@ -64,6 +64,17 @@
                 </button>
             </form>
         </div>
+        <div id="service-type" data-type="{{ slug }}"></div>
+        <div id="service-id" data-id="{{ service.id }}"></div>
+        <div id="chat-box">
+            <h3>Общий чат</h3>
+            <div id="chat-log">
+                {% for message in messages %}
+                    <p><strong>{{ message.sender }}:</strong> {{ message.message }}</p>
+                {% endfor %}
+            </div>
+            <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
+        </div>
         <div class="details__chatt"></div>
         {% comment %} <div class="details__chat">
             <div class="chat-header">

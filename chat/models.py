@@ -1,12 +1,42 @@
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
+class ChatRoom(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    service = GenericForeignKey("content_type", "object_id")
+    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="buyer_chats")
+    seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller_chats")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("content_type", "object_id", "buyer", "seller")
+
+    def __str__(self):
+        return f"Chat for {self.service} - {self.buyer} & {self.seller}"
+
+
 class ChatMessage(models.Model):
-    room_name = models.CharField(max_length=255, default="global_chat")  # Весь чат — это "global_chat"
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="messages", null=True, blank=True)
+    room_name = models.CharField(max_length=100, null=True, blank=True)
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.room_name != "global_chat" and self.chat_room is None:
+            raise ValueError("chat_room не может быть NULL для чатов услуг!")
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.sender}: {self.message[:30]}"
+
+
+class DummyModel(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name

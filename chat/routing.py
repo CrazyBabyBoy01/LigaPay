@@ -4,6 +4,8 @@ from chat import consumers  # Будем использовать ChatConsumer, 
 
 
 websocket_urlpatterns = [
-    re_path(r"ws/socket-server/", consumers.ChatConsumer.as_asgi()),  # Маршрут для чата
-    # re_path(r"ws/chat/(?P<room_name>\w+)/$", consumers.ChatConsumer.as_asgi()),
+    # 🔹 Общий чат (один маршрут для всего проекта)
+    re_path(r"ws/chat/global_chat/$", consumers.ChatConsumer.as_asgi()),
+    # 🔹 Чат для услуги (например: ws://127.0.0.1:8000/ws/chat/rpservice/1/)
+    re_path(r"ws/chat/(?P<service_type>[\w-]+)/(?P<service_id>\d+)/$", consumers.ChatConsumer.as_asgi()),
 ]
