@@ -43,21 +43,8 @@ class AccountServiceForm(forms.ModelForm):
             "skin_count",  # Уникальное для AccountService
             "character_count",  # Уникальное для AccountService
             "is_auto_delivery",
+            "quantity",
         ]
-
-
-# class RPServiceFilterForm(forms.ModelForm):
-#     class Meta:
-#         model = RPService
-#         fields = ["server", "filter_type"]
-
-#     server = forms.ModelChoiceField(
-#         choices=RPService.SERVER_CHOICES,
-#         widget=forms.Select(attrs={"class": "filter-container__server"}),
-#     )
-#     filter_type = forms.ChoiceField(
-#         choices=RPService.FILTER_CHOICES, widget=forms.Select(attrs={"class": "filter-container__btn"})
-#     )
 
 
 class RPServiceForm(forms.ModelForm):

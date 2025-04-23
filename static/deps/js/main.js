@@ -13,26 +13,66 @@ if (authElement) {
     console.warn("Элемент с id='isAuthenticated' не найден на этой странице.");
 }
 
-// Открываем модальное окно при клике на кнопку
-var openModalBtn = document.getElementById("openModalBtn");
 
-if (openModalBtn) {  // Проверка, существует ли элемент
-    openModalBtn.onclick = function() {
-        console.log("Кнопка нажата");
-        console.log("isAuthenticated:", isAuthenticated);
 
-        if (isAuthenticated === "True") {
-            console.log("Пользователь авторизован");
-            modal.style.display = "flex";
-        } else {
-            console.log("Пользователь не авторизован");
-            window.location.href = "/users/autorization/"; // Убедитесь, что URL верный
+
+
+
+// // Открываем модальное окно для создания карточки при клике на кнопку
+// var openModalBtn = document.getElementById("openModalBtn");
+
+// if (openModalBtn) {  // Проверка, существует ли элемент
+//     openModalBtn.onclick = function() {
+//         console.log("Кнопка нажата");
+//         console.log("isAuthenticated:", isAuthenticated);
+
+//         if (isAuthenticated === "True") {
+//             console.log("Пользователь авторизован");
+//             modal.style.display = "flex";
+//         } else {
+//             console.log("Пользователь не авторизован");
+//             window.location.href = "/users/autorization/"; // Убедитесь, что URL верный
+//         }
+//     };
+// } else {
+//     console.log("Кнопка не найдена на странице");
+// }
+
+function setupModal(openBtnId, modalId) {
+    var openBtn = document.getElementById(openBtnId);
+    var modal = document.getElementById(modalId);
+
+    if (openBtn && modal) {
+        openBtn.onclick = function () {
+            if (isAuthenticated === "True") {
+                modal.style.display = "flex";
+            } else {
+                window.location.href = "/users/autorization/";
+            }
+        };
+
+        var closeBtn = modal.querySelector(".close");
+        if (closeBtn) {
+            closeBtn.onclick = function () {
+                modal.style.display = "none";
+            };
         }
-    };
-} else {
-    console.log("Кнопка не найдена на странице");
+
+        window.onclick = function (event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        };
+    } else {
+        console.log("Не найдена кнопка или модалка: " + openBtnId + ", " + modalId);
+    }
 }
 
+// Для создания
+setupModal("openModalBtn", "modal");
+
+// Для редактирования
+setupModal("openEditModalBtn", "editModal");
 
 // Закрытие модального окна
 document.addEventListener("DOMContentLoaded", function() {
@@ -55,6 +95,8 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("❌ Кнопка закрытия или модальное окно не найдены!");
     }
 });
+
+
 
 // Получаем элементы иконки и меню
 const profileIcon = document.getElementById('profileIcon');

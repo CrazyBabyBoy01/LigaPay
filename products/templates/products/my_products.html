@@ -1,0 +1,49 @@
+{% extends "main/base.html" %}
+{% block content %}
+{% load static %}
+{% load custom_filters %}
+
+{% get_route_map as route_map %}
+
+<div class="container">
+    <h1>Мои предложения</h1>
+
+    <div class="tc table-products">
+        <div class="tc__header">
+            <div class="tc__header-item tc-server">Категория</div>
+            <div class="tc__header-item tc-server">Сервер</div>
+            <div class="tc__header-item tc-desc">Описание</div>
+            <div class="tc__header-item tc-user">Продавец</div>
+            <div class="tc__header-item tc-count">Наличие</div>
+            <div class="tc__header-item tc-price">Цена</div>
+        </div>
+
+        {% for service in services %}
+            {% get_viewname service route_map as viewname %}
+            {# Если viewname пустой, можно обработать этот случай отдельно #}
+            {% if viewname %}
+                <a href="{% url viewname service.id %}" class="tc-item">
+                    <div class="tc__header-item tc-server">Продажа: {{ service.category.name }}</div>
+                    <div class="tc__header-item tc-server">{{ service.server }}</div>
+                    <div class="tc__header-item tc-desc">{{ service.title }}</div>
+                    <div class="tc__header-item tc-user">
+                        <img width="20" height="20" src="{% if user.image %}{{ user.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}" alt="">
+                        {{ service.seller }}
+                    </div>
+                    <div class="tc__header-item tc-quantity">{{ service.quantity }}</div>
+                    <div class="tc__header-item tc-price">{{ service.price }}</div>
+                </a>
+            {% else %}
+                <!-- Здесь можно вывести сообщение об ошибке или пропустить услугу -->
+                <p>Не найден маршрут для данного типа услуги.</p>
+            {% endif %}
+        {% empty %}
+            <div class="tc-item">
+                <div class="tc__header-item" colspan="5">Нет доступных услуг для отображения.</div>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

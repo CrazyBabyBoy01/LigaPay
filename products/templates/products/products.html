@@ -73,7 +73,6 @@
             <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
         </div> {% endcomment %}
         <div class="products-content">
-            <input type="hidden" id="isAuthenticated" value="{{ user.is_authenticated }}">
             {% block subcontent %}{% endblock subcontent %}
             {% if is_paginated %}
                 <div class="pagination">
