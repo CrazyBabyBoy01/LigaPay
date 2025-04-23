@@ -5,7 +5,7 @@
     {% if is_buyer %}
         <div class="details__buer">
             <div class="back-link">
-                <a href="{% url "products:riot-points" %}" id="">&lt Вернуться</a>
+                <a href="{% url "products:account" %}" id="">&lt Вернуться</a>
             </div>
             <div class="details-content">
                 <h2>Оформление заказа</h2>
@@ -15,17 +15,13 @@
                         <span class="value">{{ service.get_server_display }}</span>
                     </div>
                     <div class="details-content__item">
-                        <span class="label">ТИП</span>
-                        <span class="value">{{ service.get_filter_type_display }}</span>
-                    </div>
-                    <div class="details-content__item">
                         <span class="label">Цена</span>
                         <span id="item-price" class="value" data-price="{{ service.price|floatformat:2 }}">{{ service.price }}</span>
                     </div>
-                    <div class="details-content__item">
-                        <span class="label">Наличие</span>
-                        <span class="value">{{ service.quantity }}</span>
-                    </div>
+                </div>
+                <div class="details-content__item">
+                    <span class="label">Краткое описание</span>
+                    <span class="value">{{ service.title }}</span>
                 </div>
                 <div class="details-content__item">
                     <span class="label">Подробное описание</span>
@@ -89,17 +85,13 @@
                         <span class="value">{{ service.get_server_display }}</span>
                     </div>
                     <div class="details-content__item">
-                        <span class="label">ТИП</span>
-                        <span class="value">{{ service.get_filter_type_display }}</span>
-                    </div>
-                    <div class="details-content__item">
                         <span class="label">Цена</span>
                         <span id="item-price" class="value" data-price="{{ service.price|floatformat:2 }}">{{ service.price }}</span>
                     </div>
-                    <div class="details-content__item">
-                        <span class="label">Наличие</span>
-                        <span class="value">{{ service.quantity }}</span>
-                    </div>
+                </div>
+                <div class="details-content__item">
+                    <span class="label">Краткое описание</span>
+                    <span class="value">{{ service.title }}</span>
                 </div>
                 <div class="details-content__item">
                     <span class="label">Подробное описание</span>
@@ -111,7 +103,7 @@
                 <button class="header__btn" id="openEditModalBtn">Редактировать</button>
 
                 <!-- Кнопка удалить — просто сабмит формы с name="delete" -->
-                <form action="{% url 'products:riot-points_detail' service.id %}" method="post" style="display:inline;">
+                <form action="{% url 'products:qualification_detail' service.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" name="delete" class="header__btn" onclick="return confirm('Точно удалить?')">Удалить</button>
                 </form>
@@ -131,45 +123,27 @@
             <span id="closeModalBtn" class="close">&times;</span>
             <h3 class="offer__title" id="modal-title">Редактирование оффера</h3>
 
-            <form action="{% url 'products:riot-points_detail' service.id %}" id="offer-form" method='post'>
+            <form action="{% url 'products:qualification_detail' service.id %}" id="offer-form" method='post'>
                 {% csrf_token %}
 
                 <!-- Поля формы -->
                 <div class="offer__form form">
-                    <label for="id_title">{{ form.title.label }}</label>
+                    <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>
+                    {{ form.server }}
+                </div>
+                <div class="offer__form form">
+                    <label for="{{ form.title.id_for_label }}">{{ form.title.label }}</label>
                     {{ form.title }}
                 </div>
 
                 <div class="offer__form form">
-                    <label for="id_description">{{ form.description.label }}</label>
+                    <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
                     {{ form.description }}
                 </div>
-
                 <div class="offer__form form">
-                    <label for="id_price">{{ form.price.label }}</label>
+                    <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
                     {{ form.price }}
                 </div>
-
-                <div class="offer__form form">
-                    <label for="id_server">{{ form.server.label }}</label>
-                    {{ form.server }}
-                </div>
-
-                <div class="offer__form form">
-                    <label for="id_filter_type">{{ form.filter_type.label }}</label>
-                    {{ form.filter_type }}
-                </div>
-
-                <div class="offer__form form">
-                    <label for="id_quantity">{{ form.quantity.label }}</label>
-                    {{ form.quantity }}
-                </div>
-
-                <div class="offer__form offer__form-bool form">
-                    <label for="id_is_auto_delivery">{{ form.is_auto_delivery.label }}</label>
-                    {{ form.is_auto_delivery }}
-                </div>
-
                 <button class="header__btn" type="submit" id="submit-btn">Отправить</button>
             </form>
         </div>

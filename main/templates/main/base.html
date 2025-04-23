@@ -42,6 +42,9 @@
           </li>
           {% if user.is_authenticated %}
             <li>
+              <a href="{% url "products:my_products" %}" class="header__list-item">Мои услуги</a>
+            </li>
+            <li>
               <a href="{% url "orders:my_orders" %}" class="header__list-item">Покупки</a>
             </li>
             <li>
@@ -87,6 +90,7 @@
           {% endif %}
         </ul>
       </div>
+      <input type="hidden" id="isAuthenticated" value="{{ user.is_authenticated }}">
 
       {% block content %}{% endblock content %}
 

@@ -1,9 +1,34 @@
-from chat.models import ChatMessage
+import logging
+
+from chat.models import ChatMessage, ChatRoom
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from .models import Category, ServerBasedService
+
+
+logger = logging.getLogger(__name__)
+
+
+class ExcludeOwnServicesMixin:
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        # Проверяем, анонимный ли пользователь
+        if user.is_authenticated:
+            logger.debug("🔍 Пользователь анонимный — возвращаем все карточки")
+            return queryset
+
+        before_count = queryset.count()
+        # Фильтруем по исключению собственных услуг
+        filtered_qs = queryset.exclude(seller=user)
+        after_count = filtered_qs.count()
+
+        # Логируем до и после фильтрации
+        logger.debug(f"🔍 Фильтрация карточек: было {before_count}, после фильтрации своих — {after_count}")
+        return filtered_qs
 
 
 class CategoryMixin:
@@ -78,7 +103,6 @@ class SearchDescriptionMixin:
         # Применение фильтра "Автоматическая доставка"
         if filters["auto_delivery"]:
             queryset = queryset.filter(is_auto_delivery=True)
-
         return queryset
 
 
@@ -95,11 +119,20 @@ class ChatMixin:
 
 class ServiceChatMixin:
     def get_service_chat_messages(self, service=None):
+        user = self.request.user
+        if not user.is_authenticated:
+            print("❗ Анонимный пользователь — не загружаем чат-сообщения")
+            return []
         if service is None:
-            service = self.get_object()  # Автоматически получаем объект, если не передан
-        return ChatMessage.objects.filter(
-            chat_room__object_id=service.id, chat_room__content_type=ContentType.objects.get_for_model(service)
-        ).order_by("timestamp")
+            service = self.get_object()
+
+        content_type = ContentType.objects.get_for_model(service)
+
+        try:
+            chat_room = ChatRoom.objects.get(content_type=content_type, object_id=service.id, buyer=user)
+            return chat_room.messages.all().order_by("timestamp")
+        except ChatRoom.DoesNotExist:
+            return []  # Возвращаем пустой список, если комнаты нет
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

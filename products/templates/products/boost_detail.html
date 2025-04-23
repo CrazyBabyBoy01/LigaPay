@@ -5,7 +5,7 @@
     {% if is_buyer %}
         <div class="details__buer">
             <div class="back-link">
-                <a href="{% url "products:riot-points" %}" id="">&lt Вернуться</a>
+                <a href="{% url "products:boost" %}" id="">&lt Вернуться</a>
             </div>
             <div class="details-content">
                 <h2>Оформление заказа</h2>
@@ -23,8 +23,8 @@
                         <span id="item-price" class="value" data-price="{{ service.price|floatformat:2 }}">{{ service.price }}</span>
                     </div>
                     <div class="details-content__item">
-                        <span class="label">Наличие</span>
-                        <span class="value">{{ service.quantity }}</span>
+                        <span class="label">Диапазон</span>
+                        <span class="value">{{ service.get_rank_range_display }}</span>
                     </div>
                 </div>
                 <div class="details-content__item">
@@ -97,8 +97,8 @@
                         <span id="item-price" class="value" data-price="{{ service.price|floatformat:2 }}">{{ service.price }}</span>
                     </div>
                     <div class="details-content__item">
-                        <span class="label">Наличие</span>
-                        <span class="value">{{ service.quantity }}</span>
+                        <span class="label">Диапазон</span>
+                        <span class="value">{{ service.get_rank_range_display }}</span>
                     </div>
                 </div>
                 <div class="details-content__item">
@@ -111,7 +111,7 @@
                 <button class="header__btn" id="openEditModalBtn">Редактировать</button>
 
                 <!-- Кнопка удалить — просто сабмит формы с name="delete" -->
-                <form action="{% url 'products:riot-points_detail' service.id %}" method="post" style="display:inline;">
+                <form action="{% url 'products:boost_detail' service.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" name="delete" class="header__btn" onclick="return confirm('Точно удалить?')">Удалить</button>
                 </form>
@@ -131,7 +131,7 @@
             <span id="closeModalBtn" class="close">&times;</span>
             <h3 class="offer__title" id="modal-title">Редактирование оффера</h3>
 
-            <form action="{% url 'products:riot-points_detail' service.id %}" id="offer-form" method='post'>
+            <form action="{% url 'products:boost_detail' service.id %}" id="offer-form" method='post'>
                 {% csrf_token %}
 
                 <!-- Поля формы -->
@@ -161,8 +161,8 @@
                 </div>
 
                 <div class="offer__form form">
-                    <label for="id_quantity">{{ form.quantity.label }}</label>
-                    {{ form.quantity }}
+                    <label for="id_rank_range">{{ form.rank_range.label }}</label>
+                    {{ form.rank_range }}
                 </div>
 
                 <div class="offer__form offer__form-bool form">

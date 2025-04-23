@@ -40,7 +40,7 @@
             <div class="tc__header-item tc-price">Цена</div>
         </div>
         {% for service in services %}
-            <a href="#" class="tc-item">
+            <a href="{% url "products:boost_detail" service.id%}" class="tc-item">
                 <div class="tc__header-item tc-server">{{ service.server }}</div>
                 <div class="tc__header-item tc-desc">{{ service.description }}</div>
                 <div class="tc__header-item tc-user">

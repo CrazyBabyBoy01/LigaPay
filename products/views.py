@@ -7,9 +7,10 @@ from venv import logger
 from chat.models import ChatMessage
 from common.views import ContextMixin
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
@@ -46,7 +47,14 @@ from products.forms import (
     TrainingServiceForm,
 )
 
-from .mixins import CategoryMixin, ChatMixin, PaginateMixin, SearchDescriptionMixin, ServiceChatMixin
+from .mixins import (
+    CategoryMixin,
+    ChatMixin,
+    ExcludeOwnServicesMixin,  # Этот миксин должен быть первым!
+    PaginateMixin,
+    SearchDescriptionMixin,
+    ServiceChatMixin,
+)
 from .models import (
     AccountService,
     BattlePassService,
@@ -96,7 +104,21 @@ class AccountServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
+        print("🔍 Запрашиваем queryset для AccountServiceListView")
+        # queryset = self.model.objects.all().order_by("id")
+
+        # Получаем все услуги (карточки) для текущего пользователя
         queryset = self.model.objects.all().order_by("id")
+
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
+
         filter_form = AccountServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = AccountFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -125,14 +147,75 @@ class AccountServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
         return self.get(request, *args, **kwargs)  # В данном случае, снова вызываем get и передаем форму с ошибками
 
 
-class RPServiceListView(CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, ListView):
+class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    title = "Покупка Аккунта"
+    model = AccountService
+    template_name = "products/account_detail.html"  # Путь к шаблону
+    form_class = AccountServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект AccountService по ID или возвращает 404."""
+        return get_object_or_404(AccountService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        self.object = self.get_object()
+        kwargs["slug"] = "accounts"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        context["form"] = AccountServiceForm(instance=self.object)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = AccountServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:accounts_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
+class RPServiceListView(ExcludeOwnServicesMixin, CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, ListView):
     model = RPService
     template_name = "products/riot-points.html"  # Указываем путь к твоему шаблону
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
     title = "RP"
 
     def get_queryset(self):
+        print("🔍 Запрашиваем queryset для RPServiceListView")
+        # queryset = self.model.objects.all().order_by("id")
+
+        # Получаем все услуги (карточки) для текущего пользователя
         queryset = self.model.objects.all().order_by("id")
+
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
+
         filter_form = RPServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = RpFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -156,12 +239,13 @@ class RPServiceListView(CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, L
             return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
 
 
-class RPServiceDetailView(CategoryMixin,ServiceChatMixin, ContextMixin, DetailView):
+class RPServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (RPService)."""
 
     title = "Покупка RP"
     model = RPService
     template_name = "products/riot-points_detail.html"  # Путь к шаблону
+    form_class = RPServiceForm
     context_object_name = "service"
 
     def get_object(self):
@@ -173,13 +257,35 @@ class RPServiceDetailView(CategoryMixin,ServiceChatMixin, ContextMixin, DetailVi
         kwargs["slug"] = "riot-points"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["form"] = RPService()
-        context["form_purchase"] = PurchaseForm()
+        service = self.get_object()
+        context["form"] = RPServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         return context
 
     def post(self, request, *args, **kwargs):
-        pass
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = RPServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:riot-points_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
 
 
 class BoostServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
@@ -193,7 +299,20 @@ class BoostServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
     context_object_name = "services"  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
+        print("🔍 Запрашиваем queryset для RPServiceListView")
+        # queryset = self.model.objects.all().order_by("id")
+
+        # Получаем все услуги (карточки) для текущего пользователя
         queryset = self.model.objects.all().order_by("id")
+
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = BoostServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = BoostFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -217,6 +336,56 @@ class BoostServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
             return redirect("products:boost")  # Здесь можно перенаправить на страницу успеха
 
 
+class BoostServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги (RPService)."""
+
+    title = "Буст аккаунта"
+    model = BoostService
+    template_name = "products/boost_detail.html"  # Путь к шаблону
+    form_class = BoostServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект RPService по ID или возвращает 404."""
+        return get_object_or_404(BoostService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "boosting"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = BoostServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = BoostServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:boost_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
 class TrainingServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
@@ -229,6 +398,14 @@ class TrainingServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = TrainingServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = TrainingFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -252,11 +429,61 @@ class TrainingServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
             return redirect("products:training")  # Здесь можно перенаправить на страницу успеха
 
 
+class TrainingServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги (TrainingService)."""
+
+    title = "Обучение"
+    model = TrainingService
+    template_name = "products/training_detail.html"  # Путь к шаблону
+    form_class = TrainingServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект RPService по ID или возвращает 404."""
+        return get_object_or_404(TrainingService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "training"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = TrainingServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = TrainingServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:training_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
 class BattlePassServiceListView(
     CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView
 ):
     """
-    Вьюха для отображения списка услуг категории "Account".
+    Вьюха для отображения списка услуг категории "BattlePass".
     """
 
     title = "Боевой пропуск"
@@ -266,6 +493,14 @@ class BattlePassServiceListView(
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = BattlePassServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = BattlePassFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -289,6 +524,55 @@ class BattlePassServiceListView(
             return redirect("products:battlepass")  # Здесь можно перенаправить на страницу успеха
 
 
+class BattlePassServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги (BattlePassService)."""
+
+    title = "Обучение"
+    model = BattlePassService
+    template_name = "products/battlepass_detail.html"  # Путь к шаблону
+    form_class = BattlePassServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект BattlePassService по ID или возвращает 404."""
+        return get_object_or_404(BattlePassService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "battle-pass"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = BattlePassServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = BattlePassServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:battlepass_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
 class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
@@ -301,6 +585,14 @@ class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = DonationServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = DonationFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -322,6 +614,56 @@ class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
             form.save()  # Сохраняем данные формы
             return redirect("products:donation")  # Здесь можно перенаправить на страницу успеха
+        return redirect("products:donation")
+
+
+class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги DonationService)."""
+
+    title = "Обучение"
+    model = DonationService
+    template_name = "products/donation_detail.html"  # Путь к шаблону
+    form_class = DonationServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект DonationService по ID или возвращает 404."""
+        return get_object_or_404(DonationService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "donation"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = DonationServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = DonationServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:donation_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
 
 
 class GeneralServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
@@ -336,6 +678,14 @@ class GeneralServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = GeneralServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = GeneralFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -359,6 +709,56 @@ class GeneralServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
             return redirect("products:services")  # Здесь можно перенаправить на страницу успеха
 
 
+class GeneralServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги (BattlePassService)."""
+
+    title = "Обучение"
+    model = GeneralService
+    template_name = "products/services_detail.html"  # Путь к шаблону
+    form_class = GeneralServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект BattlePassService по ID или возвращает 404."""
+        return get_object_or_404(GeneralService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "services"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = GeneralServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = GeneralServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:services_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
 class OtherServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView):
     """
     Вьюха для отображения списка услуг категории "Account".
@@ -371,6 +771,14 @@ class OtherServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = OtherServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = OtherFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -394,6 +802,56 @@ class OtherServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
             return redirect("products:other")  # Здесь можно перенаправить на страницу успеха
 
 
+class OtherServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги (OtherService)."""
+
+    title = "Обучение"
+    model = OtherService
+    template_name = "products/other_detail.html"  # Путь к шаблону
+    form_class = OtherServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект OtherService по ID или возвращает 404."""
+        return get_object_or_404(OtherService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "other"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = OtherServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = OtherServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:other_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
 class QualificationServiceListView(
     CategoryMixin, ChatMixin, SearchDescriptionMixin, ContextMixin, PaginateMixin, ListView
 ):
@@ -408,6 +866,14 @@ class QualificationServiceListView(
 
     def get_queryset(self):
         queryset = self.model.objects.all().order_by("id")
+        user = self.request.user
+        if user.is_authenticated:
+            # Преобразуем ленивый объект в обычный
+            user = user._wrapped if hasattr(user, "_wrapped") else user
+            print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
+            queryset = queryset.exclude(seller=user)
+        else:
+            print("🕵️ Пользователь анонимный — показываем все услуги")
         filter_form = QualificationServiceFilterForm(self.request.GET)
         if filter_form.is_valid():
             queryset = QualificationFilter(filter_form.cleaned_data, queryset=queryset, request=self.request).qs
@@ -429,6 +895,99 @@ class QualificationServiceListView(
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
             form.save()  # Сохраняем данные формы
             return redirect("products:qualification")  # Здесь можно перенаправить на страницу успеха
+
+
+class QualificationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+    """Представление для отображения деталей услуги (BattlePassService)."""
+
+    title = "Обучение"
+    model = QualificationService
+    template_name = "products/qualification_detail.html"  # Путь к шаблону
+    form_class = QualificationServiceForm
+    context_object_name = "service"
+
+    def get_object(self):
+        """Получает объект BattlePassService по ID или возвращает 404."""
+        return get_object_or_404(QualificationService, id=self.kwargs["pk"])
+
+    def get_context_data(self, **kwargs):
+        # Сюда передаем slug, чтобы миксин мог правильно его обработать
+        kwargs["slug"] = "qualification"  # или динамически передавайте нужный слаг
+
+        context = super().get_context_data(**kwargs)
+        service = self.get_object()
+        context["form"] = QualificationServiceForm(instance=service)
+        context["form_purchase"] = PurchaseForm()  # форма для покупки
+        context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
+        context["model_name"] = self.model._meta.model_name
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        service = self.get_object()
+
+        # Проверка, что пользователь — продавец
+        if service.seller != request.user:
+            return HttpResponseForbidden("У вас нет прав на это действие.")
+
+        # Удаление
+        if "delete" in request.POST:
+            service.delete()
+            return redirect("products:my_products")
+
+        # Редактирование
+        form = QualificationServiceForm(request.POST, instance=service)
+        if form.is_valid():
+            form.save()
+            return redirect("products:qualification_detail", pk=service.pk)
+
+        # Если форма невалидна, отрисуем снова с ошибками
+        context = self.get_context_data(object=service)
+        context["form"] = form
+        return self.render_to_response(context)
+
+
+class MyProductsView(TemplateView):
+    # Вьюха для отображения карточек в услугах(кроме своих)
+    template_name = "products/my_products.html"
+
+    def get_context_data(self, category_slug=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        if user.is_authenticated:
+            rp_services = RPService.objects.filter(seller=user)
+            boost_services = BoostService.objects.filter(seller=user)
+            battlepass_services = BattlePassService.objects.filter(seller=user)
+            account_services = AccountService.objects.filter(seller=user)
+            donation_services = DonationService.objects.filter(seller=user)
+            other_services = OtherService.objects.filter(seller=user)
+            qualification_services = QualificationService.objects.filter(seller=user)
+            general_services = GeneralService.objects.filter(seller=user)
+            training_services = TrainingService.objects.filter(seller=user)
+
+            # Можно объединить в один список
+            all_services = (
+                list(rp_services)
+                + list(boost_services)
+                + list(battlepass_services)
+                + list(account_services)
+                + list(donation_services)
+                + list(other_services)
+                + list(qualification_services)
+                + list(general_services)
+                + list(training_services)
+            )
+
+            # Если нужно — отсортируй по дате
+            all_services.sort(key=lambda s: s.created_at, reverse=True)  # если есть поле created_at
+
+            context["services"] = all_services
+            context["category_slug"] = category_slug
+        else:
+            context["services"] = []
+
+        return context
 
 
 # class OfferView(TemplateView):

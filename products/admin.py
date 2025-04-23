@@ -14,7 +14,7 @@ from .models import (
 
 
 class BaseServiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "price", "is_active")
+    list_display = ("id", "title", "price", "is_active", "seller")
     list_filter = ("is_active",)
     search_fields = ("title",)
 

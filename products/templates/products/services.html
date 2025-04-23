@@ -31,7 +31,7 @@
             <div class="tc__header-item tc-price">Цена</div>
         </div>
         {% for service in services %}
-            <a href="{% url 'products:services' %}" class="tc-item">
+            <a href="{% url 'products:services_detail' service.id %}" class="tc-item">
                 <div class="tc__header-item tc-desc">{{ service.description }}</div>
                 <div class="tc__header-item tc-user">
                     <img width="20" height="20" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
