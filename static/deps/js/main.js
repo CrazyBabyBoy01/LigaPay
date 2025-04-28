@@ -198,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
         amountInput.addEventListener("input", function() {
             let amount = parseInt(amountInput.value) || 0;
             priceInput.value = (amount * itemPrice).toFixed(2); // Умножаем на количество и округляем до 2 знаков
+            
         });
     }
 });

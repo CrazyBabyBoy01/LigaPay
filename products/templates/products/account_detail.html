@@ -54,26 +54,13 @@
                 <form action={% url 'orders:create_order' model_name service.id %} method='post' class="details-form">
                     {% csrf_token %}
                     <div class="details-form__method ">
+                        <input type="hidden" name="amount" value="1">
+                        <input type="hidden" name="price" id="price">
                         <div class="label">
                             {{ form_purchase.payment_method.label }}
                         </div>
 
                         {{form_purchase.payment_method}}
-                    </div>
-                    <div class="details-form__quantity">
-                        <div class="details-form__quantity_left">
-                            <div class="label">
-                                {{form_purchase.amount.label}}
-                            </div>
-                            {{form_purchase.amount}}
-                        </div>
-                        <span class="arrow-icon">⇄</span>
-                        <div class="details-form__quantity_right">
-                            <div class="label">
-                                {{form_purchase.price.label}}
-                            </div>
-                            {{form_purchase.price}}
-                        </div>
                     </div>
                     <div class="details-form__name">
                         <div class="label">
