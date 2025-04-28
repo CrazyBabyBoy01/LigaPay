@@ -1,5 +1,6 @@
 from attr import fields
 from django import forms
+from traitlets import default
 
 from .models import (
     AccountService,
@@ -543,14 +544,15 @@ class PurchaseForm(forms.Form):
     )
     amount = forms.IntegerField(
         label="Получу",
-        required=True,
+        required=False,
+        initial=1,
         widget=forms.NumberInput(
             attrs={"class": "details-form__item", "id": "amount", "placeholder": "Введите количество"}
         ),
     )
     price = forms.DecimalField(
         label="Заплачу",
-        required=True,
+        required=False,
         widget=forms.NumberInput(
             attrs={
                 "class": "details-form__item",

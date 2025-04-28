@@ -40,13 +40,13 @@ class CreateOrderView(LoginRequiredMixin, View):
         if not form.is_valid():
             messages.error(request, "Некорректные данные!")
             return redirect("users:profile", pk=request.user.pk)
-
+        logger.info(f"Данные формы: {form.cleaned_data}")
         # Получаем данные из формы
-        amount = form.cleaned_data["amount"]
+        amount = form.cleaned_data.get("amount", 1)
         price = form.cleaned_data["price"]
         player_id = form.cleaned_data["player_id"]
         payment_method = form.cleaned_data["payment_method"]
-
+        logger.info(f"Обработано количество: {amount} шт. товара")
         try:
             logger.info("🔄 Начинаем транзакцию...")
             with transaction.atomic():  # Используем транзакцию для безопасности
@@ -65,21 +65,28 @@ class CreateOrderView(LoginRequiredMixin, View):
                 except model.DoesNotExist:
                     messages.error(request, "Товар не найден!")
                     return JsonResponse({"success": False, "message": "Товар не найден!"})
-                logger.info(f"✅ Найден товар: {product.title} (остаток: {product.quantity})")
+                logger.info(f"🔍 Проверяем, что товар с ID {product_id} существует и загружен корректно.")
+                logger.info(f"✅ Найден товар: {product.title} (остаток: {getattr(product, 'quantity', 'Не указано')})")
                 # 🔴 Проверка: достаточно ли товара на складе?
-                if amount > product.quantity:
-                    messages.error(request, "Недостаточное количество товара в наличии!")
-                    return JsonResponse({"success": False, "message": "Недостаточное количество товара в наличии!"})
+                has_quantity = hasattr(product, "quantity")
+                logger.info(f"Проверка наличия поля 'quantity': {has_quantity}")
+                if has_quantity:
+                    if amount > product.quantity:
+                        messages.error(request, "Недостаточное количество товара в наличии!")
+                        return JsonResponse({"success": False, "message": "Недостаточное количество товара в наличии!"})
+                    logger.info(
+                        f"🔴 Уменьшаем количество товара на складе: {product.quantity} → {product.quantity - amount}"
+                    )
+                    # Уменьшаем количество товара
+                    product.quantity -= amount
+                    product.save()
+                    logger.info(f"✅ Товар обновлён, остаток: {product.quantity}")
+                else:
+                    logger.info("💡 У товара нет поля 'quantity', покупка возможна только в одном экземпляре.")
 
-                # Вычисляем финальную стоимость (цена за штуку * количество)
+                # Вычисляем финальную стоимость
                 total_price = product.price * amount
                 logger.info(f"💰 Общая сумма: {total_price} руб.")
-                logger.info(f"🔎 Покупается количество: {amount}, Текущее в БД: {product.quantity}")
-                # 🔴 Уменьшаем количество товара
-                product.quantity -= amount
-                product.save()
-                logger.info(f"✅ Товар обновлён, остаток: {product.quantity}")
-                logger.info(f"🛒 Количество в заказе: {amount}")
                 # 🔴 Создаём заказ
                 order = Order.objects.create(
                     user=request.user,
