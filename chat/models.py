@@ -5,18 +5,21 @@ from django.db import models
 
 
 class ChatRoom(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    # СТАРЫЕ ПОЛЯ — временно оставляем
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
     service = GenericForeignKey("content_type", "object_id")
+
+    # НОВЫЕ ПОЛЯ — основа для общего чата
     buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="buyer_chats")
     seller = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="seller_chats")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("content_type", "object_id", "buyer", "seller")
+        constraints = [models.UniqueConstraint(fields=["buyer", "seller"], name="unique_chatroom_buyer_seller")]
 
     def __str__(self):
-        return f"Chat for {self.service} - {self.buyer} & {self.seller}"
+        return f"Chat between {self.buyer.username} & {self.seller.username}"
 
 
 class ChatMessage(models.Model):

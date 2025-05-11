@@ -91,6 +91,7 @@ class CreateOrderView(LoginRequiredMixin, View):
                 # Вычисляем финальную стоимость
                 total_price = product.price * amount
                 logger.info(f"💰 Общая сумма: {total_price} руб.")
+
                 # 🔴 Создаём заказ
                 order = Order.objects.create(
                     user=request.user,
@@ -105,8 +106,6 @@ class CreateOrderView(LoginRequiredMixin, View):
                 logger.info(f"📦 Заказ создан: ID {order.id}, сумма {total_price} руб.")
                 # ✅ Получаем или создаем чат
                 chat_room, _ = ChatRoom.objects.get_or_create(
-                    content_type=ContentType.objects.get_for_model(product),
-                    object_id=product.id,
                     buyer=request.user,
                     seller=product.seller,
                 )
@@ -161,9 +160,8 @@ class ConfirmOrderView(View):
         # Находим чат для этого заказа
         try:
             chat_room = ChatRoom.objects.get(
-                content_type=ContentType.objects.get_for_model(order.product),
-                object_id=order.object_id,
                 buyer=request.user,
+                seller=order.seller,
             )
         except ChatRoom.DoesNotExist:
             return JsonResponse({"success": True, "message": "Покупка подтверждена, но чат не найден."})

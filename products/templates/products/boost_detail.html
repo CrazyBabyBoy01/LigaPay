@@ -55,11 +55,20 @@
             </div>
 
             <div id="chat-box">
-                <h3>Общий чат</h3>
+                <h3>Чат с продавцом</h3>
                 <div id="chat-log">
-                    {% for message in messages %}
-                        <p><strong>{{ message.sender }}:</strong> {{ message.message }}</p>
-                    {% endfor %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <p>
+                                <strong>{{ message.sender.username }}:</strong>
+                                {{ message.message }}
+                                <br>
+                                <small style="color: gray;">{{ message.timestamp|date:"Y-m-d H:i" }}</small>
+                            </p>
+                        {% endfor %}
+                    {% else %}
+                        <p>Сообщений пока нет.</p>
+                    {% endif %}
                 </div>
                 <div id="order-button-container">
                     {% if pending_order %}

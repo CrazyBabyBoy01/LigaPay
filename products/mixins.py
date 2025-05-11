@@ -1,4 +1,5 @@
 import logging
+import time
 
 from chat.models import ChatMessage, ChatRoom
 from django.contrib.contenttypes.models import ContentType
@@ -118,23 +119,37 @@ class ChatMixin:
 
 
 class ServiceChatMixin:
-    def get_service_chat_messages(self, service=None):
-        user = self.request.user
-        if not user.is_authenticated:
-            print("❗ Анонимный пользователь — не загружаем чат-сообщения")
-            return []
-        if service is None:
-            service = self.get_object()
+    def get_chat_messages(self, buyer, seller):
+        room = ChatRoom.objects.filter(buyer=buyer, seller=seller).first()
 
-        content_type = ContentType.objects.get_for_model(service)
+        if room:
+            logger.info(f"Комната найдена: {room}")
+            messages = ChatMessage.objects.filter(chat_room=room).order_by("timestamp")
+        else:
+            logger.warning(f"Чат между {buyer} и {seller} не найден.")
+            messages = []
 
-        try:
-            chat_room = ChatRoom.objects.get(content_type=content_type, object_id=service.id, buyer=user)
-            return chat_room.messages.all().order_by("timestamp")
-        except ChatRoom.DoesNotExist:
-            return []  # Возвращаем пустой список, если комнаты нет
+        return messages
 
     def get_context_data(self, **kwargs):
+        logger.info("Получаем контекст для чата между покупателем и продавцом.")
+
         context = super().get_context_data(**kwargs)
-        context["messages"] = self.get_service_chat_messages()  # Теперь `service` передается автоматически
+
+        service = getattr(self, "object", None)
+        buyer = self.request.user
+
+        if buyer.is_authenticated and service:
+            seller = getattr(service, "seller", None)
+
+            if seller:
+                context["messages"] = self.get_chat_messages(buyer, seller)
+            else:
+                logger.warning("Продавец не найден.")
+                context["messages"] = []
+        else:
+            logger.warning("Пользователь не аутентифицирован или объект услуги не найден.")
+            context["messages"] = []
+
+        logger.info(f"Контекст содержит {len(context['messages'])} сообщений.")
         return context
