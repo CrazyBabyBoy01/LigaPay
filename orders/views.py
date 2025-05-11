@@ -1,5 +1,8 @@
 import logging
 
+from channels.consumer import async_to_sync
+from channels.layers import get_channel_layer
+from chat.models import ChatRoom
 from common.views import ContextMixin
 from django.apps import apps
 from django.contrib import messages
@@ -7,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.http import JsonResponse
+from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
@@ -99,13 +103,36 @@ class CreateOrderView(LoginRequiredMixin, View):
                 )
                 logger.info(f"✅ Заказ создан: ID {order.id}, Количество: {order.amount}")
                 logger.info(f"📦 Заказ создан: ID {order.id}, сумма {total_price} руб.")
-                # 🔴 Пытаемся оплатить
-                if order.process_payment():
-                    order.save()
-                    messages.success(request, f"Вы купили {amount} шт. товара! 🎉")
-                    logger.info("✅ Оплата прошла успешно. Баланс обновлён.")
-                    return JsonResponse({"success": True, "message": f"Вы купили {amount} шт. товара!"})
-                raise ValueError("Недостаточно средств!")
+                # ✅ Получаем или создаем чат
+                chat_room, _ = ChatRoom.objects.get_or_create(
+                    content_type=ContentType.objects.get_for_model(product),
+                    object_id=product.id,
+                    buyer=request.user,
+                    seller=product.seller,
+                )
+
+                # ✅ Отправляем WebSocket-сообщение о создании заказа
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f"chat_{chat_room.id}",
+                    {
+                        "type": "order_created",
+                        "order_id": order.id,
+                        "csrf_token": get_token(request),
+                    },
+                )
+                logger.info(f"📤 WebSocket: отправлено событие order_created в chat_{chat_room.id}")
+
+                messages.success(request, "Заказ создан! Подтвердите покупку в чате. ✅")
+                logger.info(f"✅ Заказ создан без оплаты. ID заказа: {order.id}")
+                return JsonResponse({"success": True, "message": "Заказ создан! Подтвердите покупку в чате."})
+
+                # if order.process_payment():
+                #     order.save()
+                #     messages.success(request, f"Вы купили {amount} шт. товара! 🎉")
+                #     logger.info("✅ Оплата прошла успешно. Баланс обновлён.")
+                #     return JsonResponse({"success": True, "message": f"Вы купили {amount} шт. товара!"})
+                # raise ValueError("Недостаточно средств!")
 
         except ValueError as e:
             logger.error(f"❌ Ошибка: {e}")
@@ -113,6 +140,46 @@ class CreateOrderView(LoginRequiredMixin, View):
         except Exception as e:
             logger.error(f"❌ Непредвиденная ошибка: {e}")
             return JsonResponse({"success": False, "message": "Произошла ошибка при оформлении заказа!"})
+
+
+class ConfirmOrderView(View):
+    """Подтверждение оплаты заказа"""
+
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        if order.status != "pending":
+            return JsonResponse({"success": False, "message": "Этот заказ уже подтвержден или отменен."})
+
+        if not order.process_payment():
+            return JsonResponse({"success": False, "message": "Ошибка оплаты! Недостаточно средств."})
+
+        # Успешная оплата
+        order.status = "paid"
+        order.save()
+
+        # Находим чат для этого заказа
+        try:
+            chat_room = ChatRoom.objects.get(
+                content_type=ContentType.objects.get_for_model(order.product),
+                object_id=order.object_id,
+                buyer=request.user,
+            )
+        except ChatRoom.DoesNotExist:
+            return JsonResponse({"success": True, "message": "Покупка подтверждена, но чат не найден."})
+
+        # WebSocket: отправляем событие
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"chat_{chat_room.id}",
+            {
+                "type": "order_confirmed",
+                "message": f"🎉 Заказ #{order.id} успешно подтверждён и оплачен!",
+                "order_id": order.id,
+            },
+        )
+
+        return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!"})
 
 
 class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
