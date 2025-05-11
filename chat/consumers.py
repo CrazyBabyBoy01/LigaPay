@@ -3,6 +3,7 @@ import logging
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from django.apps import apps
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.utils.timezone import now
@@ -214,7 +215,7 @@ class ChatConsumer(WebsocketConsumer):
             service_type = service_type_map.get(service_type, service_type)
 
             try:
-                service_model = ContentType.objects.get(model=service_type).model_class()
+                service_model = apps.get_model("products", service_type)
                 service = service_model.objects.get(id=service_id)
                 seller = service.seller  # Убедись, что у услуги есть поле seller
             except Exception as e:
@@ -224,8 +225,6 @@ class ChatConsumer(WebsocketConsumer):
 
             # Создаем или получаем чат-комнату
             self.chat_room, created = ChatRoom.objects.get_or_create(
-                content_type=ContentType.objects.get_for_model(service),
-                object_id=service.id,
                 buyer=buyer,
                 seller=seller,
             )
