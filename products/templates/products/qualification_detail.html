@@ -57,6 +57,14 @@
                         <p><strong>{{ message.sender }}:</strong> {{ message.message }}</p>
                     {% endfor %}
                 </div>
+                <div id="order-button-container">
+                    {% if pending_order %}
+                        <form class="confirm-order-form" action="{% url 'orders:confirm_order' pending_order.id %}" method="post" style="margin-top: 10px;">
+                            {% csrf_token %}
+                            <button type="submit" class="header__btn">Подтвердить покупку</button>
+                        </form>
+                    {% endif %}
+                </div>
                 <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
             </div>
             <div class="details__chatt"></div>

@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function() {
         amountInput.addEventListener("input", function() {
             let amount = parseInt(amountInput.value) || 0;
             priceInput.value = (amount * itemPrice).toFixed(2); // Умножаем на количество и округляем до 2 знаков
-            
+
         });
     }
 });
@@ -250,6 +250,68 @@ chatSocket.onmessage = function(e) {
         window.location.href = "/users/autorization/";  // Перенаправляем на страницу авторизации
         return;
     }
+    console.log("Received message:", data);
+
+
+    // ✅ Обработка спец-события: создан заказ
+    if (data.type === "order_created") {
+        console.log("Order created event received:", data);
+        const container = document.querySelector("#order-button-container");
+        if (container) {
+            // Вставляем кнопку
+            container.innerHTML = `
+                <button id="confirm-purchase-btn" class="header__btn" style="margin-top: 10px;">
+                    Подтвердить покупку
+                </button>
+            `;
+
+            // Навешиваем обработчик
+            const confirmBtn = document.getElementById("confirm-purchase-btn");
+            if (confirmBtn) {
+                confirmBtn.addEventListener("click", function () {
+                    fetch(`/orders/confirm/${data.order_id}/`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCookie("csrftoken"),
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.success) {
+                            alert(json.message);
+                        } else {
+                            alert("Ошибка: " + json.message);
+                        }
+                    });
+                });
+            }
+        } else {
+            console.error("Container for order button not found!");
+        }
+        return;
+    }
+
+     // Обработка события подтверждения заказа
+     if (data.type === "order_confirmed") {
+        console.log("Order confirmed event received:", data);  // Логируем событие о подтверждении
+
+        // Скрыть кнопку после подтверждения
+        const container = document.querySelector("#order-button-container");
+        if (container) {
+            container.innerHTML = "";  // Удаляем кнопку
+        }
+
+        // Добавляем сообщение в чат
+        const chatLog = document.querySelector('#chat-log');
+        const messageElement = document.createElement('p');
+        messageElement.innerHTML = `<strong>Система:</strong> ${data.message}`;
+        chatLog.appendChild(messageElement);
+
+        // Прокрутка вниз, чтобы показывать новые сообщения
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
     // Добавление нового сообщения в #chat-log
     const chatLog = document.querySelector('#chat-log');
     const messageElement = document.createElement('p');
@@ -278,5 +340,21 @@ document.querySelector('#chat-message-input').onkeyup = function(e) {
         messageInputDom.value = '';  // Очищаем поле ввода
     }
 };
+
+// Вспомогательная функцию для CSRF:
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.startsWith(name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
 console.log("JS загружен!");

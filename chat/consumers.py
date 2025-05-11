@@ -202,8 +202,14 @@ class ChatConsumer(WebsocketConsumer):
 
             service_type_map = {
                 "riot-points": "rpservice",
-                "battlepass": "battlepassservice",
-                "boost": "boostservice",
+                "battle-pass": "battlepassservice",
+                "boosting": "boostservice",
+                "qualification": "qualificationservice",
+                "other": "otherservice",
+                "services": "generalservice",
+                "donation": "donationservice",
+                "training": "trainingservice",
+                "accounts": "accountservice",
             }
             service_type = service_type_map.get(service_type, service_type)
 
@@ -278,3 +284,27 @@ class ChatConsumer(WebsocketConsumer):
 
     def chat_message(self, event):
         self.send(text_data=json.dumps(event))
+
+    def order_created(self, event):
+        logger.info(f"📨 Получено событие order_created: {event}")
+        self.send(
+            text_data=json.dumps(
+                {
+                    "type": "order_created",
+                    "order_id": event["order_id"],
+                    "csrf_token": event["csrf_token"],
+                }
+            )
+        )
+
+    def order_confirmed(self, event):
+        logger.info(f"📨 Получено событие order_confirmed: {event}")
+        self.send(
+            text_data=json.dumps(
+                {
+                    "type": "order_confirmed",
+                    "order_id": event["order_id"],
+                    "message": event["message"],
+                }
+            )
+        )

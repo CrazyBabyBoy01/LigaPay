@@ -7,12 +7,14 @@ from venv import logger
 from chat.models import ChatMessage
 from common.views import ContextMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView, TemplateView
+from orders.models import Order
 
 from products.filters import (
     AccountFilter,
@@ -113,7 +115,7 @@ class AccountServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
+            user = user._wrapped if hasattr(user, "_wrapped") else user  # noqa: SLF001
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -164,13 +166,23 @@ class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, De
         kwargs["slug"] = "accounts"  # или динамически передавайте нужный слаг
 
         context = super().get_context_data(**kwargs)
-        context["form"] = AccountServiceForm(instance=self.object)
+        service = self.get_object()
+        context["form"] = AccountServiceForm(instance=service)
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         service = self.get_object()
 
         # Проверка, что пользователь — продавец
@@ -210,7 +222,7 @@ class RPServiceListView(ExcludeOwnServicesMixin, CategoryMixin, ChatMixin, Pagin
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
+            user = user._wrapped if hasattr(user, "_wrapped") else user  # noqa: SLF001
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -262,9 +274,18 @@ class RPServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailV
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
         service = self.get_object()
 
         # Проверка, что пользователь — продавец
@@ -308,7 +329,6 @@ class BoostServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -359,6 +379,15 @@ class BoostServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, Det
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
@@ -401,7 +430,6 @@ class TrainingServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -452,6 +480,15 @@ class TrainingServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, 
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
@@ -496,7 +533,6 @@ class BattlePassServiceListView(
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -547,6 +583,15 @@ class BattlePassServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
@@ -588,7 +633,6 @@ class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -640,6 +684,15 @@ class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, 
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
@@ -681,7 +734,6 @@ class GeneralServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -732,6 +784,15 @@ class GeneralServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, D
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
@@ -774,7 +835,6 @@ class OtherServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -825,6 +885,15 @@ class OtherServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, Det
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):
@@ -869,7 +938,6 @@ class QualificationServiceListView(
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
-            user = user._wrapped if hasattr(user, "_wrapped") else user
             print(f"🔐 Пользователь авторизован — исключаем его карточки: {user}")
             queryset = queryset.exclude(seller=user)
         else:
@@ -920,6 +988,15 @@ class QualificationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMi
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        #  Получаем заказ с этим товаром и статусом "pending"
+        pending_order = Order.objects.filter(
+            content_type=ContentType.objects.get_for_model(service),
+            object_id=service.id,
+            user=self.request.user,
+            status="pending",
+        ).first()
+
+        context["pending_order"] = pending_order
         return context
 
     def post(self, request, *args, **kwargs):

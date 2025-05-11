@@ -2,7 +2,9 @@ from cProfile import label
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
+from orders.models import Order
 
 
 # Create your models here.
@@ -43,6 +45,7 @@ class BaseService(models.Model):
     is_active = models.BooleanField(
         default=True, verbose_name="Активное", help_text="Пометить, если предложение активно"
     )
+    orders = GenericRelation(Order)  # Добавляем связь с заказами через GenericForeignKey
     search_description = models.TextField(
         verbose_name="Описание для поиска", blank=True, help_text="Введите текст, который будет использован для поиска"
     )
@@ -125,6 +128,7 @@ class RPService(ServerBasedService, AutoDeliveryFilter):
     )
     quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество валюты в наличии")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="rp_services", default=1)
+
     class Meta:
         verbose_name = "Продажа RP"
         verbose_name_plural = "Продажа RP"
@@ -174,7 +178,9 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     account_level = models.PositiveIntegerField(verbose_name="Уровень аккаунта", default=1)
     character_count = models.PositiveIntegerField(verbose_name="Количество персонажей", default=1)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="account_services", default=2)
-    quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество аккаунтов в наличии", default=1)
+    quantity = models.PositiveIntegerField(
+        verbose_name="Количество", help_text="Количество аккаунтов в наличии", default=1
+    )
 
     class Meta:
         verbose_name = "Продажа аккаунтов"
@@ -308,7 +314,9 @@ class QualificationService(ServerBasedService, BaseService):
     Модель услуги квалификации.
     Наследуется от ServerBasedService.
     """
+
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="qualification_services", default=9)
+
     class Meta:
         verbose_name = "Услуга квалификации"
         verbose_name_plural = "Услуги квалификации"
@@ -339,6 +347,7 @@ class TrainingService(BaseService):
         default="default_value",
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="training_services", default=4)
+
     class Meta:
         verbose_name = "Услуга обучения"
         verbose_name_plural = "Услуги обучения"
@@ -367,6 +376,7 @@ class BattlePassService(ServerBasedService):
     )
     quantity = models.PositiveIntegerField(verbose_name="Количество", help_text="Количество валюты в наличии")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="battlepass_services", default=5)
+
     class Meta:
         verbose_name = "Продажа боевого пропуска"
         verbose_name_plural = "Продажа боевых пропусков"
@@ -396,6 +406,7 @@ class OtherService(BaseService, AutoDeliveryFilter):
         default=1, verbose_name="Количество", help_text="Количество товара/услуги в наличии"
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="other_services", default=8)
+
     class Meta:
         verbose_name = "Прочее"
         verbose_name_plural = "Прочее"
