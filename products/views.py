@@ -4,6 +4,7 @@ from pyexpat import model
 from urllib import request
 from venv import logger
 
+from chat.mixin import GroupedMessagesMixin
 from chat.models import ChatMessage
 from common.views import ContextMixin
 from django.contrib.auth.decorators import login_required
@@ -149,7 +150,7 @@ class AccountServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
         return self.get(request, *args, **kwargs)  # В данном случае, снова вызываем get и передаем форму с ошибками
 
 
-class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     title = "Покупка Аккунта"
     model = AccountService
     template_name = "products/account_detail.html"  # Путь к шаблону
@@ -171,12 +172,16 @@ class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, De
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -216,8 +221,8 @@ class RPServiceListView(ExcludeOwnServicesMixin, CategoryMixin, ChatMixin, Pagin
         print("🔍 Запрашиваем queryset для RPServiceListView")
         # queryset = self.model.objects.all().order_by("id")
 
-        # Получаем все услуги (карточки) для текущего пользователя
-        queryset = self.model.objects.all().order_by("id")
+        # Получаем все услуги (карточки) для текущего пользователя и не равно 0
+        queryset = self.model.objects.filter(quantity__gt=0).order_by("id")
 
         user = self.request.user
         if user.is_authenticated:
@@ -251,7 +256,7 @@ class RPServiceListView(ExcludeOwnServicesMixin, CategoryMixin, ChatMixin, Pagin
             return redirect("products:riot-points")  # Здесь можно перенаправить на страницу успеха
 
 
-class RPServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class RPServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (RPService)."""
 
     title = "Покупка RP"
@@ -274,12 +279,16 @@ class RPServiceDetailView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailV
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -356,7 +365,7 @@ class BoostServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
             return redirect("products:boost")  # Здесь можно перенаправить на страницу успеха
 
 
-class BoostServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class BoostServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (RPService)."""
 
     title = "Буст аккаунта"
@@ -380,12 +389,16 @@ class BoostServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, Det
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -457,7 +470,7 @@ class TrainingServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
             return redirect("products:training")  # Здесь можно перенаправить на страницу успеха
 
 
-class TrainingServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class TrainingServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (TrainingService)."""
 
     title = "Обучение"
@@ -481,12 +494,16 @@ class TrainingServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, 
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -560,7 +577,7 @@ class BattlePassServiceListView(
             return redirect("products:battlepass")  # Здесь можно перенаправить на страницу успеха
 
 
-class BattlePassServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class BattlePassServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (BattlePassService)."""
 
     title = "Обучение"
@@ -584,12 +601,16 @@ class BattlePassServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -661,7 +682,7 @@ class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
         return redirect("products:donation")
 
 
-class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги DonationService)."""
 
     title = "Обучение"
@@ -685,12 +706,16 @@ class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, 
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -761,7 +786,7 @@ class GeneralServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
             return redirect("products:services")  # Здесь можно перенаправить на страницу успеха
 
 
-class GeneralServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class GeneralServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (BattlePassService)."""
 
     title = "Обучение"
@@ -785,12 +810,16 @@ class GeneralServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, D
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -862,7 +891,7 @@ class OtherServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, Con
             return redirect("products:other")  # Здесь можно перенаправить на страницу успеха
 
 
-class OtherServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class OtherServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (OtherService)."""
 
     title = "Обучение"
@@ -886,12 +915,16 @@ class OtherServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, Det
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context
@@ -965,7 +998,7 @@ class QualificationServiceListView(
             return redirect("products:qualification")  # Здесь можно перенаправить на страницу успеха
 
 
-class QualificationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMixin, DetailView):
+class QualificationServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView):
     """Представление для отображения деталей услуги (BattlePassService)."""
 
     title = "Обучение"
@@ -989,12 +1022,16 @@ class QualificationServiceDetailsView(CategoryMixin, ServiceChatMixin, ContextMi
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
         #  Получаем заказ с этим товаром и статусом "pending"
-        pending_order = Order.objects.filter(
-            content_type=ContentType.objects.get_for_model(service),
-            object_id=service.id,
-            user=self.request.user,
-            status="pending",
-        ).first()
+        # Только для авторизованных пользователей — проверка заказов
+        if self.request.user.is_authenticated:
+            pending_order = Order.objects.filter(
+                content_type=ContentType.objects.get_for_model(service),
+                object_id=service.id,
+                user=self.request.user,
+                status="pending",
+            ).first()
+        else:
+            pending_order = None
 
         context["pending_order"] = pending_order
         return context

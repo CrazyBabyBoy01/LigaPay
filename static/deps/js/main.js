@@ -211,9 +211,10 @@ function closeSocket() {
 }
 
 
-
+const chatIdElement = document.querySelector("#chat-id");
 const serviceTypeElement = document.querySelector("#service-type");
 const serviceIdElement = document.querySelector("#service-id");
+
 
 let chatSocket;
 let roomName;
@@ -223,123 +224,223 @@ let roomName;
 closeSocket();  // Закрываем старое соединение, если оно есть
 
 // Проверяем, находимся ли мы в общем чате или в чате услуги
-if (serviceTypeElement && serviceIdElement) {
+if (chatIdElement &&
+    chatIdElement.dataset.chatId) {
+    // 🔹 Подключение по chat_id (диалог)
+    const chatId = chatIdElement.dataset.chatId;
+    roomName = `dialogs/${chatId}`;
+} else if (serviceTypeElement && serviceIdElement) {
+    // 🔹 Подключение по услуге
     const serviceType = serviceTypeElement.dataset.type;
     const serviceId = serviceIdElement.dataset.id;
     roomName = `${serviceType}/${serviceId}`;
 } else {
-    roomName = "global_chat";  // Это общий чат
+    // 🔹 Общий чат
+    roomName = "global_chat";
 }
+
 
 // Формируем URL для WebSocket
 chatSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomName}/`);
-// Подключаемся к WebSocket на текущем сайте (должен быть путь к чату)
-// const chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/chat/global_chat/');
 
-// Обработка входящих сообщений
-// chatSocket.onmessage = function(e) {
-//     const data = JSON.parse(e.data);
-//     document.querySelector('#chat-log').value += (data.message + '\n');  // Добавляем новое сообщение в чат
-// };
-chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
+document.addEventListener("DOMContentLoaded", function () {
+    const chatLog = document.querySelector('#chat-log');
+    const currentUser = document.querySelector("#current-user")?.dataset.username || "";
 
-    if (data.error) {
-        // Если пришла ошибка (пользователь не авторизован), перенаправляем на страницу авторизации
-        alert(data.error);
-        window.location.href = "/users/autorization/";  // Перенаправляем на страницу авторизации
-        return;
-    }
-    console.log("Received message:", data);
-
-
-    // ✅ Обработка спец-события: создан заказ
-    if (data.type === "order_created") {
-        console.log("Order created event received:", data);
-        const container = document.querySelector("#order-button-container");
-        if (container) {
-            // Вставляем кнопку
-            container.innerHTML = `
-                <button id="confirm-purchase-btn" class="header__btn" style="margin-top: 10px;">
-                    Подтвердить покупку
-                </button>
-            `;
-
-            // Навешиваем обработчик
-            const confirmBtn = document.getElementById("confirm-purchase-btn");
-            if (confirmBtn) {
-                confirmBtn.addEventListener("click", function () {
-                    fetch(`/orders/confirm/${data.order_id}/`, {
-                        method: "POST",
-                        headers: {
-                            "X-CSRFToken": getCookie("csrftoken"),
-                            "Content-Type": "application/json"
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(json => {
-                        if (json.success) {
-                            alert(json.message);
-                        } else {
-                            alert("Ошибка: " + json.message);
-                        }
-                    });
-                });
-            }
-        } else {
-            console.error("Container for order button not found!");
-        }
-        return;
-    }
-
-     // Обработка события подтверждения заказа
-     if (data.type === "order_confirmed") {
-        console.log("Order confirmed event received:", data);  // Логируем событие о подтверждении
-
-        // Скрыть кнопку после подтверждения
-        const container = document.querySelector("#order-button-container");
-        if (container) {
-            container.innerHTML = "";  // Удаляем кнопку
-        }
-
-        // Добавляем сообщение в чат
-        const chatLog = document.querySelector('#chat-log');
-        const messageElement = document.createElement('p');
-        messageElement.innerHTML = `<strong>Система:</strong> ${data.message}`;
-        chatLog.appendChild(messageElement);
-
-        // Прокрутка вниз, чтобы показывать новые сообщения
+    if (chatLog) {
         chatLog.scrollTop = chatLog.scrollHeight;
     }
 
-    // Добавление нового сообщения в #chat-log
-    const chatLog = document.querySelector('#chat-log');
-    const messageElement = document.createElement('p');
-    messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
-    chatLog.appendChild(messageElement);
-    // Ограничиваем количество сообщений, например, до 10 последних
-    const maxMessages = 4;
-    const messages = chatLog.querySelectorAll('p');
-    if (messages.length > maxMessages) {
-        chatLog.removeChild(messages[0]);  // Удаляем старое сообщение
-    }
-    // Прокрутка вниз, чтобы показывать новые сообщения
-    chatLog.scrollTop = chatLog.scrollHeight;
-};
-// Обработка закрытия соединения
-chatSocket.onclose = function(e) {
-    console.error('Chat socket closed unexpectedly');
-};
+    // Навешиваем обработчик на форму, если она уже есть
+    setupConfirmHandler();
 
-// Отправка сообщений по нажатию Enter
-document.querySelector('#chat-message-input').onkeyup = function(e) {
-    if (e.keyCode === 13) {  // Нажат Enter
-        const messageInputDom = document.querySelector('#chat-message-input');
-        const message = messageInputDom.value;
-        chatSocket.send(JSON.stringify({'message': message}));  // Отправляем сообщение на сервер
-        messageInputDom.value = '';  // Очищаем поле ввода
+    // Обработка входящих сообщений
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+
+        if (data.error) {
+            alert(data.error);
+            window.location.href = "/users/autorization/";
+            return;
+        }
+
+        console.log("Received message:", data);
+
+        // ✅ Новый заказ — показываем кнопку (если её ещё нет)
+        if (data.type === "order_created") {
+            const container = document.querySelector("#order-button-container");
+            if (container && !document.getElementById("confirm-form")) {
+                container.innerHTML = `
+                    <form id="confirm-form" method="post" style="margin-top: 10px;">
+                        <button type="submit" id="confirm-purchase-btn" class="header__btn" data-order-id="${data.order_id}">
+                            Подтвердить покупку
+                        </button>
+                    </form>
+                `;
+                setupConfirmHandler();
+            }
+            return;
+        }
+
+        // ✅ Подтверждение заказа — убираем кнопку
+        if (data.type === "order_confirmed") {
+            const container = document.querySelector("#order-button-container");
+            if (container) {
+                container.innerHTML = "";
+            }
+
+            const messageElement = document.createElement('p');
+            messageElement.innerHTML = `<strong>Система:</strong> ${data.message}`;
+            chatLog.appendChild(messageElement);
+
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Добавление обычного сообщения
+        const messageElement = document.createElement('p');
+        messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+        chatLog.appendChild(messageElement);
+
+        appendMessage({
+            senderUsername: data.sender,
+            messageText: data.message,
+            timestamp: data.timestamp,
+            currentUser: currentUser,
+            chatLogElement: chatLog
+        });
+
+        const maxMessages = 50;
+        const messages = chatLog.querySelectorAll('.message');
+        if (messages.length > maxMessages) {
+            chatLog.removeChild(messages[0]);
+        }
+    };
+
+    chatSocket.onclose = function () {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    // Отправка сообщений по Enter
+    document.querySelector('#chat-message-input').onkeyup = function (e) {
+        if (e.keyCode === 13) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            if (message.trim() !== "") {
+                chatSocket.send(JSON.stringify({ 'message': message }));
+                messageInputDom.value = '';
+            }
+        }
+    };
+
+    // ✅ Функция навешивания обработчика на форму подтверждения
+    function setupConfirmHandler() {
+        const confirmForm = document.getElementById("confirm-form");
+        if (confirmForm) {
+            confirmForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const orderId = confirmForm.querySelector("#confirm-purchase-btn").dataset.orderId;
+
+                fetch(`/orders/confirm/${orderId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert(json.message);
+                        if (json.reload) {
+                            location.reload();
+                        }
+                    } else {
+                        alert("Ошибка: " + json.message);
+                    }
+                })
+                .catch(err => {
+                    console.error("Ошибка при подтверждении заказа:", err);
+                });
+            });
+        }
     }
-};
+});
+
+
+
+// Функция добавления сообщения в DOM
+function appendMessage({ senderUsername, messageText, timestamp, currentUser, chatLogElement }) {
+    const date = timestamp ? new Date(timestamp) : new Date();
+    const isoTimestamp = date.toISOString();
+    const formattedDate = date.toLocaleString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    const messages = chatLogElement.querySelectorAll('.message');
+    const lastMessageGroup = messages[messages.length - 1];
+
+    const isCurrentUser = senderUsername === currentUser;
+
+    let canAppend = false;
+    if (lastMessageGroup && lastMessageGroup.classList.contains(isCurrentUser ? 'me' : 'them')) {
+        const lastSender = lastMessageGroup.querySelector('.sender-name')?.textContent;
+        const lastTimestampRaw = lastMessageGroup.dataset.timestamp;
+
+        if (lastSender === senderUsername && lastTimestampRaw) {
+            const lastTimestamp = new Date(lastTimestampRaw);
+            const diffInMs = date - lastTimestamp;
+            const diffInMinutes = diffInMs / (60 * 1000);
+
+            if (diffInMinutes <= 1) {
+                canAppend = true;
+            }
+        }
+    }
+
+    if (canAppend) {
+        messageText.split('\n').forEach(line => {
+            const textDiv = document.createElement("div");
+            textDiv.classList.add("text");
+            textDiv.textContent = line;
+            lastMessageGroup.appendChild(textDiv);
+        });
+    } else {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("message", isCurrentUser ? "me" : "them");
+        messageDiv.dataset.timestamp = isoTimestamp; // 👈 сохраняем точное ISO-время
+
+        const senderDiv = document.createElement("div");
+        senderDiv.classList.add("sender");
+
+        const senderName = document.createElement("strong");
+        senderName.classList.add("sender-name");
+        senderName.textContent = senderUsername;
+
+        const timeSpan = document.createElement("span");
+        timeSpan.classList.add("timestamp");
+        timeSpan.textContent = formattedDate;
+
+        senderDiv.appendChild(senderName);
+        senderDiv.appendChild(timeSpan);
+        messageDiv.appendChild(senderDiv);
+
+        messageText.split('\n').forEach(line => {
+            const textDiv = document.createElement("div");
+            textDiv.classList.add("text");
+            textDiv.textContent = line;
+            messageDiv.appendChild(textDiv);
+        });
+
+        chatLogElement.appendChild(messageDiv);
+    }
+
+    chatLogElement.scrollTop = chatLogElement.scrollHeight;
+}
+
 
 // Вспомогательная функцию для CSRF:
 function getCookie(name) {
@@ -357,4 +458,24 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function updateUnreadCount() {
+    fetch('/chat/unread-count/')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.querySelector('.profile-badge');
+            if (data.unread_count > 0) {
+                if (badge) {
+                    badge.textContent = data.unread_count;
+                } else {
+                    const imgDiv = document.querySelector('.profile__img');
+                    const span = document.createElement('span');
+                    span.classList.add('profile-badge');
+                    span.textContent = data.unread_count;
+                    imgDiv.appendChild(span);
+                }
+            } else {
+                if (badge) badge.remove();
+            }
+        });
+}
 console.log("JS загружен!");

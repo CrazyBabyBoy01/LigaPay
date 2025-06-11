@@ -1,0 +1,106 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="chat-wrapper">
+        <div class="chat-sidebar">
+            <h2>Сообщения</h2>
+            <ul class="chat-list">
+                {% for room in chat_rooms %}
+                    <li class="{% if chat and room.id == chat.id %}active{% endif %}">
+                        <a href="{% url 'chat:chat_dialog_detail' chat_id=room.id %}">
+                            <div class="avatar">
+                            <img src="{% static 'deps/images/profile.png' %}" alt="Avatar">
+                            </div>
+                            <div class="chat-info">
+                                <div class="chat-user">
+                                    {% if user == room.buyer %}
+                                        {{ room.seller.username }}
+                                    {% else %}
+                                        {{ room.buyer.username }}
+                                    {% endif %}
+                                    <span class="chat-date">
+                                    {{ room.last_message_time|date:"d.m" }}
+                                    </span>
+                                </div>
+                                <div class="chat-last-message">
+                                    {{ room.last_message_text|default:"Сообщений нет" }}
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                {% empty %}
+                    <li>Нет активных чатов.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="chat-content">
+            {% if chat %}
+                <div class="chat-header">
+                    <div class="avatar">
+                        <img src="{% static 'deps/images/profile.png' %}" alt="Avatar">
+                    </div>
+                    <div>
+                        <div class="chat-username">
+                            {% if user == chat.buyer %}
+                                {{ chat.seller.username }}
+                            {% else %}
+                                {{ chat.buyer.username }}
+                            {% endif %}
+                        </div>
+                        <div class="chat-status">
+                            {% if interlocutor.is_online %}
+                                <span style="color: green;">Онлайн</span>
+                            {% else %}
+                                <span style="color: gray;">Оффлайн</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-box" id="chat-log">
+                    {% for group in grouped_messages %}
+                        <div class="message {% if group.sender == user %}me{% else %}them{% endif %}">
+                            <div class="sender">
+                                <strong class="sender-name">{{ group.sender.username }}</strong>
+                                <span class="timestamp">{{ group.timestamp|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            {% for msg in group.messages %}
+                                <div class="text">{{ msg }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <p style="color: red;">pending_order: {{ pending_order }}</p>
+                <div id="order-button-container">
+                    {% if pending_order %}
+                        <form id="confirm-form" method="post" style="margin-top: 10px;">
+                            {% csrf_token %}
+                            <button
+                                type="submit"
+                                id="confirm-purchase-btn"
+                                class="header__btn"
+                                data-order-id="{{ pending_order.id }}"
+                            >
+                                Подтвердить покупку
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+
+                <div class="chat-input">
+                    <input id="chat-message-input" type="text" placeholder="Написать..." />
+                </div>
+            {% else %}
+                <h2>Выберите чат для общения</h2>
+            {% endif %}
+        </div>
+    </div>
+    <div id="current-user" data-user-id="{{ user.id }}"></div>
+    <div id="chat-data"
+        data-chat-id="{{ chat_id }}"
+        buyer="{{ buyer }}"
+        seller="{{ seller }}">
+
+    </div>
+    <div id="chat-id" data-chat-id="{{ chat.id }}"></div>
+{% endblock content %}

@@ -143,13 +143,20 @@ class ServiceChatMixin:
             seller = getattr(service, "seller", None)
 
             if seller:
-                context["messages"] = self.get_chat_messages(buyer, seller)
+                messages = self.get_chat_messages(buyer, seller)
+
+                # 👉 группируем сообщения, если есть миксин
+                if hasattr(self, "group_messages"):
+                    context["grouped_messages"] = self.group_messages(messages)
+                else:
+                    context["grouped_messages"] = messages
             else:
                 logger.warning("Продавец не найден.")
                 context["messages"] = []
         else:
             logger.warning("Пользователь не аутентифицирован или объект услуги не найден.")
+            context["grouped_messages"] = []
             context["messages"] = []
 
-        logger.info(f"Контекст содержит {len(context['messages'])} сообщений.")
+        logger.info(f"Контекст содержит {len(context['grouped_messages'])} сообщений.")
         return context
