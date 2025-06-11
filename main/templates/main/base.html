@@ -54,6 +54,9 @@
               <a href="#" class="header__list-item">
                 <div class="profile__img">
                   <img width="40" height="40" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
+                  {% if unread_message_count > 0 %}
+                    <span class="profile-badge">{{ unread_message_count }}</span>
+                  {% endif %}
                 </div>
                 <span class="caret"></span>
               </a>
@@ -65,7 +68,12 @@
                   <a href="{% url "wallet:wallet_deposit" %}">Баланс: {{ request.user.wallet.balance }} ₽</a>
                 </li>
                 <li>
-                  <a href="#">Сообщения</a>
+                  <a href="{% url 'chat:chat_dialogs' %}" class="nav-link">
+                      Сообщения
+                      {% if unread_message_count > 0 %}
+                          <span class="badge">{{ unread_message_count }}</span>
+                      {% endif %}
+                  </a>
                 </li>
                 <li>
                   <a href="#">Финансы</a>
@@ -98,6 +106,6 @@
 
 
   <script src="{% static "deps/js/main.js" %}"></script>
-
+<div id="current-user" data-username="{{ user.username }}"></div>
 </body>
 </html>

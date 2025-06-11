@@ -183,12 +183,35 @@ logger = logging.getLogger(__name__)  # Логгер для отладки
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         # Получаем параметры из URL
-        service_type = self.scope["url_route"]["kwargs"].get("service_type")
-        service_id = self.scope["url_route"]["kwargs"].get("service_id")
+        route_kwargs = self.scope["url_route"]["kwargs"]
+        chat_id = route_kwargs.get("chat_id")
+        service_type = route_kwargs.get("service_type")
+        service_id = route_kwargs.get("service_id")
 
-        logger.info(f"🔄 Подключение к WebSocket: service_type={service_type}, service_id={service_id}")
+        logger.info(
+            f"🔄 Подключение к WebSocket: chat_id={chat_id}, service_type={service_type}, service_id={service_id}"
+        )
+        user = self.scope["user"]
+        if chat_id:
+            try:
+                self.chat_room = ChatRoom.objects.get(id=chat_id)
+                self.buyer = self.chat_room.buyer
+                self.seller = self.chat_room.seller
 
-        if service_type == "global_chat" or (service_type is None and service_id is None):
+                # Проверка, что текущий пользователь — участник
+                if user != self.buyer and user != self.seller:
+                    logger.warning("❌ Пользователь не является участником чата")
+                    self.close()
+                    return
+
+                self.room_name = f"private_chat_{chat_id}"
+                self.room_group_name = f"chat_{chat_id}"
+            except ChatRoom.DoesNotExist:
+                logger.error(f"❌ Чат с ID {chat_id} не найден!")
+                self.close()
+                return
+
+        elif service_type == "global_chat" or (service_type is None and service_id is None):
             # 🟢 Общий чат
             self.room_name = "global_chat"
             self.room_group_name = "chat_global_chat"
@@ -222,6 +245,7 @@ class ChatConsumer(WebsocketConsumer):
                 logger.error(f"❌ Ошибка поиска услуги: {e}")
                 self.close()
                 return
+            logger.info(f"🧾 Попытка создать или получить чат: buyer={buyer.username}, seller={seller.username}")
 
             # Создаем или получаем чат-комнату
             self.chat_room, created = ChatRoom.objects.get_or_create(

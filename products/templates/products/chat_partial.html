@@ -1,0 +1,46 @@
+<div id="chat-box">
+    <h3>Чат с продавцом</h3>
+    <div id="chat-log">
+        {% if grouped_messages %}
+            {% for group in grouped_messages %}
+                <div class="message">
+                    <div class="sender">
+                        <strong class="sender-name">{{ group.sender.username }}</strong>
+                        <span class="timestamp">{{ group.timestamp|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    {% for msg in group.messages %}
+                        <div class="text">{{ msg }}</div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% elif messages %}
+            {% for message in messages %}
+                <p>
+                    <strong>{{ message.sender.username }}:</strong>
+                    {{ message.message }}
+                    <br>
+                    <small style="color: gray;">{{ message.timestamp|date:"Y-m-d H:i" }}</small>
+                </p>
+            {% endfor %}
+        {% else %}
+            <p>Сообщений пока нет.</p>
+        {% endif %}
+    </div>
+    <p style="color: red;">pending_order: {{ pending_order }}</p>
+    <div id="order-button-container">
+        {% if pending_order %}
+            <form id="confirm-form" method="post" style="margin-top: 10px;">
+                {% csrf_token %}
+                <button
+                    type="submit"
+                    id="confirm-purchase-btn"
+                    class="header__btn"
+                    data-order-id="{{ pending_order.id }}"
+                >
+                    Подтвердить покупку
+                </button>
+            </form>
+        {% endif %}
+    </div>
+    <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
+</div>

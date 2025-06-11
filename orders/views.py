@@ -2,7 +2,7 @@ import logging
 
 from channels.consumer import async_to_sync
 from channels.layers import get_channel_layer
-from chat.models import ChatRoom
+from chat.models import ChatMessage, ChatRoom
 from common.views import ContextMixin
 from django.apps import apps
 from django.contrib import messages
@@ -165,6 +165,13 @@ class ConfirmOrderView(View):
             )
         except ChatRoom.DoesNotExist:
             return JsonResponse({"success": True, "message": "Покупка подтверждена, но чат не найден."})
+        # 💾 Сохраняем сообщение в чат
+        ChatMessage.objects.create(
+            chat_room=chat_room,
+            sender=request.user,
+            message=f"✅ Покупатель {request.user.username} подтвердил успешное выполнение заказа "
+            f"#{order.id} и отправил деньги продавцу {order.seller.username}.",
+        )
 
         # WebSocket: отправляем событие
         channel_layer = get_channel_layer()
@@ -172,12 +179,13 @@ class ConfirmOrderView(View):
             f"chat_{chat_room.id}",
             {
                 "type": "order_confirmed",
-                "message": f"🎉 Заказ #{order.id} успешно подтверждён и оплачен!",
+                "message": f"✅ Покупатель {request.user.username} подтвердил успешное выполнение заказа "
+                f"#{order.id} и отправил деньги продавцу {order.seller.username}.",
                 "order_id": order.id,
             },
         )
 
-        return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!"})
+        return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!","reload": True})
 
 
 class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
