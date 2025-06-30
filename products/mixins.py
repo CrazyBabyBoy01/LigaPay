@@ -120,7 +120,7 @@ class ChatMixin:
 
 class ServiceChatMixin:
     def get_chat_messages(self, buyer, seller):
-        room = ChatRoom.objects.filter(buyer=buyer, seller=seller).first()
+        room = ChatRoom.objects.filter(Q(buyer=buyer, seller=seller) | Q(buyer=seller, seller=buyer)).first()
 
         if room:
             logger.info(f"Комната найдена: {room}")

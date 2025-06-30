@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Q, Subquery
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
@@ -90,11 +90,13 @@ class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
         interlocutor = chat.seller if request.user == chat.buyer else chat.buyer
         pending_order = None
         if request.user.is_authenticated:
-            pending_order = Order.objects.filter(
-                user=request.user,
-                seller=chat.seller,
-                status="pending",
-            ).first()
+            pending_order = (
+                Order.objects.filter(
+                    status="pending",
+                )
+                .filter(Q(user=chat.buyer, seller=chat.seller) | Q(user=chat.seller, seller=chat.buyer))
+                .first()
+            )
         grouped_messages = self.group_messages(messages)
         return render(
             request,

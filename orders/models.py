@@ -29,7 +29,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending", verbose_name="Статус заказа")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    
+
     amount = models.PositiveIntegerField()
     seller = models.ForeignKey(
         settings.AUTH_USER_MODEL,  # Связываем с моделью пользователя
