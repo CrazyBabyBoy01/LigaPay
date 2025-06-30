@@ -56,7 +56,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="chat-box" id="chat-log">
+                <div class="chat-box chat-box__messages" id="chat-log">
                     {% for group in grouped_messages %}
                         <div class="message {% if group.sender == user %}me{% else %}them{% endif %}">
                             <div class="sender">
@@ -64,7 +64,7 @@
                                 <span class="timestamp">{{ group.timestamp|date:"d.m.Y H:i" }}</span>
                             </div>
                             {% for msg in group.messages %}
-                                <div class="text">{{ msg }}</div>
+                                <div class="text">{{ msg|safe }}</div>
                             {% endfor %}
                         </div>
                     {% endfor %}

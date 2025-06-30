@@ -1,4 +1,4 @@
-<div id="chat-box">
+<div id="chat-box " class="chat-box chat-box__products">
     <h3>Чат с продавцом</h3>
     <div id="chat-log">
         {% if grouped_messages %}
@@ -9,7 +9,7 @@
                         <span class="timestamp">{{ group.timestamp|date:"d.m.Y H:i" }}</span>
                     </div>
                     {% for msg in group.messages %}
-                        <div class="text">{{ msg }}</div>
+                        <div class="text">{{ msg|safe }}</div>
                     {% endfor %}
                 </div>
             {% endfor %}
@@ -26,7 +26,6 @@
             <p>Сообщений пока нет.</p>
         {% endif %}
     </div>
-    <p style="color: red;">pending_order: {{ pending_order }}</p>
     <div id="order-button-container">
         {% if pending_order %}
             <form id="confirm-form" method="post" style="margin-top: 10px;">
@@ -35,8 +34,7 @@
                     type="submit"
                     id="confirm-purchase-btn"
                     class="header__btn"
-                    data-order-id="{{ pending_order.id }}"
-                >
+                    data-order-id="{{ pending_order.id }}">
                     Подтвердить покупку
                 </button>
             </form>

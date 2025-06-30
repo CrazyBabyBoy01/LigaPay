@@ -296,11 +296,6 @@ document.addEventListener("DOMContentLoaded", function () {
             chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        // Добавление обычного сообщения
-        const messageElement = document.createElement('p');
-        messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
-        chatLog.appendChild(messageElement);
-
         appendMessage({
             senderUsername: data.sender,
             messageText: data.message,

@@ -6,13 +6,16 @@ from chat.models import ChatMessage, ChatRoom
 from common.views import ContextMixin
 from django.apps import apps
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from django.db.models import Q
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.html import escape
 from django.views import View
 from django.views.generic import ListView
 from products.forms import PurchaseForm
@@ -33,6 +36,7 @@ from .models import Order
 
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 class CreateOrderView(LoginRequiredMixin, View):
@@ -104,11 +108,36 @@ class CreateOrderView(LoginRequiredMixin, View):
                 )
                 logger.info(f"✅ Заказ создан: ID {order.id}, Количество: {order.amount}")
                 logger.info(f"📦 Заказ создан: ID {order.id}, сумма {total_price} руб.")
-                # ✅ Получаем или создаем чат
-                chat_room, _ = ChatRoom.objects.get_or_create(
-                    buyer=request.user,
-                    seller=product.seller,
+
+                # ✅ Получаем или создаем чат, независимо от порядка buyer/seller
+
+                user1, user2 = sorted([request.user, product.seller], key=lambda u: u.id)
+
+                chat_room = ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)).first()
+
+                if not chat_room:
+                    chat_room = ChatRoom.objects.create(buyer=user1, seller=user2)
+                logger.info(f"📎 Используем чат-комнату: ID {chat_room.id}")
+
+                # 🔽 Сообщение в чат
+                message_text = (
+                    f"✅ Покупатель {escape(request.user.username)} создал заказ #{order.id}."
+                    f"{escape(product.title)}, {amount} шт."
+                    f"{escape(request.user.username)}, не забудьте потом нажать кнопку "
+                    f"«Подтвердить покупку»."
                 )
+
+                system_user = User.objects.get(username="LigaPay")
+                ChatMessage.objects.create(
+                    chat_room=chat_room,
+                    sender=system_user,
+                    message=message_text,
+                )
+                # # ✅ Получаем или создаем чат
+                # chat_room, _ = ChatRoom.objects.get_or_create(
+                #     buyer=request.user,
+                #     seller=product.seller,
+                # )
 
                 # ✅ Отправляем WebSocket-сообщение о создании заказа
                 channel_layer = get_channel_layer()
@@ -159,18 +188,23 @@ class ConfirmOrderView(View):
 
         # Находим чат для этого заказа
         try:
-            chat_room = ChatRoom.objects.get(
-                buyer=request.user,
-                seller=order.seller,
-            )
+            user1, user2 = sorted([request.user, order.seller], key=lambda u: u.id)
+
+            chat_room = ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)).first()
         except ChatRoom.DoesNotExist:
             return JsonResponse({"success": True, "message": "Покупка подтверждена, но чат не найден."})
         # 💾 Сохраняем сообщение в чат
+        plain_message = (
+            f'✅ <span class="username">{escape(request.user.username)}</span> оплатил '
+            f'<span class="order-id">заказ #{order.id}</span> и отправил деньги продавцу '
+            f'<span class="username">{escape(order.seller.username)}</span>.'
+        )
+        system_user = User.objects.get(username="LigaPay")
+
         ChatMessage.objects.create(
             chat_room=chat_room,
-            sender=request.user,
-            message=f"✅ Покупатель {request.user.username} подтвердил успешное выполнение заказа "
-            f"#{order.id} и отправил деньги продавцу {order.seller.username}.",
+            sender=system_user,
+            message=plain_message,
         )
 
         # WebSocket: отправляем событие
@@ -179,13 +213,12 @@ class ConfirmOrderView(View):
             f"chat_{chat_room.id}",
             {
                 "type": "order_confirmed",
-                "message": f"✅ Покупатель {request.user.username} подтвердил успешное выполнение заказа "
-                f"#{order.id} и отправил деньги продавцу {order.seller.username}.",
+                "message": plain_message,
                 "order_id": order.id,
             },
         )
 
-        return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!","reload": True})
+        return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!", "reload": True})
 
 
 class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
