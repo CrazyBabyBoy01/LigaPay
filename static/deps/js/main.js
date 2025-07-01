@@ -301,7 +301,8 @@ document.addEventListener("DOMContentLoaded", function () {
             messageText: data.message,
             timestamp: data.timestamp,
             currentUser: currentUser,
-            chatLogElement: chatLog
+            chatLogElement: chatLog,
+            isSystem: data.sender === "LigaPay"
         });
 
         const maxMessages = 50;
@@ -364,7 +365,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // Функция добавления сообщения в DOM
-function appendMessage({ senderUsername, messageText, timestamp, currentUser, chatLogElement }) {
+function appendMessage({ senderUsername, messageText, timestamp, currentUser, chatLogElement, isSystem}) {
     const date = timestamp ? new Date(timestamp) : new Date();
     const isoTimestamp = date.toISOString();
     const formattedDate = date.toLocaleString("ru-RU", {
@@ -400,12 +401,22 @@ function appendMessage({ senderUsername, messageText, timestamp, currentUser, ch
         messageText.split('\n').forEach(line => {
             const textDiv = document.createElement("div");
             textDiv.classList.add("text");
-            textDiv.textContent = line;
+            if (isSystem) {
+                textDiv.innerHTML = line;
+                textDiv.classList.add("system-message");  // добавляем класс
+            } else {
+                textDiv.textContent = line;
+            }
             lastMessageGroup.appendChild(textDiv);
         });
     } else {
         const messageDiv = document.createElement("div");
-        messageDiv.classList.add("message", isCurrentUser ? "me" : "them");
+        messageDiv.classList.add("message");
+        if (isSystem) {
+            messageDiv.classList.add("system-message");  // выделяем системные сообщения
+        } else {
+            messageDiv.classList.add(isCurrentUser ? "me" : "them");
+        }
         messageDiv.dataset.timestamp = isoTimestamp; // 👈 сохраняем точное ISO-время
 
         const senderDiv = document.createElement("div");
@@ -426,7 +437,12 @@ function appendMessage({ senderUsername, messageText, timestamp, currentUser, ch
         messageText.split('\n').forEach(line => {
             const textDiv = document.createElement("div");
             textDiv.classList.add("text");
-            textDiv.textContent = line;
+            if (isSystem) {
+                textDiv.innerHTML = line;
+                textDiv.classList.add("system-message");
+            } else {
+                textDiv.textContent = line;
+            }
             messageDiv.appendChild(textDiv);
         });
 
