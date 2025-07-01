@@ -121,26 +121,31 @@ class CreateOrderView(LoginRequiredMixin, View):
 
                 # 🔽 Сообщение в чат
                 message_text = (
-                    f"✅ Покупатель {escape(request.user.username)} создал заказ #{order.id}."
+                    f'✅ Покупатель <span class="username">{escape(request.user.username)}</span> создал <span class="order-id">заказ #{order.id}</span>.'
                     f"{escape(product.title)}, {amount} шт."
-                    f"{escape(request.user.username)}, не забудьте потом нажать кнопку "
+                    f'<span class="username">{escape(request.user.username)}</span>, не забудьте потом нажать кнопку '
                     f"«Подтвердить покупку»."
                 )
-
                 system_user = User.objects.get(username="LigaPay")
                 ChatMessage.objects.create(
                     chat_room=chat_room,
                     sender=system_user,
                     message=message_text,
                 )
-                # # ✅ Получаем или создаем чат
-                # chat_room, _ = ChatRoom.objects.get_or_create(
-                #     buyer=request.user,
-                #     seller=product.seller,
-                # )
 
                 # ✅ Отправляем WebSocket-сообщение о создании заказа
                 channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f"chat_{chat_room.id}",
+                    {
+                        "type": "chat_message",
+                        "message": message_text,
+                        "sender": system_user.username,
+                        "order_id": order.id,
+                        "is_system": True,
+                    },
+                )
+                # Потом сигнал клиенту отрисовать кнопку
                 async_to_sync(channel_layer.group_send)(
                     f"chat_{chat_room.id}",
                     {
@@ -212,9 +217,11 @@ class ConfirmOrderView(View):
         async_to_sync(channel_layer.group_send)(
             f"chat_{chat_room.id}",
             {
-                "type": "order_confirmed",
+                "type": "chat_message",
+                "sender": system_user.username,
                 "message": plain_message,
                 "order_id": order.id,
+                "is_system": True,
             },
         )
 

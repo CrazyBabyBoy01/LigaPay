@@ -1,9 +1,9 @@
 <div id="chat-box " class="chat-box chat-box__products">
-    <h3>Чат с продавцом</h3>
-    <div id="chat-log">
+    <h3 class="chat-box__title">Чат с продавцом</h3>
+    <div id="chat-log" class="chat-log">
         {% if grouped_messages %}
             {% for group in grouped_messages %}
-                <div class="message">
+                <div class="message {% if group.sender.username == 'LigaPay' %}system-message{% else %}{% if group.sender.username == request.user.username %}me{% else %}them{% endif %}{% endif %}">
                     <div class="sender">
                         <strong class="sender-name">{{ group.sender.username }}</strong>
                         <span class="timestamp">{{ group.timestamp|date:"d.m.Y H:i" }}</span>
@@ -35,7 +35,7 @@
                     id="confirm-purchase-btn"
                     class="header__btn"
                     data-order-id="{{ pending_order.id }}">
-                    Подтвердить покупку
+                    Подтвердить
                 </button>
             </form>
         {% endif %}

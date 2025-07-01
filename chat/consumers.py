@@ -6,8 +6,9 @@ from channels.generic.websocket import WebsocketConsumer
 from django.apps import apps
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
-from django.utils.timezone import now
 from django.db.models import Q
+from django.utils.timezone import now
+
 from .models import ChatMessage, ChatRoom
 
 
@@ -81,19 +82,12 @@ class ChatConsumer(WebsocketConsumer):
                 return
             logger.info(f"🧾 Попытка создать или получить чат: buyer={buyer.username}, seller={seller.username}")
 
-
-
-            chat_room = ChatRoom.objects.filter(
-                        Q(buyer=buyer, seller=seller) | Q(buyer=seller, seller=buyer)
-                    ).first()
+            chat_room = ChatRoom.objects.filter(Q(buyer=buyer, seller=seller) | Q(buyer=seller, seller=buyer)).first()
 
             if chat_room:
                 self.chat_room = chat_room
             else:
                 self.chat_room = ChatRoom.objects.create(buyer=buyer, seller=seller)
-
-
-
 
             # # Упорядочиваем пользователей по id
             # user1, user2 = sorted([buyer, seller], key=lambda u: u.id)

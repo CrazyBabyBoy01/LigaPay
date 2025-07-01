@@ -60,7 +60,7 @@
         </div>
         <div id="chat-box" class="chat-box">
             <h3>Общий чат</h3>
-            <div id="chat-log">
+            <div id="chat-log" class="chat-log">
                 {% for message in messages %}
                     <div class="sender">
                         <p><strong>{{ message.sender }}:</strong> {{ message.message }}</p>
