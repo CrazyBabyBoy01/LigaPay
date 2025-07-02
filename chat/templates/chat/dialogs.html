@@ -9,7 +9,12 @@
                     <li class="{% if chat and room.id == chat.id %}active{% endif %}">
                         <a href="{% url 'chat:chat_dialog_detail' chat_id=room.id %}">
                             <div class="avatar">
-                            <img src="{% static 'deps/images/profile.png' %}" alt="Avatar">
+                            <img src="{% if user == room.buyer %}
+                                {% if room.seller.image %}{{ room.seller.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
+                            {% else %}
+                                {% if room.buyer.image %}{{ room.buyer.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
+                            {% endif %}" alt="Avatar">
+
                             </div>
                             <div class="chat-info">
                                 <div class="chat-user">
@@ -37,7 +42,12 @@
             {% if chat %}
                 <div class="chat-header">
                     <div class="avatar">
-                        <img src="{% static 'deps/images/profile.png' %}" alt="Avatar">
+                        <img src="{% if user == chat.buyer %}
+                            {% if chat.seller.image %}{{ chat.seller.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
+                        {% else %}
+                            {% if chat.buyer.image %}{{ chat.buyer.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
+                        {% endif %}" alt="Avatar">
+
                     </div>
                     <div>
                         <div class="chat-username">
