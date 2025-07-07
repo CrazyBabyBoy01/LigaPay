@@ -83,7 +83,7 @@
                 <h3 class="offer__title">
                     Добавьте оффер
                 </h3>
-                <form action={% url "products:account" %} method='post' class="offer__form">
+                <form action={% url "products:account" %} method='post' enctype="multipart/form-data" class="offer__form">
                     {% csrf_token %}
                     <div class="offer__form form">
                         <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>
@@ -131,6 +131,11 @@
                         <label for="{{ form.is_auto_delivery.id_for_label }}">{{ form.is_auto_delivery.label }}</label>
                         {{ form.is_auto_delivery }}
                     </div>
+                    <div class="offer__form form">
+                        <label for="{{ image_form.image.id_for_label }}">{{ image_form.image.label }}</label>
+                        {{ image_form.image }}
+                    </div>
+                    
                     <button class="header__btn" type="submit">Отправить</button>
                 </form>
 

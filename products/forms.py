@@ -12,6 +12,7 @@ from .models import (
     QualificationService,
     RPService,
     ServerBasedService,
+    ServiceImage,
     TrainingService,
 )
 
@@ -24,6 +25,10 @@ CATEGORY_MODEL_MAPPING = {
     "general": GeneralService,
 }
 
+class ServiceImageForm(forms.ModelForm):
+    class Meta:
+        model = ServiceImage
+        fields = ['image']
 
 class AccountServiceForm(forms.ModelForm):
     """

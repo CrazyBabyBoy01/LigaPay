@@ -185,6 +185,86 @@ function showNotification(type, message) {
     }, 5000);  // Уведомление исчезнет через 5 секунд
 }
 
+// === Загрузка изображения через AJAX ===
+document.addEventListener("DOMContentLoaded", function() {
+    const uploadImageBtn = document.getElementById("uploadImageBtn");
+    const imageInput = document.getElementById("imageInput");
+    const uploadImageForm = document.getElementById("uploadImageForm");
+
+    if (uploadImageBtn && imageInput && uploadImageForm) {
+        uploadImageBtn.addEventListener("click", () => {
+            imageInput.click();
+        });
+
+        imageInput.addEventListener("change", () => {
+            if (imageInput.files.length > 0) {
+                const formData = new FormData();
+                formData.append("add_image", "1");
+                formData.append("image", imageInput.files[0]);
+
+                console.log("Отправка файла:", imageInput.files[0]);  // <-- ПРОВЕРКА
+
+                fetch(uploadImageForm.action, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Ответ от сервера:", data);  // <-- ПРОВЕРКА
+                    if (data.success) {
+                        showNotification("success", data.message);
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification("error", data.message || "Ошибка при загрузке изображения.");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Ошибка:", error);
+                    showNotification("error", "Ошибка при отправке запроса.");
+                });
+            }
+        });
+    }
+});
+
+// === Удаление изображений через AJAX ===
+document.addEventListener("DOMContentLoaded", function() {
+    const deleteForms = document.querySelectorAll(".image-delete-form");
+
+    deleteForms.forEach(form => {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification("success", data.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification("error", data.message || "Ошибка при удалении.");
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка:", error);
+                showNotification("error", "Произошла ошибка при удалении.");
+            });
+        });
+    });
+});
+
+
+
 document.addEventListener("DOMContentLoaded", function() {
     let amountInput = document.getElementById("amount");
     let priceInput = document.getElementById("price");
@@ -202,6 +282,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+// // Добавляем изображение в карточку товара
+// document.getElementById("uploadImageBtn").addEventListener("click", function() {
+//     document.getElementById("imageInput").click(); // Открываем диалог выбора файла
+// });
+
+// document.getElementById("imageInput").addEventListener("change", function() {
+//     if (this.files.length > 0) {
+//         document.getElementById("uploadImageForm").submit(); // Автоотправка формы
+//     }
+// });
+
 // Функция для закрытия текущего WebSocket
 function closeSocket() {
     if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {

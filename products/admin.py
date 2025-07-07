@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html_join
+from genericadmin.admin import GenericTabularInline
 
 from .models import (
     AccountService,
@@ -9,14 +11,34 @@ from .models import (
     OtherService,
     QualificationService,
     RPService,
+    ServiceImage,
     TrainingService,
 )
 
 
+class ServiceImageInline(GenericTabularInline):
+    model = ServiceImage
+    extra = 1
+
+
 class BaseServiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "price", "is_active", "seller")
+    list_display = ("id", "title", "price", "is_active", "seller", "display_images")
     list_filter = ("is_active",)
     search_fields = ("title",)
+    readonly_fields = ("display_images",)
+    inlines = [ServiceImageInline]
+
+    def display_images(self, obj):
+        imgs = obj.images.all()
+        if not imgs:
+            return "-"
+        return format_html_join(
+            "",
+            '<img src="{}" width="100" style="margin-right: 10px;"/>',
+            ((img.image.url,) for img in imgs),
+        )
+
+    display_images.short_description = "Картинки"
 
 
 # Регистрируем все модели с этим классом

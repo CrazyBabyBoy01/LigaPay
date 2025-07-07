@@ -9,7 +9,7 @@
             </div>
             <div class="details-content">
                 <h2>Оформление заказа</h2>
-                <div class="details-content__row">
+                <div class="details-content__header-row">
                     <div class="details-content__item">
                         <span class="label">СЕРВЕР</span>
                         <span class="value">{{ service.get_server_display }}</span>
@@ -27,13 +27,31 @@
                         <span class="value">{{ service.get_receiving_method_display }}</span>
                     </div>
                 </div>
-                <div class="details-content__item">
-                    <span class="label">Краткое описание</span>
-                    <span class="value">{{ service.title }}</span>
-                </div>
-                <div class="details-content__item">
-                    <span class="label">Подробное описание</span>
-                    <span class="value">{{ service.description }}</span>
+                <div class="details-content__footer-row">
+                    <div class="details-content__item">
+                        <span class="label">Краткое описание</span>
+                        <span class="value">{{ service.title }}</span>
+                    </div>
+                    <div class="details-content__item">
+                        <span class="label">Подробное описание</span>
+                        <span class="value">{{ service.description }}</span>
+                    </div>
+                    <div class="details-content__item">
+                        <span class="label">Изображения</span>
+                        <span class="value">
+                            {% if service.images.all %}
+                                <div class="images-wrapper" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    {% for img in service.images.all %}
+                                        <a href="{{ img.image.url }}" target="_blank" rel="noopener noreferrer">
+                                            <img src="{{ img.image.url }}" alt="Image {{ forloop.counter }}" style="max-width: 150px; max-height: 150px; object-fit: contain; border: 1px solid #ccc; margin: 5px;"/>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                Нет картинок
+                            {% endif %}
+                        </span>
+                    </div>
                 </div>
                 <form action={% url 'orders:create_order' model_name service.id %} method='post' class="details-form">
                     {% csrf_token %}
@@ -66,7 +84,7 @@
         <div class="details__seller">
             <div class="details-content">
                 <h2>Моя услуга по категории {{ service.category.name }} </h2>
-                <div class="details-content__row">
+                <div class="details-content__header-row">
                     <div class="details-content__item">
                         <span class="label">СЕРВЕР</span>
                         <span class="value">{{ service.get_server_display }}</span>
@@ -84,17 +102,50 @@
                         <span class="value">{{ service.get_receiving_method_display }}</span>
                     </div>
                 </div>
-                <div class="details-content__item">
-                    <span class="label">Краткое описание</span>
-                    <span class="value">{{ service.title }}</span>
-                </div>
-                <div class="details-content__item">
-                    <span class="label">Подробное описание</span>
-                    <span class="value">{{ service.description }}</span>
+                <div class="details-content__footer-row">
+                    <div class="details-content__item">
+                        <span class="label">Краткое описание</span>
+                        <span class="value">{{ service.title }}</span>
+                    </div>
+                    <div class="details-content__item">
+                        <span class="label">Подробное описание</span>
+                        <span class="value">{{ service.description }}</span>
+                    </div>
+                    <div class="details-content__item">
+                        <span class="label">Изображения</span>
+                        <div class="images-wrapper" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            {% for img in images %}
+                                <div style="position: relative; display: inline-block;">
+                                    <img src="{{ img.image.url }}" alt="Image {{ forloop.counter }}" style="max-width: 100px; max-height: 100px; border: 1px solid #ccc;"/>
+                                    <form method="post" action="{% url 'products:donation_detail' service.id %}" style="position: absolute; top: -5px; right: -5px;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="delete_image" value="1">
+                                        <input type="hidden" name="image_id" value="{{ img.id }}">
+                                        <button type="submit" style="background: red; color: white; border: none; padding: 2px 5px; font-size: 12px;">✕</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% comment %} <div class="details-content__item">
+                        <label for="id_image">Добавить новую картинку</label>
+                        <form action="{% url 'products:accounts_detail' service.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ image_form.image }}
+                            <input type="hidden" name="add_image" value="1">
+                            <button type="submit" class="header__btn">Загрузить</button>
+                        </form>
+                    </div> {% endcomment %}
                 </div>
             </div>
             <div class="details-actions">
                 <!-- Кнопка редактировать — открывает модалку -->
+                <form id="uploadImageForm" action="{% url 'products:donation_detail' service.id %}" method="post" enctype="multipart/form-data" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="file" id="imageInput" name="image" accept="image/*" style="display:none;" />
+                    <input type="hidden" name="add_image" value="1">
+                    <button type="button" class="header__btn" id="uploadImageBtn">Загрузить картинку</button>
+                </form>
                 <button class="header__btn" id="openEditModalBtn">Редактировать</button>
 
                 <!-- Кнопка удалить — просто сабмит формы с name="delete" -->

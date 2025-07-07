@@ -7,6 +7,7 @@ from venv import logger
 from chat.mixin import GroupedMessagesMixin
 from chat.models import ChatMessage
 from common.views import ContextMixin
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseForbidden, JsonResponse
@@ -46,6 +47,7 @@ from products.forms import (
     QualificationServiceForm,
     RPServiceFilterForm,
     RPServiceForm,
+    ServiceImageForm,
     TrainingServiceFilterForm,
     TrainingServiceForm,
 )
@@ -68,6 +70,7 @@ from .models import (
     OtherService,
     QualificationService,
     RPService,
+    ServiceImage,
     TrainingService,
 )
 
@@ -132,14 +135,22 @@ class AccountServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, C
         context = super().get_context_data(**kwargs)
         context["filter_form"] = AccountServiceFilterForm(self.request.GET)
         context["form"] = AccountServiceForm()
+        context["image_form"] = ServiceImageForm()  # Добавляем форму для загрузки картинки
         return context
 
     def post(self, request, *args, **kwargs):
         form = AccountServiceForm(request.POST)
+        image_form = ServiceImageForm(request.POST, request.FILES)  # Форма для картинки с файлами
         if form.is_valid():
             offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
             form.save()  # Сохраняем данные формы
+            # Обработка загруженных файлов (картинок)
+            if image_form.is_valid() and image_form.cleaned_data.get("image"):
+                image = image_form.save(commit=False)
+                image.content_object = offer  # Связываем картинку с сервисом
+                image.save()
+
             return redirect("products:account")  # Здесь можно перенаправить на страницу успеха
 
         # Добавление ошибок в лог или отладочную информацию
@@ -172,6 +183,8 @@ class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesM
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["image_form"] = ServiceImageForm()  # Добавляем картинку
+        context["images"] = self.object.images.all()
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
             pending_order = Order.objects.filter(
@@ -192,7 +205,28 @@ class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesM
 
         # Проверка, что пользователь — продавец
         if service.seller != request.user:
-            return HttpResponseForbidden("У вас нет прав на это действие.")
+            return JsonResponse({"success": False, "message": "У вас нет прав на это действие."})
+        # Удаление изображения
+        if "delete_image" in request.POST:
+            image_id = request.POST.get("image_id")
+            image = get_object_or_404(service.images, id=image_id)
+            image.delete()
+            return JsonResponse({"success": True, "message": "Изображение удалено."})
+
+        # Добавление нового изображения
+        if "add_image" in request.POST:
+            if service.images.count() >= 4:
+                return JsonResponse({"success": False, "message": "Максимум 4 изображения разрешено."})
+
+            image_form = ServiceImageForm(request.POST, request.FILES)
+            if image_form.is_valid():
+                new_img = image_form.save(commit=False)
+                new_img.content_object = service
+                new_img.save()
+                return JsonResponse({"success": True, "message": "Изображение добавлено."})
+            return JsonResponse(
+                {"success": False, "message": "Ошибка при загрузке изображения.", "errors": image_form.errors.as_json()}
+            )
 
         # Удаление
         if "delete" in request.POST:
@@ -201,13 +235,22 @@ class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesM
 
         # Редактирование
         form = AccountServiceForm(request.POST, instance=service)
+        image_form = ServiceImageForm(request.POST, request.FILES)
+
         if form.is_valid():
-            form.save()
+            offer = form.save()
+
+            # Если загрузили картинку — сохраняем её
+            if image_form.is_valid() and image_form.cleaned_data.get("image"):
+                new_img = image_form.save(commit=False)
+                new_img.content_object = offer
+                new_img.save()
             return redirect("products:accounts_detail", pk=service.pk)
 
         # Если форма невалидна, отрисуем снова с ошибками
         context = self.get_context_data(object=service)
         context["form"] = form
+        context["image_form"] = image_form
         return self.render_to_response(context)
 
 
@@ -670,14 +713,21 @@ class DonationServiceListView(CategoryMixin, ChatMixin, SearchDescriptionMixin, 
         context = super().get_context_data(**kwargs)
         context["filter_form"] = DonationServiceFilterForm(self.request.GET)
         context["form"] = DonationServiceForm()
+        context["image_form"] = ServiceImageForm()  # Добавляем форму для загрузки картинки
         return context
 
     def post(self, request, *args, **kwargs):
         form = DonationServiceForm(request.POST)
+        image_form = ServiceImageForm(request.POST, request.FILES)  # Форма для картинки с файлами
         if form.is_valid():
             offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
             offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
             form.save()  # Сохраняем данные формы
+            # Обработка загруженных файлов (картинок)
+            if image_form.is_valid() and image_form.cleaned_data.get("image"):
+                image = image_form.save(commit=False)
+                image.content_object = offer  # Связываем картинку с сервисом
+                image.save()
             return redirect("products:donation")  # Здесь можно перенаправить на страницу успеха
         return redirect("products:donation")
 
@@ -705,6 +755,8 @@ class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessage
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["image_form"] = ServiceImageForm()  # Добавляем картинку
+        context["images"] = self.object.images.all()
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -726,7 +778,25 @@ class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessage
         # Проверка, что пользователь — продавец
         if service.seller != request.user:
             return HttpResponseForbidden("У вас нет прав на это действие.")
+        # Удаление изображения
+        if "delete_image" in request.POST:
+            image_id = request.POST.get("image_id")
+            image = get_object_or_404(service.images, id=image_id)
+            image.delete()
+            return redirect("products:donation_detail", pk=service.pk)
 
+        # Добавление нового изображения
+        if "add_image" in request.POST:
+            if service.images.count() >= 4:
+                context = self.get_context_data(object=service)
+                context["image_limit_error"] = "Максимум 4 изображения разрешено."
+                return self.render_to_response(context)
+            image_form = ServiceImageForm(request.POST, request.FILES)
+            if image_form.is_valid():
+                new_img = image_form.save(commit=False)
+                new_img.content_object = service
+                new_img.save()
+            return redirect("products:donation_detail", pk=service.pk)
         # Удаление
         if "delete" in request.POST:
             service.delete()

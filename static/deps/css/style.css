@@ -875,13 +875,30 @@ div.filter-container__lvl input{
 .details__chat{
     width: 40%;
 }
-.details-content__row {
+.details-content__header-row {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     max-width: 400px;
     margin-bottom: 20px;
 }
+
+.details-content__footer-row{
+    display: grid;
+    gap: 20px;
+}
+
+.images-wrapper img {
+  width: 100px;        /* фиксированная ширина */
+  height: 100px;       /* фиксированная высота */
+  object-fit: cover;   /* изображение масштабируется и обрезается, чтобы заполнить контейнер */
+  border: 1px solid #ccc;
+  border-radius: 4px;  /* можно добавить скругления, если хочешь */
+}
+
+
+
+
 
 .details-content__item{
     display: flex;
@@ -1123,6 +1140,17 @@ div.filter-container__lvl input{
     opacity: 1;  /* Устанавливаем прозрачность 1 */
     transform: translateY(0); /* Убираем сдвиг */
 }
+.notification.success { background-color: #28a745; }   /* Зелёная */
+.notification.info    { background-color: #17a2b8; }   /* Синяя */
+.notification.warning { background-color: #ffc107; color: #333; } /* Жёлтая */
+
+@keyframes fadeOut {
+0% {opacity: 1;}
+80% {opacity: 1;}
+100% {opacity: 0; display: none;}
+}
+
+
 /* ЧАТ */
 
 .chat-box {
