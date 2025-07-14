@@ -80,6 +80,10 @@ class ChatConsumer(WebsocketConsumer):
                 logger.error(f"❌ Ошибка поиска услуги: {e}")
                 self.close()
                 return
+            if buyer == seller:
+                logger.info("🛑 Продавец зашел на свою услугу — чат не нужен")
+                self.close()
+                return
             logger.info(f"🧾 Попытка создать или получить чат: buyer={buyer.username}, seller={seller.username}")
 
             chat_room = ChatRoom.objects.filter(Q(buyer=buyer, seller=seller) | Q(buyer=seller, seller=buyer)).first()

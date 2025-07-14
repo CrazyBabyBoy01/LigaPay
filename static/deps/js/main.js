@@ -143,7 +143,8 @@ if (form) {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value  // Указываем CSRF токен
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,// Указываем CSRF токен
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.json())  // Получаем ответ в формате JSON
@@ -345,6 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Навешиваем обработчик на форму, если она уже есть
     setupConfirmHandler();
+    setupCancelHandler();
 
     // Обработка входящих сообщений
     chatSocket.onmessage = function (e) {
@@ -373,6 +375,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             return;
         }
+
 
         // ✅ Подтверждение заказа — убираем кнопку
         if (data.type === "order_confirmed") {
@@ -420,12 +423,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // ✅ Функция навешивания обработчика на форму подтверждения
+    // ✅ Функция для обработки подтверждения заказа
     function setupConfirmHandler() {
         const confirmForm = document.getElementById("confirm-form");
+        // console.log("setupCancelHandler called, cancelForm:", cancelForm);
         if (confirmForm) {
             confirmForm.addEventListener("submit", function (e) {
                 e.preventDefault();
+                // console.log("Cancel form submitted!");
                 const orderId = confirmForm.querySelector("#confirm-purchase-btn").dataset.orderId;
 
                 fetch(`/orders/confirm/${orderId}/`, {
@@ -448,6 +453,43 @@ document.addEventListener("DOMContentLoaded", function () {
                 })
                 .catch(err => {
                     console.error("Ошибка при подтверждении заказа:", err);
+                });
+            });
+        }
+    }
+     // Функция для обработки отказа от заказа
+    function setupCancelHandler() {
+        const cancelForm = document.getElementById("cancel-form");
+        console.log("cancelForm найден:", cancelForm);
+        if (cancelForm) {
+            cancelForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const cancelBtn = cancelForm.querySelector("#cancel-order-btn");
+                const orderId = cancelBtn.dataset.orderId;
+                console.log("Кнопка отмены найдена:", cancelBtn);
+
+                fetch(`/orders/cancel/${orderId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert(json.message);
+                        // Очищаем или обновляем UI — например, убираем кнопки
+                        const container = document.querySelector("#order-button-container");
+                        if (container) {
+                            container.innerHTML = "";
+                        }
+                    } else {
+                        alert("Ошибка: " + json.message);
+                    }
+                })
+                .catch(err => {
+                    console.error("Ошибка при отмене заказа:", err);
                 });
             });
         }

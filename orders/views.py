@@ -43,6 +43,7 @@ class CreateOrderView(LoginRequiredMixin, View):
     """Создание заказа и попытка оплаты"""
 
     def post(self, request, model_name, product_id):
+        logger.info(f"X-Requested-With header: {request.META.get('HTTP_X_REQUESTED_WITH')}")
         form = PurchaseForm(request.POST)
 
         if not form.is_valid():
@@ -156,7 +157,9 @@ class CreateOrderView(LoginRequiredMixin, View):
                 )
                 logger.info(f"📤 WebSocket: отправлено событие order_created в chat_{chat_room.id}")
 
-                messages.success(request, "Заказ создан! Подтвердите покупку в чате. ✅")
+                if request.META.get("HTTP_X_REQUESTED_WITH") != "XMLHttpRequest":
+                    messages.success(request, "Заказ создан! Подтвердите покупку в чате. ✅")
+
                 logger.info(f"✅ Заказ создан без оплаты. ID заказа: {order.id}")
                 return JsonResponse({"success": True, "message": "Заказ создан! Подтвердите покупку в чате."})
 
@@ -226,6 +229,54 @@ class ConfirmOrderView(View):
         )
 
         return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!", "reload": True})
+
+
+class CancelOrderView(LoginRequiredMixin, View):
+    def post(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+
+        # Только продавец может отменить
+        if request.user != order.seller:
+            return JsonResponse({"success": False, "message": "Вы не можете отменить этот заказ."})
+
+        # Только если заказ в ожидании
+        if order.status != "pending":
+            return JsonResponse({"success": False, "message": "Нельзя отменить завершённый заказ."})
+
+        # Обновляем статус
+        order.status = "canceled"
+        order.save()
+
+        # Отправка сообщения в чат
+        user1, user2 = sorted([order.user, order.seller], key=lambda u: u.id)
+        chat_room = ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)).first()
+
+        system_user = User.objects.get(username="LigaPay")
+        cancel_message = (
+            f'❌ <span class="username">{escape(request.user.username)}</span> отклонил '
+            f'<span class="order-id">заказ #{order.id}</span>.'
+        )
+
+        ChatMessage.objects.create(
+            chat_room=chat_room,
+            sender=system_user,
+            message=cancel_message,
+        )
+
+        # WebSocket сообщение
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"chat_{chat_room.id}",
+            {
+                "type": "chat_message",
+                "sender": system_user.username,
+                "message": cancel_message,
+                "order_id": order.id,
+                "is_system": True,
+            },
+        )
+
+        return JsonResponse({"success": True, "message": "Заказ успешно отклонён."})
 
 
 class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
