@@ -28,7 +28,7 @@
                                     </span>
                                 </div>
                                 <div class="chat-last-message">
-                                    {{ room.last_message_text|default:"Сообщений нет" }}
+                                    {{ room.last_message_text|default:"Сообщений нет" |safe }}
                                 </div>
                             </div>
                         </a>
@@ -81,6 +81,37 @@
                 </div>
                 <div id="order-button-container">
                     {% if pending_order %}
+                        {% if user == pending_order.user %}
+                            <!-- Покупатель видит кнопку подтверждения -->
+                            <form id="confirm-form" method="post" style="margin-top: 10px;" action="{% url 'orders:confirm_order' pending_order.id %}">
+                                {% csrf_token %}
+                                <button
+                                    type="submit"
+                                    class="header__btn"
+                                    data-order-id="{{ pending_order.id }}"
+                                >
+                                    Подтвердить покупку
+                                </button>
+                            </form>
+                        {% elif user == pending_order.seller %}
+                            <!-- Продавец видит кнопку отказа -->
+                            <form id="cancel-form" method="post" style="margin-top: 10px;" action="{% url 'orders:cancel_order' pending_order.id %}">
+                                {% csrf_token %}
+                                <button
+                                    id="cancel-order-btn"
+                                    type="submit"
+                                    class="header__btn header__btn--danger"
+                                    data-order-id="{{ pending_order.id }}"
+                                >
+                                    Отклонить заказ
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% comment %} <div id="order-button-container">
+                    {% if pending_order %}
                         <form id="confirm-form" method="post" style="margin-top: 10px;">
                             {% csrf_token %}
                             <button
@@ -93,7 +124,7 @@
                             </button>
                         </form>
                     {% endif %}
-                </div>
+                </div> {% endcomment %}
 
 
                 <div class="chat-input">
