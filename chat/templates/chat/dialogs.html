@@ -9,12 +9,14 @@
                     <li class="{% if chat and room.id == chat.id %}active{% endif %}">
                         <a href="{% url 'chat:chat_dialog_detail' chat_id=room.id %}">
                             <div class="avatar">
-                            <img src="{% if user == room.buyer %}
-                                {% if room.seller.image %}{{ room.seller.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
-                            {% else %}
-                                {% if room.buyer.image %}{{ room.buyer.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
-                            {% endif %}" alt="Avatar">
-
+                                <img src="{% if user == room.buyer %}
+                                    {% if room.seller.image %}{{ room.seller.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
+                                {% else %}
+                                    {% if room.buyer.image %}{{ room.buyer.image.url }}{% else %}{% static 'deps/images/profile.png' %}{% endif %}
+                                {% endif %}" alt="Avatar">
+                                {% if room.unread_count > 0 %}
+                                    <span class="profile-badge">{{ room.unread_count }}</span>
+                                {% endif %}
                             </div>
                             <div class="chat-info">
                                 <div class="chat-user">
@@ -30,6 +32,7 @@
                                 <div class="chat-last-message">
                                     {{ room.last_message_text|default:"Сообщений нет" |safe }}
                                 </div>
+
                             </div>
                         </a>
                     </li>
@@ -135,7 +138,7 @@
             {% endif %}
         </div>
     </div>
-    <div id="current-user" data-user-id="{{ user.id }}"></div>
+    <div id="current-user" data-user-id="{{ user.id }}" data-username="{{ request.user.username }}"></div>
     <div id="chat-data"
         data-chat-id="{{ chat_id }}"
         buyer="{{ buyer }}"

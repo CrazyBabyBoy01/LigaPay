@@ -1284,6 +1284,9 @@ div.filter-container__lvl input{
     padding: 1rem;
 
 }
+.avatar {
+    position: relative;
+}
 
 .chat-list {
     list-style: none;

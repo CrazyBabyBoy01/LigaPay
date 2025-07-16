@@ -361,9 +361,33 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Received message:", data);
 
         // ✅ Новый заказ — показываем кнопку (если её ещё нет)
+        // if (data.type === "order_created") {
+        //     const container = document.querySelector("#order-button-container");
+        //     if (container && !document.getElementById("confirm-form")) {
+        //         container.innerHTML = `
+        //             <form id="confirm-form" method="post" style="margin-top: 10px;">
+        //                 <button type="submit" id="confirm-purchase-btn" class="header__btn" data-order-id="${data.order_id}">
+        //                     Подтвердить покупку
+        //                 </button>
+        //             </form>
+        //         `;
+        //         setupConfirmHandler();
+        //     }
+        //     return;
+        // }
         if (data.type === "order_created") {
+            console.log("🧪 order_created payload:", data);
             const container = document.querySelector("#order-button-container");
-            if (container && !document.getElementById("confirm-form")) {
+            if (!container) return;
+            // Получаем текущего пользователя из DOM
+            const currentUser = document.querySelector('#current-user').dataset.username;
+
+            // Выводим в консоль для проверки
+            console.log("Текущий пользователь:", currentUser);
+            console.log("Покупатель из события:", data.buyer_username);
+            console.log("Продавец из события:", data.seller_username);
+            // Показываем кнопку только нужному пользователю
+            if (currentUser === data.buyer_username && !document.getElementById("confirm-form")) {
                 container.innerHTML = `
                     <form id="confirm-form" method="post" style="margin-top: 10px;">
                         <button type="submit" id="confirm-purchase-btn" class="header__btn" data-order-id="${data.order_id}">
@@ -372,6 +396,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     </form>
                 `;
                 setupConfirmHandler();
+            } else if (currentUser === data.seller_username && !document.getElementById("cancel-form")) {
+                container.innerHTML = `
+                    <form id="cancel-form" method="post" style="margin-top: 10px;">
+                        <button type="submit" id="cancel-order-btn" class="header__btn red" data-order-id="${data.order_id}">
+                            Отменить заказ
+                        </button>
+                    </form>
+                `;
+                setupCancelHandler();
             }
             return;
         }

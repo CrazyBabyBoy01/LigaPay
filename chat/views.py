@@ -57,7 +57,15 @@ class DialogsView(LoginRequiredMixin, View):
             last_message_text=Subquery(last_messages.values("message")[:1]),
             last_message_time=Subquery(last_messages.values("timestamp")[:1]),
         ).order_by("-last_message_time")  # сортировка по последнему сообщению
-
+        for room in chat_rooms:
+            room.unread_count = (
+                ChatMessage.objects.filter(
+                    chat_room=room,
+                    is_read=False,
+                )
+                .exclude(sender=request.user)
+                .count()
+            )
         return render(request, "chat/dialogs.html", {"chat_rooms": chat_rooms})
 
 
@@ -79,7 +87,15 @@ class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
             )
             .order_by("-last_message_time")
         )
-
+        for room in chat_rooms:
+            room.unread_count = (
+                ChatMessage.objects.filter(
+                    chat_room=room,
+                    is_read=False,
+                )
+                .exclude(sender=request.user)
+                .count()
+            )
         chat = ChatRoom.objects.get(id=chat_id)
         if request.user != chat.buyer and request.user != chat.seller:
             return render(request, "chat/forbidden.html", status=403)
