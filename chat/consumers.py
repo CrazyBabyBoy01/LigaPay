@@ -165,6 +165,8 @@ class ChatConsumer(WebsocketConsumer):
                     "type": "order_created",
                     "order_id": event["order_id"],
                     "csrf_token": event["csrf_token"],
+                    "buyer_username": event.get("buyer_username"),
+                    "seller_username": event.get("seller_username"),
                 }
             )
         )

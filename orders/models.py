@@ -39,6 +39,31 @@ class Order(models.Model):
         related_name="sales",  # Позволит найти все продажи продавца через user.sales.all()
         verbose_name="Продавец",
     )
+    def hold_payment(self):
+        try:
+            buyer_wallet = Wallet.objects.get(user=self.user)
+        except Wallet.DoesNotExist:
+            print("Ошибка: у покупателя нет кошелька.")
+            return False
+
+        total_price = self.price * self.amount
+
+        if buyer_wallet.balance < total_price:
+            print("Ошибка: недостаточно средств.")
+            return False
+
+        with transaction.atomic():
+            # Списываем с баланса покупателя
+            buyer_wallet.balance -= total_price
+            # Добавляем в замороженные средства
+            buyer_wallet.held_balance += total_price
+            buyer_wallet.save()
+
+            self.status = "pending"
+            self.save()
+
+        print(f"Сумма {total_price}₽ заморожена на кошельке {self.user.username}")
+        return True
 
     def process_payment(self):
         """Метод обработки оплаты с учетом количества товара"""

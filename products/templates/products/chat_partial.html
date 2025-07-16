@@ -1,4 +1,4 @@
-<div id="chat-box " class="chat-box chat-box__products">
+<div id="chat-box" class="chat-box chat-box__products">
     <h3 class="chat-box__title">Чат с продавцом</h3>
     <div id="chat-log" class="chat-log">
         {% if grouped_messages %}
@@ -41,4 +41,5 @@
         {% endif %}
     </div>
     <input id="chat-message-input" type="text" size="100" placeholder="Введите сообщение">
+    <div id="current-user" data-username="{{ request.user.username }}"></div>
 </div>

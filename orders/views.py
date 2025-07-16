@@ -31,6 +31,7 @@ from products.models import (
     ServerBasedService,
     TrainingService,
 )
+from wallet.models import Wallet
 
 from .models import Order
 
@@ -107,9 +108,14 @@ class CreateOrderView(LoginRequiredMixin, View):
                     description=product.description,
                     amount=amount,  # Сохраняем количество в заказе
                 )
+
                 logger.info(f"✅ Заказ создан: ID {order.id}, Количество: {order.amount}")
                 logger.info(f"📦 Заказ создан: ID {order.id}, сумма {total_price} руб.")
 
+                if not order.hold_payment():
+                    messages.error(request, "Недостаточно средств для заморозки оплаты.")
+                    order.delete()
+                    return JsonResponse({"success": False, "message": "Недостаточно средств."})
                 # ✅ Получаем или создаем чат, независимо от порядка buyer/seller
 
                 user1, user2 = sorted([request.user, product.seller], key=lambda u: u.id)
@@ -146,6 +152,15 @@ class CreateOrderView(LoginRequiredMixin, View):
                         "is_system": True,
                     },
                 )
+                # # Потом сигнал клиенту отрисовать кнопку
+                # async_to_sync(channel_layer.group_send)(
+                #     f"chat_{chat_room.id}",
+                #     {
+                #         "type": "order_created",
+                #         "order_id": order.id,
+                #         "csrf_token": get_token(request),
+                #     },
+                # )
                 # Потом сигнал клиенту отрисовать кнопку
                 async_to_sync(channel_layer.group_send)(
                     f"chat_{chat_room.id}",
@@ -153,6 +168,8 @@ class CreateOrderView(LoginRequiredMixin, View):
                         "type": "order_created",
                         "order_id": order.id,
                         "csrf_token": get_token(request),
+                        "buyer_username": order.user.username,
+                        "seller_username": order.seller.username,
                     },
                 )
                 logger.info(f"📤 WebSocket: отправлено событие order_created в chat_{chat_room.id}")
@@ -243,9 +260,27 @@ class CancelOrderView(LoginRequiredMixin, View):
         if order.status != "pending":
             return JsonResponse({"success": False, "message": "Нельзя отменить завершённый заказ."})
 
-        # Обновляем статус
-        order.status = "canceled"
-        order.save()
+        with transaction.atomic():
+            try:
+                buyer_wallet = Wallet.objects.select_for_update().get(user=order.user)
+            except Wallet.DoesNotExist:
+                return JsonResponse({"success": False, "message": "Кошелек покупателя не найден."})
+
+            refund_amount = order.price
+
+            if buyer_wallet.held_balance < refund_amount:
+                return JsonResponse(
+                    {"success": False, "message": "Ошибка возврата средств. Недостаточно замороженных средств."}
+                )
+
+            buyer_wallet.held_balance -= refund_amount
+            buyer_wallet.balance += refund_amount
+            buyer_wallet.save()
+
+            # Обновляем статус
+            order.status = "canceled"
+            order.save()
+
 
         # Отправка сообщения в чат
         user1, user2 = sorted([order.user, order.seller], key=lambda u: u.id)
