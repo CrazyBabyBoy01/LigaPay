@@ -1168,7 +1168,19 @@ div.filter-container__lvl input{
     text-align: center;
     font-size: 20px;
 }
+/* Обёртка для фиксированного чата */
+.chat-fixed {
+    position: sticky;
+    top: 80px; /* Расстояние от верхнего края */
+    align-self: flex-start;
+    z-index: 10;
+}
 
+/* Адаптация размеров для фиксации */
+.chat-box.chat-box__products {
+    max-height: 600px;
+    overflow-y: auto;
+}
 
 .chat-box__products {
     height: 600px;
@@ -1435,4 +1447,204 @@ div.filter-container__lvl input{
 }
 .text {
     font-size: 13px;
+}
+
+/* Модальное окно для отзыва */
+
+.modal {
+    display: none; /* Скрыто по умолчанию */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5); /* полупрозрачный фон */
+    backdrop-filter: blur(2px);
+}
+
+/* Контейнер модального контента */
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Кнопка закрытия */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    transition: color 0.2s;
+}
+.close:hover {
+    color: #333;
+}
+
+/* Заголовок */
+.modal-content h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Поля формы */
+.modal-content label {
+    display: block;
+    margin-top: 10px;
+    font-weight: 500;
+    color: #555;
+}
+
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+.modal-content select:focus,
+.modal-content textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Кнопка отправки */
+.modal-content button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 16px;
+    margin-top: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background-color 0.2s;
+}
+.modal-content button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Контейнер звёзд */
+.star-rating {
+    direction: rtl;
+    display: inline-flex;
+    justify-content: flex-start;
+    gap: 5px;
+    font-size: 26px;
+}
+
+/* Скрываем input, оставляем label */
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+/* Оформляем звёзды */
+.star-rating label {
+    color: #ccc;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+/* Подсветка при наведении */
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    color: #ffc107;
+}
+
+/* Выбранные звёзды */
+.star-rating input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+/* Стили для отбражения отзывов на странице */
+.reviews-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.review-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-2px);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.review-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-author strong {
+    color: #D32F2F;
+}
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.review-stars .star {
+    color: #ccc;
+    font-size: 20px;
+    margin-left: 2px;
+}
+
+.review-stars .star.filled {
+    color: #ffc107;
+}
+
+.review-comment {
+    font-style: italic;
+    margin-top: 8px;
+    color: #333;
+}
+
+.date {
+    font-size: 12px;
+    color: #888;
 }

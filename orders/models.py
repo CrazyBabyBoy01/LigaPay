@@ -99,3 +99,23 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Заказ {self.id} - {self.product} ({self.status})"
+
+# Модель для отзывов 
+class Review(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="review", verbose_name="Заказ")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews_written", verbose_name="Автор"
+    )
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews_received", verbose_name="Продавец"
+    )
+    rating = models.PositiveSmallIntegerField(verbose_name="Оценка (1-5)")
+    comment = models.TextField(verbose_name="Комментарий", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата отзыва")
+
+    class Meta:
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+
+    def __str__(self):
+        return f"Отзыв от {self.author.username} продавцу {self.seller.username}"

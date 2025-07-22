@@ -1,0 +1,36 @@
+{% load static %}
+{% if seller_reviews %}
+    <div class="reviews-container">
+        {% for review in seller_reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <div class="review-author">
+                        <div class="avatar">
+                            {% if review.author.image %}
+                                <img class="avatar" src="{{ review.author.image.url }}" alt="{{ review.author.username }}" />
+                            {% else %}
+                                <img class="avatar" src="{% static "deps/images/profile.png" %}" alt="{{ review.author.username }}" />
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>{{ review.author.username }}</strong><br>
+                            <small class="date">{{ review.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                    </div>
+                    <div class="review-stars">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}
+                                <span class="star filled">&#9733;</span>
+                            {% else %}
+                                <span class="star">&#9733;</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="review-comment">{{ review.comment }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>У этого продавца пока нет отзывов.</p>
+{% endif %}

@@ -33,7 +33,7 @@ from products.models import (
 )
 from wallet.models import Wallet
 
-from .models import Order
+from .models import Order, Review
 
 
 logger = logging.getLogger(__name__)
@@ -244,8 +244,19 @@ class ConfirmOrderView(View):
                 "is_system": True,
             },
         )
+        # Теперь отправляем специальное событие для открытия модалки
+        async_to_sync(channel_layer.group_send)(
+            f"chat_{chat_room.id}",
+            {
+                "type": "order_confirmed",  # 👈 вот оно
+                "message": "Покупка подтверждена и оплачена!",
+                "order_id": order.id,
+            },
+        )
 
-        return JsonResponse({"success": True, "message": "Покупка подтверждена и оплачена!", "reload": True})
+        return JsonResponse(
+            {"success": True, "message": "Покупка подтверждена и оплачена!", "reload": True, "show_review": True}
+        )
 
 
 class CancelOrderView(LoginRequiredMixin, View):
@@ -280,7 +291,6 @@ class CancelOrderView(LoginRequiredMixin, View):
             # Обновляем статус
             order.status = "canceled"
             order.save()
-
 
         # Отправка сообщения в чат
         user1, user2 = sorted([order.user, order.seller], key=lambda u: u.id)
@@ -338,3 +348,43 @@ class SaleListView(LoginRequiredMixin, ContextMixin, ListView):
     def get_queryset(self):
         """Фильтруем заказы, где текущий пользователь является продавцом"""
         return Order.objects.filter(seller=self.request.user).order_by("-created_at")
+
+
+class ReviewCreateView(LoginRequiredMixin, View):
+    def post(self, request):
+        order_id = request.POST.get("order_id")
+        order = get_object_or_404(Order, id=order_id)
+
+        # Проверка: только покупатель может оставить отзыв
+        if order.user != request.user:
+            messages.error(request, "Вы не можете оставить отзыв к этому заказу.")
+            return redirect("orders:order_detail", order_id=order.id)
+
+        # Проверка, существует ли отзыв уже
+        if hasattr(order, "review"):
+            messages.warning(request, "Вы уже оставили отзыв для этого заказа.")
+            return redirect("orders:order_detail", order_id=order.id)
+
+        rating = request.POST.get("rating")
+        comment = request.POST.get("comment", "").strip()
+
+        # Проверяем, что рейтинг - число и в нужном диапазоне
+        try:
+            rating = int(rating)
+            if rating < 1 or rating > 5:
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(request, "Оценка должна быть числом от 1 до 5.")
+            return redirect("orders:order_detail", order_id=order.id)
+
+        # Создаём отзыв
+        Review.objects.create(
+            order=order,
+            author=request.user,
+            seller=order.seller,
+            rating=rating,
+            comment=comment,
+        )
+
+        messages.success(request, "Спасибо! Ваш отзыв сохранён.")
+        return redirect("main:index")

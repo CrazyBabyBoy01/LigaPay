@@ -58,11 +58,11 @@ function setupModal(openBtnId, modalId) {
             };
         }
 
-        window.onclick = function (event) {
+        window.addEventListener("click", function (event) {
             if (event.target === modal) {
                 modal.style.display = "none";
             }
-        };
+        });
     } else {
         console.log("Не найдена кнопка или модалка: " + openBtnId + ", " + modalId);
     }
@@ -422,6 +422,18 @@ document.addEventListener("DOMContentLoaded", function () {
             chatLog.appendChild(messageElement);
 
             chatLog.scrollTop = chatLog.scrollHeight;
+            // ✅ Вставляем order_id в скрытое поле формы
+            const reviewOrderInput = document.getElementById("order_id_input");
+            if (reviewOrderInput) {
+                reviewOrderInput.value = data.order_id;
+                console.log("📌 Order ID вставлен в форму отзыва:", data.order_id);
+            }
+            // ✅ Открытие модального окна с отзывом
+            const reviewModal = document.getElementById("reviewModal");
+            if (reviewModal) {
+                reviewModal.style.display = "block";
+            }
+
         }
 
         appendMessage({
@@ -477,9 +489,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(json => {
                     if (json.success) {
                         alert(json.message);
-                        if (json.reload) {
+
+                        const reviewModal = document.getElementById("reviewModal");
+
+                        if (json.show_review && reviewModal) {
+                            // Показываем модалку
+                            reviewModal.style.display = "block";
+
+                            // Даём пользователю 5 секунд, потом перезагружаем
+                            setTimeout(() => {
+                                location.reload();
+                            }, 50000); // можно изменить на больше/меньше
+                        } else if (json.reload) {
+                            // Если нет модалки — просто перезагружаем
                             location.reload();
                         }
+
                     } else {
                         alert("Ошибка: " + json.message);
                     }
@@ -527,6 +552,20 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     }
+    const reviewModal = document.getElementById("reviewModal");
+    const reviewCloseBtn = document.getElementById("reviewCloseBtn");
+
+    if (reviewCloseBtn && reviewModal) {
+        reviewCloseBtn.onclick = function () {
+            reviewModal.style.display = "none";
+        };
+    }
+
+    window.addEventListener("click", function (event) {
+        if (event.target === reviewModal) {
+            reviewModal.style.display = "none";
+        }
+    });
 });
 
 

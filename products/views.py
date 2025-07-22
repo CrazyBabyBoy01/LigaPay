@@ -16,7 +16,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views import View
 from django.views.generic import DetailView, FormView, ListView, TemplateView
-from orders.models import Order
+from orders.models import Order, Review
 
 from products.filters import (
     AccountFilter,
@@ -185,6 +185,7 @@ class AccountServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesM
         context["model_name"] = self.model._meta.model_name
         context["image_form"] = ServiceImageForm()  # Добавляем картинку
         context["images"] = self.object.images.all()
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
             pending_order = Order.objects.filter(
@@ -322,6 +323,7 @@ class RPServiceDetailView(CategoryMixin, ServiceChatMixin, GroupedMessagesMixin,
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
             pending_order = Order.objects.filter(
@@ -431,6 +433,7 @@ class BoostServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMi
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -536,6 +539,7 @@ class TrainingServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessage
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -643,6 +647,7 @@ class BattlePassServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessa
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -757,6 +762,7 @@ class DonationServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessage
         context["model_name"] = self.model._meta.model_name
         context["image_form"] = ServiceImageForm()  # Добавляем картинку
         context["images"] = self.object.images.all()
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -879,6 +885,7 @@ class GeneralServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessages
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -984,6 +991,7 @@ class OtherServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMessagesMi
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -1091,6 +1099,7 @@ class QualificationServiceDetailsView(CategoryMixin, ServiceChatMixin, GroupedMe
         context["form_purchase"] = PurchaseForm()  # форма для покупки
         context["is_buyer"] = self.request.user != self.object.seller  # Проверка, покупатель ли это
         context["model_name"] = self.model._meta.model_name
+        context["seller_reviews"] = Review.objects.filter(seller=service.seller).order_by("-id")
         #  Получаем заказ с этим товаром и статусом "pending"
         # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
@@ -1172,33 +1181,3 @@ class MyProductsView(TemplateView):
             context["services"] = []
 
         return context
-
-
-# class OfferView(TemplateView):
-#     template_name = "products/offer.html"
-#     context_object_name = "offers"
-
-#     def get(self, request, *args, **kwargs):
-#         # Получаем выбранную категорию из URL или из запроса
-#         category_slug = self.kwargs.get("slug", None)  # Или используй kwargs, если передаешь через URL
-
-#         # Создаем форму
-#         form = GeneralOfferForm()
-
-#         # Динамически скрываем или показываем поля в зависимости от категории
-#         if category_slug == "accounts":
-#             form.fields["rank"].required = True
-#             form.fields["server"].required = True
-#             form.fields["position"].required = False
-#         return render(request, self.template_name, {"form": form, "category_slug": category_slug})
-#     def post(self, request, *args, **kwargs):
-#         category_slug = self.kwargs.get("slug")
-#         category = get_object_or_404(Category, slug=category_slug)
-#         form = GeneralOfferForm(request.POST, category=category)
-
-#         if form.is_valid():
-#             offer = form.save(commit=False)
-#             offer.category = category  # Привязываем категорию
-#             offer.save()
-#             return redirect("products:account")  # Укажите URL успеха
-#         return render(request, self.template_name, {"form": form, "category": category})
