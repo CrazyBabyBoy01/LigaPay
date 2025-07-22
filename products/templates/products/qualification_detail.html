@@ -48,11 +48,16 @@
                         Купить
                     </button>
                 </form>
+                <h3>Отзывы о продавце {{ service.seller.username }}</h3>
+                {% include "products/reviews.html" %}
             </div>
 
-            {% include "products/chat_partial.html" %}
+            <div class="chat-fixed">
+                {% include "products/chat_partial.html" %}
+            </div>
             <div class="details__chatt"></div>
             <div id="notifications"></div>
+            {% include "products/review_modal.html" %}
         </div>
     {% else %}
         <div class="details__seller">

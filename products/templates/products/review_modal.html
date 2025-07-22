@@ -1,0 +1,22 @@
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <span id="reviewCloseBtn" class="close">&times;</span>
+        <h2>Оставьте отзыв</h2>
+        <form id="reviewForm" method="POST" action="{% url 'orders:review_create' %}">
+            {% csrf_token %}
+            <input type="hidden" name="order_id" id="order_id_input" value="">
+            <label for="rating">Оценка:</label>
+            <div class="star-rating">
+                {% for i in "54321" %}
+                    <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                    <label for="star{{ i }}" title="{{ i }} звёзд">&#9733;</label>
+                {% endfor %}
+            </div>
+
+            <label for="comment">Комментарий:</label>
+            <textarea id="comment" name="comment" rows="4" placeholder="Напишите отзыв..." required></textarea>
+
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
+</div>
