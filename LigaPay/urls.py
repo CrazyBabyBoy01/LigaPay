@@ -37,6 +37,7 @@ urlpatterns = [
     path("wallet/", include("wallet.urls", namespace="wallet")),
     path("orders/", include("orders.urls", namespace="orders")),
     path("chat/", include("chat.urls", namespace="chat")),
+    path("store/", include("store.urls")),
 ]
 
 if settings.DEBUG:

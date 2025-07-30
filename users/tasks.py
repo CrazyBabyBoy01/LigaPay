@@ -37,7 +37,7 @@ def send_email_verification(user_identifier):
 
 
 @shared_task
-def send_reset_email(subject, message, recipient_list):
+def send_reset_email(subject, message, recipient_list,html_message=None):
     """
     Отправляет email с помощью Celery.
     """
@@ -47,4 +47,5 @@ def send_reset_email(subject, message, recipient_list):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=recipient_list,
         fail_silently=False,
+        html_message=html_message,
     )
