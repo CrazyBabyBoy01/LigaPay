@@ -1648,3 +1648,98 @@ div.filter-container__lvl input{
     font-size: 12px;
     color: #888;
 }
+
+
+/* 3D модели */
+
+.container-skin {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+
+.char1name, .account_name1, .skin1name {
+    display: none;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.buttons .button,
+.buttons .button1 {
+    background-color: #4a90e2;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.buttons .button:hover,
+.buttons .button1:hover {
+    background-color: #357abd;
+    transform: translateY(-2px);
+}
+
+.buttons .button:disabled,
+.buttons .button1:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.buttons h3.price_char,
+.buttons h3.price_skin {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.accounts_data {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.form_group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+}
+
+.form_group label {
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.form_group input,
+.form_group select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form_group input:focus,
+.form_group select:focus {
+    border-color: #0077ff;
+}

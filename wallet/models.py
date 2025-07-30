@@ -32,6 +32,7 @@ class Wallet(models.Model):
             raise ValidationError("Недостаточно средств на балансе.")
         self.balance -= amount
         self.save()
+        print(f"==> Balance after withdraw: {self.balance}")
         Transaction.objects.create(wallet=self, amount=-amount, transaction_type="withdraw")
 
     def transfer(self, recipient_wallet, amount):

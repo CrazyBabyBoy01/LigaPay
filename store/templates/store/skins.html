@@ -1,0 +1,192 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% block content %}
+
+    <div class="container-skin" id="container-skin">
+        <div id="loading" style="display: none;">
+        </div>
+        <div class="skins" id="skins"></div>
+        <div class="buttons">
+            <div class="accounts_data">
+                <div class="form_group">
+                    <label for="{{ skinorder_form.server.id_for_label }}">Сервер:</label>
+                    {{ skinorder_form.server }}
+                </div>
+                <div class="form_group">
+                    <label for="name">Ник в игре:</label>
+                    <input id="account_name" type="text" value="{{ user.game_username }}">
+                </div>
+            </div>
+            <form action="{% url 'store:store_skins' %}" method='post'>
+                {% csrf_token %}
+                <div>
+                    {{ skinorder_form.char_name }}
+
+                    {{ skinorder_form.account_name }}
+                    <h3 class="price_char">Цена: 200 руб.</h3>
+                    <button type='sumbit' class="button">Купить персонажа</button>
+                </div>
+            </form>
+            <form action="{% url 'store:store_skins' %}" method='post'>
+            {% csrf_token %}
+            <div>
+                {{ skinorder_form.skin_name }}
+
+                {{ skinorder_form.account_name }}
+                <h3 class="price_skin">Цена: 0 руб.</h3>
+                <button type='submit' class="button1">Купить образ</button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'deps/chars/lib/jquery.min.js' %}"></script>
+
+    <script>
+        const totalPriceCharElem = document.getElementsByClassName("price_char")[0]
+        const totalPriceSkinElem = document.getElementsByClassName("price_skin")[0]
+        const char1NameElem = document.getElementsByClassName("char1name")[0]
+        const skin1NameElem = document.getElementsByClassName("skin1name")[0]
+        const buttonElem = document.getElementsByClassName("button1")[0]
+        const ServerElem = document.getElementById("server")
+        const аccountNameElem = document.getElementById("account_name")
+        const formServerElem = document.getElementsByClassName("server1")[0]
+        const formAccountNameElem = document.getElementsByClassName("account_name1")[0]
+        const formServerElem1 = document.getElementsByClassName("server1")[1]
+        const formAccountNameElem1 = document.getElementsByClassName("account_name1")[1]
+        const buttonBuyChar = document.getElementsByClassName("button")[0];
+        console.log(formServerElem)
+
+
+        let name2price = {}
+        let skin2price = {}
+
+        $.getJSON('/static/deps/chars/assets/name2price.json', function (data) {
+        $.each(data, function (key, val) {
+            name2price[key] = val;
+
+
+        });
+    });
+
+    $.getJSON('/static/deps/chars/assets/skins2price.json', function (data) {
+        $.each(data, function (key, val) {
+            skin2price[key] = val;
+        });
+    });
+
+    // Цена персонажа
+    Object.defineProperty(window, 'char_name', {
+        set: function(value) {
+            //console.log('set!', value);
+            char1NameElem.value = value
+            console.log('char --', char1NameElem)
+            let price = name2price[value]
+            //console.log(name2price)
+            if (price) {
+            totalPriceCharElem.textContent = price + " руб."
+            }
+            totalPriceSkinElem.textContent = 0 + " руб.";
+            buttonElem.disabled = true;
+            buttonElem.style.backgroundColor = "#ccc";
+            buttonElem.style.cursor = "not-allowed";
+            buttonElem.style.border = "1px solid #999";
+        }
+        });
+        buttonElem.disabled = true;
+        buttonElem.style.backgroundColor = "#ccc";
+        buttonElem.style.cursor = "not-allowed";
+        buttonElem.style.border = "1px solid #999";
+        // Цена образа
+        Object.defineProperty(window, 'skin_name', {
+        set: function(value) {
+            console.log('set!', value);
+            skin1NameElem.value = value
+            console.log('skin --', skin1NameElem)
+
+            let price = skin2price[value]
+            console.log(skin2price[value])
+            if (price) {
+            totalPriceSkinElem.textContent = price + " руб."
+            buttonElem.disabled = false;
+            buttonElem.style.backgroundColor = "";
+            buttonElem.style.cursor = "";
+            buttonElem.style.border = "";
+            }
+
+            else {
+            totalPriceSkinElem.textContent = 0 + " руб.";
+            buttonElem.disabled = true;
+            buttonElem.style.backgroundColor = "#ccc";
+            buttonElem.style.cursor = "not-allowed";
+            buttonElem.style.border = "1px solid #999";
+            }
+        }
+
+        });
+
+        window.char_name = "Азир";
+
+        const accountName = аccountNameElem.value;
+        formAccountNameElem.value = accountName;
+        formAccountNameElem1.value = accountName;
+
+
+
+        // Функция для обработки изменений сервера
+        ServerElem.addEventListener("change", function() {
+        const selectedServer = ServerElem.value;
+        formServerElem.value = selectedServer;
+        formServerElem1.value = selectedServer;
+
+        console.log("Выбран сервер:", selectedServer); // выводим выбранный сервер в консоль
+        // Заполняем значение в нужной переменной или элементе JavaScript
+        // например, server = selectedServer;
+        });
+
+        // Функция для обработки изменений имени аккаунта
+        аccountNameElem.addEventListener("input", function() {
+        const accountName = аccountNameElem.value;
+        formAccountNameElem.value = accountName;
+        formAccountNameElem1.value = accountName;
+        console.log("Введено имя аккаунта:", accountName); // выводим введенное имя в консоль
+        // Заполняем значение в нужной переменной или элементе JavaScript
+        // например, accountNameValue = accountName;
+        });
+
+        // Функция для проверки, заполнено ли поле с именем аккаунта
+    function validateAccountName() {
+    const accountName = аccountNameElem.value.trim();
+
+    // Проверяем, пустое ли поле
+    if (accountName === "") {
+        аccountNameElem.style.border = "3px solid red"; // Подсвечиваем рамку красным
+    } else {
+        аccountNameElem.style.borderColor = ""; // Убираем подсветку рамки
+    }
+    }
+
+    // Слушаем изменения в поле с именем аккаунта
+    аccountNameElem.addEventListener("input", validateAccountName);
+
+    // Первоначальная проверка при загрузке страницы
+    validateAccountName();
+
+
+    </script>
+
+
+        <script src="{% static 'deps/chars/lib/dat.gui.min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/d3.min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/gl-matrix-min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/pako.min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/three.min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/LOLLoader.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/inflate.min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/OrbitControls.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/WebGL.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/stats.min.js' %}"></script>
+        <script src="{% static 'deps/chars/lib/index.js' %}"></script>
+
+
+{% endblock %}
