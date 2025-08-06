@@ -1,6 +1,6 @@
-from common.views import ContextMixin
 from django.views.generic import ListView
 
+from common.views import ContextMixin
 from news.models import News
 
 
@@ -9,9 +9,9 @@ from news.models import News
 
 class NewsView(ContextMixin, ListView):
     model = News
-    template_name = "news/news.html"
-    title = "Новости"
-    context_object_name = "news"
+    template_name = 'news/news.html'
+    title = 'Новости'
+    context_object_name = 'news'
     paginate_by = 6
-    ordering = ("-date",)
-    background_image = "/static/deps/images/SB_Riven.jpg"
+    ordering = ('-date',)
+    background_image = '/static/deps/images/SB_Riven.jpg'

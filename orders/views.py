@@ -2,8 +2,6 @@ import logging
 
 from channels.consumer import async_to_sync
 from channels.layers import get_channel_layer
-from chat.models import ChatMessage, ChatRoom
-from common.views import ContextMixin
 from django.apps import apps
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -14,23 +12,13 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
 from django.utils.html import escape
 from django.views import View
 from django.views.generic import ListView
+
+from chat.models import ChatMessage, ChatRoom
+from common.views import ContextMixin
 from products.forms import PurchaseForm
-from products.models import (
-    AccountService,
-    BattlePassService,
-    BoostService,
-    DonationService,
-    GeneralService,
-    OtherService,
-    QualificationService,
-    RPService,
-    ServerBasedService,
-    TrainingService,
-)
 from wallet.models import Wallet
 
 from .models import Order, Review
@@ -48,55 +36,62 @@ class CreateOrderView(LoginRequiredMixin, View):
         form = PurchaseForm(request.POST)
 
         if not form.is_valid():
-            messages.error(request, "Некорректные данные!")
-            return redirect("users:profile", pk=request.user.pk)
-        logger.info(f"Данные формы: {form.cleaned_data}")
+            messages.error(request, 'Некорректные данные!')
+            return redirect('users:profile', pk=request.user.pk)
+        logger.info(f'Данные формы: {form.cleaned_data}')
         # Получаем данные из формы
-        amount = form.cleaned_data.get("amount", 1)
-        price = form.cleaned_data["price"]
-        player_id = form.cleaned_data["player_id"]
-        payment_method = form.cleaned_data["payment_method"]
-        logger.info(f"Обработано количество: {amount} шт. товара")
+        amount = form.cleaned_data.get('amount', 1)
+        logger.info(f'Обработано количество: {amount} шт. товара')
         try:
-            logger.info("🔄 Начинаем транзакцию...")
+            logger.info('🔄 Начинаем транзакцию...')
             with transaction.atomic():  # Используем транзакцию для безопасности
                 # Получаем товар
-                logger.info(f"🔍 Начинаем обработку покупки: {amount} шт. товара (ID {product_id})")
+                logger.info(f'🔍 Начинаем обработку покупки: {amount} шт. товара (ID {product_id})')
 
-                model = apps.get_model("products", model_name)
+                model = apps.get_model('products', model_name)
                 if not model:
-                    messages.error(request, "Некорректная категория товара!")
-                    return JsonResponse({"success": False, "message": "Некорректные данные!"})
+                    messages.error(request, 'Некорректная категория товара!')
+                    return JsonResponse({'success': False, 'message': 'Некорректные данные!'})
 
                 try:
                     product = model.objects.select_for_update().get(
                         id=product_id
                     )  # Блокируем запись для других транзакций
                 except model.DoesNotExist:
-                    messages.error(request, "Товар не найден!")
-                    return JsonResponse({"success": False, "message": "Товар не найден!"})
-                logger.info(f"🔍 Проверяем, что товар с ID {product_id} существует и загружен корректно.")
-                logger.info(f"✅ Найден товар: {product.title} (остаток: {getattr(product, 'quantity', 'Не указано')})")
+                    messages.error(request, 'Товар не найден!')
+                    return JsonResponse({'success': False, 'message': 'Товар не найден!'})
+                logger.info(
+                    f'🔍 Проверяем, что товар с ID {product_id} существует и загружен корректно.'
+                )
+                logger.info(
+                    f"✅ Найден товар: {product.title} "
+                    f"(остаток: {getattr(product, 'quantity', 'Не указано')})"
+                )
                 # 🔴 Проверка: достаточно ли товара на складе?
-                has_quantity = hasattr(product, "quantity")
+                has_quantity = hasattr(product, 'quantity')
                 logger.info(f"Проверка наличия поля 'quantity': {has_quantity}")
                 if has_quantity:
                     if amount > product.quantity:
-                        messages.error(request, "Недостаточное количество товара в наличии!")
-                        return JsonResponse({"success": False, "message": "Недостаточное количество товара в наличии!"})
+                        messages.error(request, 'Недостаточное количество товара в наличии!')
+                        return JsonResponse(
+                            {'success': False, 'message': 'Недостаточное количество товара в наличии!'}
+                        )
                     logger.info(
-                        f"🔴 Уменьшаем количество товара на складе: {product.quantity} → {product.quantity - amount}"
+                        f'🔴 Уменьшаем количество товара на складе: '
+                        f'{product.quantity} → {product.quantity - amount}'
                     )
                     # Уменьшаем количество товара
                     product.quantity -= amount
                     product.save()
-                    logger.info(f"✅ Товар обновлён, остаток: {product.quantity}")
+                    logger.info(f'✅ Товар обновлён, остаток: {product.quantity}')
                 else:
-                    logger.info("💡 У товара нет поля 'quantity', покупка возможна только в одном экземпляре.")
+                    logger.info(
+                        "💡 У товара нет поля 'quantity', покупка возможна только в одном экземпляре."
+                    )
 
                 # Вычисляем финальную стоимость
                 total_price = product.price * amount
-                logger.info(f"💰 Общая сумма: {total_price} руб.")
+                logger.info(f'💰 Общая сумма: {total_price} руб.')
 
                 # 🔴 Создаём заказ
                 order = Order.objects.create(
@@ -109,31 +104,33 @@ class CreateOrderView(LoginRequiredMixin, View):
                     amount=amount,  # Сохраняем количество в заказе
                 )
 
-                logger.info(f"✅ Заказ создан: ID {order.id}, Количество: {order.amount}")
-                logger.info(f"📦 Заказ создан: ID {order.id}, сумма {total_price} руб.")
+                logger.info(f'✅ Заказ создан: ID {order.id}, Количество: {order.amount}')
+                logger.info(f'📦 Заказ создан: ID {order.id}, сумма {total_price} руб.')
 
                 if not order.hold_payment():
-                    messages.error(request, "Недостаточно средств для заморозки оплаты.")
+                    messages.error(request, 'Недостаточно средств для заморозки оплаты.')
                     order.delete()
-                    return JsonResponse({"success": False, "message": "Недостаточно средств."})
+                    return JsonResponse({'success': False, 'message': 'Недостаточно средств.'})
                 # ✅ Получаем или создаем чат, независимо от порядка buyer/seller
 
                 user1, user2 = sorted([request.user, product.seller], key=lambda u: u.id)
 
-                chat_room = ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)).first()
+                chat_room = ChatRoom.objects.filter(
+                    Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)
+                ).first()
 
                 if not chat_room:
                     chat_room = ChatRoom.objects.create(buyer=user1, seller=user2)
-                logger.info(f"📎 Используем чат-комнату: ID {chat_room.id}")
+                logger.info(f'📎 Используем чат-комнату: ID {chat_room.id}')
 
                 # 🔽 Сообщение в чат
                 message_text = (
                     f'✅ Покупатель <span class="username">{escape(request.user.username)}</span> создал <span class="order-id">заказ #{order.id}</span>.'
-                    f"{escape(product.title)}, {amount} шт."
+                    f'{escape(product.title)}, {amount} шт.'
                     f'<span class="username">{escape(request.user.username)}</span>, не забудьте потом нажать кнопку '
-                    f"«Подтвердить покупку»."
+                    f'«Подтвердить покупку».'
                 )
-                system_user = User.objects.get(username="LigaPay")
+                system_user = User.objects.get(username='LigaPay')
                 ChatMessage.objects.create(
                     chat_room=chat_room,
                     sender=system_user,
@@ -143,13 +140,13 @@ class CreateOrderView(LoginRequiredMixin, View):
                 # ✅ Отправляем WebSocket-сообщение о создании заказа
                 channel_layer = get_channel_layer()
                 async_to_sync(channel_layer.group_send)(
-                    f"chat_{chat_room.id}",
+                    f'chat_{chat_room.id}',
                     {
-                        "type": "chat_message",
-                        "message": message_text,
-                        "sender": system_user.username,
-                        "order_id": order.id,
-                        "is_system": True,
+                        'type': 'chat_message',
+                        'message': message_text,
+                        'sender': system_user.username,
+                        'order_id': order.id,
+                        'is_system': True,
                     },
                 )
                 # # Потом сигнал клиенту отрисовать кнопку
@@ -163,36 +160,31 @@ class CreateOrderView(LoginRequiredMixin, View):
                 # )
                 # Потом сигнал клиенту отрисовать кнопку
                 async_to_sync(channel_layer.group_send)(
-                    f"chat_{chat_room.id}",
+                    f'chat_{chat_room.id}',
                     {
-                        "type": "order_created",
-                        "order_id": order.id,
-                        "csrf_token": get_token(request),
-                        "buyer_username": order.user.username,
-                        "seller_username": order.seller.username,
+                        'type': 'order_created',
+                        'order_id': order.id,
+                        'csrf_token': get_token(request),
+                        'buyer_username': order.user.username,
+                        'seller_username': order.seller.username,
                     },
                 )
-                logger.info(f"📤 WebSocket: отправлено событие order_created в chat_{chat_room.id}")
+                logger.info(f'📤 WebSocket: отправлено событие order_created в chat_{chat_room.id}')
 
-                if request.META.get("HTTP_X_REQUESTED_WITH") != "XMLHttpRequest":
-                    messages.success(request, "Заказ создан! Подтвердите покупку в чате. ✅")
+                if request.META.get('HTTP_X_REQUESTED_WITH') != 'XMLHttpRequest':
+                    messages.success(request, 'Заказ создан! Подтвердите покупку в чате. ✅')
 
-                logger.info(f"✅ Заказ создан без оплаты. ID заказа: {order.id}")
-                return JsonResponse({"success": True, "message": "Заказ создан! Подтвердите покупку в чате."})
-
-                # if order.process_payment():
-                #     order.save()
-                #     messages.success(request, f"Вы купили {amount} шт. товара! 🎉")
-                #     logger.info("✅ Оплата прошла успешно. Баланс обновлён.")
-                #     return JsonResponse({"success": True, "message": f"Вы купили {amount} шт. товара!"})
-                # raise ValueError("Недостаточно средств!")
+                logger.info(f'✅ Заказ создан без оплаты. ID заказа: {order.id}')
+                return JsonResponse(
+                    {'success': True, 'message': 'Заказ создан! Подтвердите покупку в чате.'}
+                )
 
         except ValueError as e:
-            logger.error(f"❌ Ошибка: {e}")
-            return JsonResponse({"success": False, "message": str(e)})
+            logger.error(f'❌ Ошибка: {e}')
+            return JsonResponse({'success': False, 'message': str(e)})
         except Exception as e:
-            logger.error(f"❌ Непредвиденная ошибка: {e}")
-            return JsonResponse({"success": False, "message": "Произошла ошибка при оформлении заказа!"})
+            logger.error(f'❌ Непредвиденная ошибка: {e}')
+            return JsonResponse({'success': False, 'message': 'Произошла ошибка при оформлении заказа!'})
 
 
 class ConfirmOrderView(View):
@@ -201,30 +193,32 @@ class ConfirmOrderView(View):
     def post(self, request, order_id):
         order = get_object_or_404(Order, id=order_id, user=request.user)
 
-        if order.status != "pending":
-            return JsonResponse({"success": False, "message": "Этот заказ уже подтвержден или отменен."})
+        if order.status != 'pending':
+            return JsonResponse({'success': False, 'message': 'Этот заказ уже подтвержден или отменен.'})
 
         if not order.process_payment():
-            return JsonResponse({"success": False, "message": "Ошибка оплаты! Недостаточно средств."})
+            return JsonResponse({'success': False, 'message': 'Ошибка оплаты! Недостаточно средств.'})
 
         # Успешная оплата
-        order.status = "paid"
+        order.status = 'paid'
         order.save()
 
         # Находим чат для этого заказа
         try:
             user1, user2 = sorted([request.user, order.seller], key=lambda u: u.id)
 
-            chat_room = ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)).first()
+            chat_room = ChatRoom.objects.filter(
+                Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)
+            ).first()
         except ChatRoom.DoesNotExist:
-            return JsonResponse({"success": True, "message": "Покупка подтверждена, но чат не найден."})
+            return JsonResponse({'success': True, 'message': 'Покупка подтверждена, но чат не найден.'})
         # 💾 Сохраняем сообщение в чат
         plain_message = (
             f'✅ <span class="username">{escape(request.user.username)}</span> оплатил '
             f'<span class="order-id">заказ #{order.id}</span> и отправил деньги продавцу '
             f'<span class="username">{escape(order.seller.username)}</span>.'
         )
-        system_user = User.objects.get(username="LigaPay")
+        system_user = User.objects.get(username='LigaPay')
 
         ChatMessage.objects.create(
             chat_room=chat_room,
@@ -235,27 +229,32 @@ class ConfirmOrderView(View):
         # WebSocket: отправляем событие
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            f"chat_{chat_room.id}",
+            f'chat_{chat_room.id}',
             {
-                "type": "chat_message",
-                "sender": system_user.username,
-                "message": plain_message,
-                "order_id": order.id,
-                "is_system": True,
+                'type': 'chat_message',
+                'sender': system_user.username,
+                'message': plain_message,
+                'order_id': order.id,
+                'is_system': True,
             },
         )
         # Теперь отправляем специальное событие для открытия модалки
         async_to_sync(channel_layer.group_send)(
-            f"chat_{chat_room.id}",
+            f'chat_{chat_room.id}',
             {
-                "type": "order_confirmed",  # 👈 вот оно
-                "message": "Покупка подтверждена и оплачена!",
-                "order_id": order.id,
+                'type': 'order_confirmed',  # 👈 вот оно
+                'message': 'Покупка подтверждена и оплачена!',
+                'order_id': order.id,
             },
         )
 
         return JsonResponse(
-            {"success": True, "message": "Покупка подтверждена и оплачена!", "reload": True, "show_review": True}
+            {
+                'success': True,
+                'message': 'Покупка подтверждена и оплачена!',
+                'reload': True,
+                'show_review': True,
+            }
         )
 
 
@@ -265,23 +264,26 @@ class CancelOrderView(LoginRequiredMixin, View):
 
         # Только продавец может отменить
         if request.user != order.seller:
-            return JsonResponse({"success": False, "message": "Вы не можете отменить этот заказ."})
+            return JsonResponse({'success': False, 'message': 'Вы не можете отменить этот заказ.'})
 
         # Только если заказ в ожидании
-        if order.status != "pending":
-            return JsonResponse({"success": False, "message": "Нельзя отменить завершённый заказ."})
+        if order.status != 'pending':
+            return JsonResponse({'success': False, 'message': 'Нельзя отменить завершённый заказ.'})
 
         with transaction.atomic():
             try:
                 buyer_wallet = Wallet.objects.select_for_update().get(user=order.user)
             except Wallet.DoesNotExist:
-                return JsonResponse({"success": False, "message": "Кошелек покупателя не найден."})
+                return JsonResponse({'success': False, 'message': 'Кошелек покупателя не найден.'})
 
             refund_amount = order.price
 
             if buyer_wallet.held_balance < refund_amount:
                 return JsonResponse(
-                    {"success": False, "message": "Ошибка возврата средств. Недостаточно замороженных средств."}
+                    {
+                        'success': False,
+                        'message': 'Ошибка возврата средств. Недостаточно замороженных средств.',
+                    }
                 )
 
             buyer_wallet.held_balance -= refund_amount
@@ -289,14 +291,16 @@ class CancelOrderView(LoginRequiredMixin, View):
             buyer_wallet.save()
 
             # Обновляем статус
-            order.status = "canceled"
+            order.status = 'canceled'
             order.save()
 
         # Отправка сообщения в чат
         user1, user2 = sorted([order.user, order.seller], key=lambda u: u.id)
-        chat_room = ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)).first()
+        chat_room = ChatRoom.objects.filter(
+            Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)
+        ).first()
 
-        system_user = User.objects.get(username="LigaPay")
+        system_user = User.objects.get(username='LigaPay')
         cancel_message = (
             f'❌ <span class="username">{escape(request.user.username)}</span> отклонил '
             f'<span class="order-id">заказ #{order.id}</span>.'
@@ -311,62 +315,62 @@ class CancelOrderView(LoginRequiredMixin, View):
         # WebSocket сообщение
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
-            f"chat_{chat_room.id}",
+            f'chat_{chat_room.id}',
             {
-                "type": "chat_message",
-                "sender": system_user.username,
-                "message": cancel_message,
-                "order_id": order.id,
-                "is_system": True,
+                'type': 'chat_message',
+                'sender': system_user.username,
+                'message': cancel_message,
+                'order_id': order.id,
+                'is_system': True,
             },
         )
 
-        return JsonResponse({"success": True, "message": "Заказ успешно отклонён."})
+        return JsonResponse({'success': True, 'message': 'Заказ успешно отклонён.'})
 
 
 class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
     """Вывод списка заказов пользователя"""
 
     model = Order
-    template_name = "orders/order_list.html"
-    context_object_name = "orders"
-    title = "История покупок"
+    template_name = 'orders/order_list.html'
+    context_object_name = 'orders'
+    title = 'История покупок'
 
     def get_queryset(self):
         """Фильтруем заказы только для текущего пользователя"""
-        return Order.objects.filter(user=self.request.user).order_by("-created_at")
+        return Order.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 class SaleListView(LoginRequiredMixin, ContextMixin, ListView):
     """Вывод списка продаж пользователя"""
 
     model = Order
-    template_name = "orders/sale_list.html"
-    context_object_name = "sales"
-    title = "История продаж"
+    template_name = 'orders/sale_list.html'
+    context_object_name = 'sales'
+    title = 'История продаж'
 
     def get_queryset(self):
         """Фильтруем заказы, где текущий пользователь является продавцом"""
-        return Order.objects.filter(seller=self.request.user).order_by("-created_at")
+        return Order.objects.filter(seller=self.request.user).order_by('-created_at')
 
 
 class ReviewCreateView(LoginRequiredMixin, View):
     def post(self, request):
-        order_id = request.POST.get("order_id")
+        order_id = request.POST.get('order_id')
         order = get_object_or_404(Order, id=order_id)
 
         # Проверка: только покупатель может оставить отзыв
         if order.user != request.user:
-            messages.error(request, "Вы не можете оставить отзыв к этому заказу.")
-            return redirect("orders:order_detail", order_id=order.id)
+            messages.error(request, 'Вы не можете оставить отзыв к этому заказу.')
+            return redirect('orders:order_detail', order_id=order.id)
 
         # Проверка, существует ли отзыв уже
-        if hasattr(order, "review"):
-            messages.warning(request, "Вы уже оставили отзыв для этого заказа.")
-            return redirect("orders:order_detail", order_id=order.id)
+        if hasattr(order, 'review'):
+            messages.warning(request, 'Вы уже оставили отзыв для этого заказа.')
+            return redirect('orders:order_detail', order_id=order.id)
 
-        rating = request.POST.get("rating")
-        comment = request.POST.get("comment", "").strip()
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '').strip()
 
         # Проверяем, что рейтинг - число и в нужном диапазоне
         try:
@@ -374,8 +378,8 @@ class ReviewCreateView(LoginRequiredMixin, View):
             if rating < 1 or rating > 5:
                 raise ValueError
         except (TypeError, ValueError):
-            messages.error(request, "Оценка должна быть числом от 1 до 5.")
-            return redirect("orders:order_detail", order_id=order.id)
+            messages.error(request, 'Оценка должна быть числом от 1 до 5.')
+            return redirect('orders:order_detail', order_id=order.id)
 
         # Создаём отзыв
         Review.objects.create(
@@ -386,5 +390,5 @@ class ReviewCreateView(LoginRequiredMixin, View):
             comment=comment,
         )
 
-        messages.success(request, "Спасибо! Ваш отзыв сохранён.")
-        return redirect("main:index")
+        messages.success(request, 'Спасибо! Ваш отзыв сохранён.')
+        return redirect('main:index')

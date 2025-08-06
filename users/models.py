@@ -7,7 +7,7 @@ from django.utils.timezone import now, timedelta
 
 
 class User(AbstractUser):
-    image = models.ImageField(upload_to="users_images/", null=True, blank=True)
+    image = models.ImageField(upload_to='users_images/', null=True, blank=True)
     is_verified_email = models.BooleanField(default=False)
     email = models.EmailField(unique=True)
     new_email = models.EmailField(null=True, blank=True)
@@ -19,6 +19,7 @@ class User(AbstractUser):
             return now() - self.last_activity < timedelta(minutes=5)
         return False
 
+
 class EmailVerification(models.Model):
     code = models.UUIDField(unique=True)
     user = models.ForeignKey(to=User, on_delete=models.CASCADE)
@@ -26,13 +27,19 @@ class EmailVerification(models.Model):
     expiration = models.DateTimeField()
 
     def __str__(self):
-        return f"EmailVerification object {self.user.email}"
+        return f'EmailVerification object {self.user.email}'
 
     def send_verification_email(self):
-        link = reverse("users:email_verification", kwargs={"email": self.user.email, "code": self.code})
-        verification_link = f"{settings.DOMAIN_NAME}{link}"
-        subject = f"Подтверждение учетной записи для {self.user.username}"
-        message = f"Для подтверждения учетной записи для {self.user.email} перейдите по ссылке: {verification_link}"
+        link = reverse(
+            'users:email_verification',
+            kwargs={'email': self.user.email, 'code': self.code},
+        )
+        verification_link = f'{settings.DOMAIN_NAME}{link}'
+        subject = f'Подтверждение учетной записи для {self.user.username}'
+        message = (
+            f'Для подтверждения учетной записи для {self.user.email} '
+            f'перейдите по ссылке: {verification_link}'
+        )
         send_mail(
             subject=subject,
             message=message,
