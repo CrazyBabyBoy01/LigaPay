@@ -175,19 +175,19 @@ LOGIN_REDIRECT_URL = '/'
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-EMAIL_HOST = 'smtp.yandex.ru'  # SMTP-сервер Яндекс Почты
-EMAIL_PORT = 465  # Порт для SSL
-EMAIL_USE_SSL = True  # Использование SSL (Secure Sockets Layer)
-EMAIL_HOST_USER = 'fausta19@yandex.ru'
-EMAIL_HOST_PASSWORD = 'nxtcaljwbcweevaf'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Email, от которого отправляются письма
+EMAIL_HOST = os.getenv('EMAIL_HOST')  # SMTP-сервер Яндекс Почты
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))  # Порт для SSL
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL') == 'True'  # Использование SSL (Secure Sockets Layer)
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')  # Email, от которого отправляются письма
 
 # Redis
 
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/1",
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
@@ -201,8 +201,10 @@ CAPTCHA_IMAGE_SIZE = (150, 50)
 
 # Настройка Celery
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Убедитесь, что Redis запущен
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = (
+    f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0"  # Убедитесь, что Redis запущен
+)
+CELERY_RESULT_BACKEND = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
