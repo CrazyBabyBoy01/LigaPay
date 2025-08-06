@@ -74,6 +74,7 @@ class CategoryView(View):
     title = 'Услуги'
     template_name = 'products/products.html'
     context_object_name = 'categories'
+    background_image = '/static/deps/images/SB_Riven.jpg'
 
     def get(self, request, slug=None):
         if slug:

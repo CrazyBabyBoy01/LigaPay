@@ -25,3 +25,4 @@ class ContextMixin:
         context['background_image'] = self.background_image
         context['subtitle'] = self.subtitle
         return context
+
