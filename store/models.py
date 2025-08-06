@@ -2,18 +2,19 @@ from django.db import models
 
 from users.models import User
 
+
 # Create your models here.
 class SkinsOrder(models.Model):
     SERVER_CHOICES = [
-        ("nordic", "EU Nordic & East"),
-        ("west", "EU West"),
-        ("japan", "Japan"),
-        ("north", "Latin America North"),
-        ("south", "Latin America South"),
-        ("namerica", "North America"),
-        ("russia", "Russia"),
-        ("turkey", "Turkey"),
-        ("other", "Другой сервер"),
+        ('nordic', 'EU Nordic & East'),
+        ('west', 'EU West'),
+        ('japan', 'Japan'),
+        ('north', 'Latin America North'),
+        ('south', 'Latin America South'),
+        ('namerica', 'North America'),
+        ('russia', 'Russia'),
+        ('turkey', 'Turkey'),
+        ('other', 'Другой сервер'),
     ]
     user = models.ForeignKey(
         User,

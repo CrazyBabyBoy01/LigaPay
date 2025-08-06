@@ -6,4 +6,4 @@ class WalletConfig(AppConfig):
     name = 'wallet'
 
     def ready(self):
-        import wallet.signals  # Подключаем сигналы при запуске приложения
+        pass  # Подключаем сигналы при запуске приложения

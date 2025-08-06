@@ -1,5 +1,4 @@
 import django_filters
-from attr import fields
 from django.db.models import Q
 from django.utils.timezone import now, timedelta
 
@@ -17,8 +16,8 @@ from products.models import (
 
 
 class RpFilter(django_filters.FilterSet):
-    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    is_auto_delivery = django_filters.BooleanFilter(method='filter_auto_delivery')
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
 
     def filter_auto_delivery(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -32,16 +31,16 @@ class RpFilter(django_filters.FilterSet):
 
     class Meta:
         model = RPService
-        fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery"]
+        fields = ['server', 'filter_type', 'seller_is_online', 'is_auto_delivery']
 
 
 class AccountFilter(django_filters.FilterSet):
-    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    is_auto_delivery = django_filters.BooleanFilter(method='filter_auto_delivery')
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
     character_count = django_filters.RangeFilter()
     account_level = django_filters.RangeFilter()
     skin_count = django_filters.RangeFilter()
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
 
     def filter_auto_delivery(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -59,21 +58,21 @@ class AccountFilter(django_filters.FilterSet):
     class Meta:
         model = AccountService
         fields = [
-            "server",
-            "filter_type",
-            "rank",
-            "seller_is_online",
-            "is_auto_delivery",
-            "search",
-            "character_count",
-            "account_level",
-            "skin_count",
+            'server',
+            'filter_type',
+            'rank',
+            'seller_is_online',
+            'is_auto_delivery',
+            'search',
+            'character_count',
+            'account_level',
+            'skin_count',
         ]
 
 
 class BoostFilter(django_filters.FilterSet):
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
     server = django_filters.CharFilter()
 
     def filter_seller_online(self, queryset, name, value):
@@ -87,12 +86,12 @@ class BoostFilter(django_filters.FilterSet):
     class Meta:
         model = BoostService
 
-        fields = ["filter_type", "seller_is_online", "rank_range", "search"]
+        fields = ['filter_type', 'seller_is_online', 'rank_range', 'search']
 
 
 class TrainingFilter(django_filters.FilterSet):
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -104,12 +103,12 @@ class TrainingFilter(django_filters.FilterSet):
 
     class Meta:
         model = TrainingService
-        fields = ["filter_type", "seller_is_online", "search"]
+        fields = ['filter_type', 'seller_is_online', 'search']
 
 
 class BattlePassFilter(django_filters.FilterSet):
-    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
+    is_auto_delivery = django_filters.BooleanFilter(method='filter_auto_delivery')
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
 
     def filter_auto_delivery(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -123,13 +122,13 @@ class BattlePassFilter(django_filters.FilterSet):
 
     class Meta:
         model = BattlePassService
-        fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery"]
+        fields = ['server', 'filter_type', 'seller_is_online', 'is_auto_delivery']
 
 
 class DonationFilter(django_filters.FilterSet):
-    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    is_auto_delivery = django_filters.BooleanFilter(method='filter_auto_delivery')
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
 
     def filter_auto_delivery(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -146,12 +145,19 @@ class DonationFilter(django_filters.FilterSet):
 
     class Meta:
         model = DonationService
-        fields = ["server", "filter_type", "seller_is_online", "is_auto_delivery", "receiving_method", "search"]
+        fields = [
+            'server',
+            'filter_type',
+            'seller_is_online',
+            'is_auto_delivery',
+            'receiving_method',
+            'search',
+        ]
 
 
 class GeneralFilter(django_filters.FilterSet):
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -163,12 +169,12 @@ class GeneralFilter(django_filters.FilterSet):
 
     class Meta:
         model = GeneralService
-        fields = ["filter_type", "seller_is_online", "search"]
+        fields = ['filter_type', 'seller_is_online', 'search']
 
 
 class QualificationFilter(django_filters.FilterSet):
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
 
     def filter_seller_online(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -180,13 +186,13 @@ class QualificationFilter(django_filters.FilterSet):
 
     class Meta:
         model = QualificationService
-        fields = ["server", "seller_is_online", "search"]
+        fields = ['server', 'seller_is_online', 'search']
 
 
 class OtherFilter(django_filters.FilterSet):
-    is_auto_delivery = django_filters.BooleanFilter(method="filter_auto_delivery")
-    seller_is_online = django_filters.BooleanFilter(method="filter_seller_online")
-    search = django_filters.CharFilter(method="filter_search", label="Поиск")
+    is_auto_delivery = django_filters.BooleanFilter(method='filter_auto_delivery')
+    seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
+    search = django_filters.CharFilter(method='filter_search', label='Поиск')
 
     def filter_auto_delivery(self, queryset, name, value):
         if value:  # Если чекбокс включен
@@ -203,4 +209,4 @@ class OtherFilter(django_filters.FilterSet):
 
     class Meta:
         model = OtherService
-        fields = ["seller_is_online", "is_auto_delivery", "search", "filter_type"]
+        fields = ['seller_is_online', 'is_auto_delivery', 'search', 'filter_type']

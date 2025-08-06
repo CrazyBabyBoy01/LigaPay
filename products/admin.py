@@ -22,23 +22,23 @@ class ServiceImageInline(GenericTabularInline):
 
 
 class BaseServiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "price", "is_active", "seller", "display_images")
-    list_filter = ("is_active",)
-    search_fields = ("title",)
-    readonly_fields = ("display_images",)
+    list_display = ('id', 'title', 'price', 'is_active', 'seller', 'display_images')
+    list_filter = ('is_active',)
+    search_fields = ('title',)
+    readonly_fields = ('display_images',)
     inlines = [ServiceImageInline]
 
     def display_images(self, obj):
         imgs = obj.images.all()
         if not imgs:
-            return "-"
+            return '-'
         return format_html_join(
-            "",
+            '',
             '<img src="{}" width="100" style="margin-right: 10px;"/>',
             ((img.image.url,) for img in imgs),
         )
 
-    display_images.short_description = "Картинки"
+    display_images.short_description = 'Картинки'
 
 
 # Регистрируем все модели с этим классом
@@ -54,4 +54,4 @@ admin.site.register(QualificationService, BaseServiceAdmin)
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("name",)}
+    prepopulated_fields = {'slug': ('name',)}

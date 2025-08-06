@@ -13,5 +13,5 @@ class UpdateLastActivityMiddleware:
             last_activity = request.user.last_activity
             if not last_activity or now() - last_activity > timedelta(seconds=30):
                 request.user.last_activity = now()
-                request.user.save(update_fields=["last_activity"])
+                request.user.save(update_fields=['last_activity'])
         return response

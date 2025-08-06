@@ -1,6 +1,7 @@
 # Возвращает количество непрочитанных сообщений.
 from .utils import get_unread_message_count
 
+
 def unread_message_count(request):
     user = request.user
     if user.is_authenticated:

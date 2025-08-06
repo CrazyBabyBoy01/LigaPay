@@ -3,9 +3,10 @@ from datetime import timedelta
 
 from celery import shared_task
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.utils.timezone import now
-from django.core.exceptions import ObjectDoesNotExist
+
 from users.models import EmailVerification, User
 
 
@@ -22,22 +23,18 @@ def send_email_verification(user_identifier):
         elif isinstance(user_identifier, str):
             user = User.objects.get(email=user_identifier)
         else:
-            raise ValueError("Invalid user identifier type")
+            raise ValueError('Invalid user identifier type')
 
         # Создаём запись подтверждения email
         expiration = now() + timedelta(hours=48)
-        record = EmailVerification.objects.create(
-            code=uuid.uuid4(),
-            user=user,
-            expiration=expiration
-        )
+        record = EmailVerification.objects.create(code=uuid.uuid4(), user=user, expiration=expiration)
         record.send_verification_email()
-    except ObjectDoesNotExist:
-        raise ValueError("User matching query does not exist")
+    except ObjectDoesNotExist as err:
+        raise ValueError('User matching query does not exist') from err
 
 
 @shared_task
-def send_reset_email(subject, message, recipient_list,html_message=None):
+def send_reset_email(subject, message, recipient_list, html_message=None):
     """
     Отправляет email с помощью Celery.
     """

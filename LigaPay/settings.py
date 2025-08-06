@@ -14,7 +14,6 @@ import os
 from pathlib import Path
 
 from celery.schedules import crontab
-from django.conf.global_settings import AUTH_USER_MODEL
 from dotenv import find_dotenv, load_dotenv
 
 
@@ -27,96 +26,96 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
 
-DOMAIN_NAME = "http://localhost:8000"
+DOMAIN_NAME = 'http://localhost:8000'
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    "channels",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "debug_toolbar",
-    "main",
-    "users",
-    "captcha",
-    "widget_tweaks",
-    "news",
-    "django_celery_beat",
-    "products",
-    "wallet",
-    "orders",
-    "chat",
-    "store",
+    'channels',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'debug_toolbar',
+    'main',
+    'users',
+    'captcha',
+    'widget_tweaks',
+    'news',
+    'django_celery_beat',
+    'products',
+    'wallet',
+    'orders',
+    'chat',
+    'store',
 ]
-ASGI_APPLICATION = "LigaPay.asgi.application"
+ASGI_APPLICATION = 'LigaPay.asgi.application'
 
 MIDDLEWARE = [
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-    "users.middleware.UpdateLastActivityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'users.middleware.UpdateLastActivityMiddleware',
 ]
 
-ROOT_URLCONF = "LigaPay.urls"
+ROOT_URLCONF = 'LigaPay.urls'
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-                "chat.context_processors.unread_message_count",
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'chat.context_processors.unread_message_count',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "LigaPay.wsgi.application"
+WSGI_APPLICATION = 'LigaPay.wsgi.application'
 
-LOGIN_URL = "/users/autorization/"
+LOGIN_URL = '/users/autorization/'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT"),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('POSTGRES_DB'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_HOST'),
+        'PORT': os.getenv('POSTGRES_PORT'),
     }
 }
 
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],  # Подключение к локальному Redis
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],  # Подключение к локальному Redis
         },
     },
 }
@@ -125,16 +124,16 @@ CHANNEL_LAYERS = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -142,9 +141,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = "ru-ru"
+LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = "UTC"
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -154,21 +153,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [BASE_DIR / "static", BASE_DIR / "deps"]
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static', BASE_DIR / 'deps']
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-AUTH_USER_MODEL = "users.User"
-LOGIN_REDIRECT_URL = "/"
+AUTH_USER_MODEL = 'users.User'
+LOGIN_REDIRECT_URL = '/'
 
 
 # Sending email
@@ -176,21 +175,21 @@ LOGIN_REDIRECT_URL = "/"
 # EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-EMAIL_HOST = "smtp.yandex.ru"  # SMTP-сервер Яндекс Почты
+EMAIL_HOST = 'smtp.yandex.ru'  # SMTP-сервер Яндекс Почты
 EMAIL_PORT = 465  # Порт для SSL
 EMAIL_USE_SSL = True  # Использование SSL (Secure Sockets Layer)
-EMAIL_HOST_USER = "fausta19@yandex.ru"
-EMAIL_HOST_PASSWORD = "nxtcaljwbcweevaf"
+EMAIL_HOST_USER = 'fausta19@yandex.ru'
+EMAIL_HOST_PASSWORD = 'nxtcaljwbcweevaf'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Email, от которого отправляются письма
 
 # Redis
 
 CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
     }
 }
@@ -202,44 +201,44 @@ CAPTCHA_IMAGE_SIZE = (150, 50)
 
 # Настройка Celery
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"  # Убедитесь, что Redis запущен
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Убедитесь, что Redis запущен
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULE = {
     # Пример периодической задачи, которая запускается ежедневно
-    "update-news-every-day": {
-        "task": "news.tasks.update_news_task",
-        "schedule": crontab(minute=0, hour=0),  # Например, каждый день в полночь
+    'update-news-every-day': {
+        'task': 'news.tasks.update_news_task',
+        'schedule': crontab(minute=0, hour=0),  # Например, каждый день в полночь
     },
 }
 
 INTERNAL_IPS = [
     # ...
-    "127.0.0.1",
+    '127.0.0.1',
     # ...
 ]
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "console": {
-            "level": "INFO",  # Показывает только важные сообщения
-            "class": "logging.StreamHandler",
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'INFO',  # Показывает только важные сообщения
+            'class': 'logging.StreamHandler',
         },
     },
-    "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": "WARNING",  # Показывает только предупреждения и ошибки Django
-            "propagate": True,
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING',  # Показывает только предупреждения и ошибки Django
+            'propagate': True,
         },
-        "orders": {  # Логгер для твоего приложения
-            "handlers": ["console"],
-            "level": "DEBUG",  # Можно INFO, если слишком много логов
-            "propagate": False,
+        'orders': {  # Логгер для твоего приложения
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Можно INFO, если слишком много логов
+            'propagate': False,
         },
     },
 }
