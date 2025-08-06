@@ -37,6 +37,8 @@ class CategoryMixin:
     Миксин для получения категории по slug и добавления ее в контекст.
     """
 
+    background_image = '/static/deps/images/SB_Riven.jpg'
+
     def get_category(self, slug):
         try:
             return Category.objects.get(slug=slug)

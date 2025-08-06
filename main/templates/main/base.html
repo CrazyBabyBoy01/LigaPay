@@ -12,19 +12,28 @@
   <link rel="stylesheet" href="{% static "deps/css/style.css" %}">
   <style>
     header {
-      background-image: url('{% if background_image %}{{ background_image }}{% else %}{% static "deps/images/SB_Riven.jpg" %}{% endif %}');
-
+      {% if background_image %}
+        background-image: url('{{ background_image }}');
+      {% else %}
+        background-image: none;
+      {% endif %}
     }
     {% if background_color %}
       header {
-          background-color: {{background_color}};
-          background-image: None;
+        background-color: {{ background_color }};
+        background-image: none;
       }
     {% endif %}
   </style>
 </head>
 <body>
   <header class="header header-general">
+    {% if not background_image %}
+      <video autoplay muted loop playsinline class="header-video">
+        <source src="{% static 'deps/videos/hero.webm' %}" type="video/webm">
+        Ваш браузер не поддерживает видео.
+      </video>
+    {% endif %}
     <div class="container">
       <div class="nav nav-general">
         <div class="header__logo">
