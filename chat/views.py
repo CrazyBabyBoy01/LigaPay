@@ -30,7 +30,11 @@ def unread_message_count_api(request):
 class ChatRoomView(View):
     def get(self, request, room_name='global_chat'):
         """Загружаем страницу чата с сохранёнными сообщениями"""
-        messages = ChatMessage.objects.filter(room_name=room_name).order_by('timestamp')
+        messages = (
+            ChatMessage.objects.filter(room_name=room_name)
+            .select_related('sender')
+            .order_by('timestamp')
+        )
         return render(request, 'chat/chat.html', {'room_name': room_name, 'messages': messages})
 
 
@@ -93,7 +97,7 @@ class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
                 .exclude(sender=request.user)
                 .count()
             )
-        chat = ChatRoom.objects.get(id=chat_id)
+        chat = ChatRoom.objects.select_related('buyer', 'seller').get(id=chat_id)
         if request.user != chat.buyer and request.user != chat.seller:
             return render(request, 'chat/forbidden.html', status=403)
         # ✅ Помечаем входящие сообщения как прочитанные
@@ -106,7 +110,8 @@ class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
         pending_order = None
         if request.user.is_authenticated:
             pending_order = (
-                Order.objects.filter(
+                Order.objects.select_related('user', 'seller')
+                .filter(
                     status='pending',
                 )
                 .filter(Q(user=chat.buyer, seller=chat.seller) | Q(user=chat.seller, seller=chat.buyer))
