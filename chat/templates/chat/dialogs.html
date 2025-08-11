@@ -112,24 +112,6 @@
                         {% endif %}
                     {% endif %}
                 </div>
-
-                {% comment %} <div id="order-button-container">
-                    {% if pending_order %}
-                        <form id="confirm-form" method="post" style="margin-top: 10px;">
-                            {% csrf_token %}
-                            <button
-                                type="submit"
-                                id="confirm-purchase-btn"
-                                class="header__btn"
-                                data-order-id="{{ pending_order.id }}"
-                            >
-                                Подтвердить покупку
-                            </button>
-                        </form>
-                    {% endif %}
-                </div> {% endcomment %}
-
-
                 <div class="chat-input">
                     <input id="chat-message-input" type="text" placeholder="Написать..." />
                 </div>
