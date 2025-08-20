@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 from celery.schedules import crontab
@@ -95,7 +96,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'LigaPay.wsgi.application'
 
-LOGIN_URL = '/users/autorization/'
+LOGIN_URL = '/users/authorization/'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -244,3 +245,14 @@ LOGGING = {
         },
     },
 }
+
+# Тестовые ключи Google reCAPTCHA (работают только в тестах)
+RECAPTCHA_PUBLIC_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
+
+# Упрощенный режим капчи при запуске тестов
+if 'test' in sys.argv:
+    NOCAPTCHA = True
+
+USER_ONLINE_MINUTES = 5
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

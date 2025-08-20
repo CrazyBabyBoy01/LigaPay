@@ -46,7 +46,6 @@ from products.forms import (
 from .mixins import (
     CategoryMixin,
     ChatMixin,
-    ExcludeOwnServicesMixin,  # Этот миксин должен быть первым!
     PaginateMixin,
     SearchDescriptionMixin,
     ServiceChatMixin,
@@ -107,7 +106,12 @@ class AccountServiceListView(
         # queryset = self.model.objects.all().order_by("id")
 
         # Получаем все услуги (карточки) для текущего пользователя
-        queryset = self.model.objects.all().order_by('id')
+        queryset = (
+            self.model.objects.all()
+            .select_related('seller', 'category')
+            .prefetch_related('images')
+            .order_by('id')
+        )
 
         user = self.request.user
         if user.is_authenticated:
@@ -154,10 +158,6 @@ class AccountServiceListView(
         # Логируем ошибки
         logger.error(f'Ошибка в форме: {form.errors}')
         return self.get(request, *args, **kwargs)  # Возвращаем форму с ошибками
-        # Если форма не валидна, возвращаем ее с ошибками
-        return self.get(
-            request, *args, **kwargs
-        )  # В данном случае, снова вызываем get и передаем форму с ошибками
 
 
 class AccountServiceDetailView(
@@ -171,7 +171,10 @@ class AccountServiceDetailView(
 
     def get_object(self):
         """Получает объект AccountService по ID или возвращает 404."""
-        return get_object_or_404(AccountService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            AccountService.objects.select_related('seller', 'category').prefetch_related('images'),
+            id=self.kwargs['pk'],
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -260,9 +263,7 @@ class AccountServiceDetailView(
         return self.render_to_response(context)
 
 
-class RPServiceListView(
-    ExcludeOwnServicesMixin, CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, ListView
-):
+class RPServiceListView(CategoryMixin, ChatMixin, PaginateMixin, ContextMixin, ListView):
     model = RPService
     template_name = 'products/riot-points.html'  # Указываем путь к твоему шаблону
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
@@ -273,7 +274,9 @@ class RPServiceListView(
         # queryset = self.model.objects.all().order_by("id")
 
         # Получаем все услуги (карточки) для текущего пользователя и не равно 0
-        queryset = self.model.objects.filter(quantity__gt=0).order_by('id')
+        queryset = (
+            self.model.objects.filter(quantity__gt=0).select_related('seller', 'category').order_by('id')
+        )
 
         user = self.request.user
         if user.is_authenticated:
@@ -320,7 +323,9 @@ class RPServiceDetailView(
 
     def get_object(self):
         """Получает объект RPService по ID или возвращает 404."""
-        return get_object_or_404(RPService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            RPService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -389,7 +394,7 @@ class BoostServiceListView(
         # queryset = self.model.objects.all().order_by("id")
 
         # Получаем все услуги (карточки) для текущего пользователя
-        queryset = self.model.objects.all().order_by('id')
+        queryset = self.model.objects.all().select_related('seller', 'category').order_by('id')
 
         user = self.request.user
         if user.is_authenticated:
@@ -434,7 +439,9 @@ class BoostServiceDetailsView(
 
     def get_object(self):
         """Получает объект RPService по ID или возвращает 404."""
-        return get_object_or_404(BoostService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            BoostService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -500,7 +507,7 @@ class TrainingServiceListView(
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
-        queryset = self.model.objects.all().order_by('id')
+        queryset = self.model.objects.all().select_related('seller', 'category').order_by('id')
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
@@ -546,7 +553,9 @@ class TrainingServiceDetailsView(
 
     def get_object(self):
         """Получает объект RPService по ID или возвращает 404."""
-        return get_object_or_404(TrainingService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            TrainingService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -612,7 +621,7 @@ class BattlePassServiceListView(
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
-        queryset = self.model.objects.all().order_by('id')
+        queryset = self.model.objects.all().select_related('seller', 'category').order_by('id')
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
@@ -658,7 +667,9 @@ class BattlePassServiceDetailsView(
 
     def get_object(self):
         """Получает объект BattlePassService по ID или возвращает 404."""
-        return get_object_or_404(BattlePassService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            BattlePassService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -723,7 +734,12 @@ class DonationServiceListView(
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
-        queryset = self.model.objects.all().order_by('id')
+        queryset = (
+            self.model.objects.all()
+            .select_related('seller', 'category')
+            .prefetch_related('images')
+            .order_by('id')
+        )
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
@@ -777,7 +793,10 @@ class DonationServiceDetailsView(
 
     def get_object(self):
         """Получает объект DonationService по ID или возвращает 404."""
-        return get_object_or_404(DonationService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            DonationService.objects.select_related('seller', 'category').prefetch_related('images'),
+            id=self.kwargs['pk'],
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -862,7 +881,7 @@ class GeneralServiceListView(
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
-        queryset = self.model.objects.all().order_by('id')
+        queryset = self.model.objects.all().select_related('seller', 'category').order_by('id')
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
@@ -908,7 +927,9 @@ class GeneralServiceDetailsView(
 
     def get_object(self):
         """Получает объект BattlePassService по ID или возвращает 404."""
-        return get_object_or_404(GeneralService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            GeneralService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -974,7 +995,7 @@ class OtherServiceListView(
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
-        queryset = self.model.objects.all().order_by('id')
+        queryset = self.model.objects.all().select_related('seller', 'category').order_by('id')
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
@@ -1018,7 +1039,9 @@ class OtherServiceDetailsView(
 
     def get_object(self):
         """Получает объект OtherService по ID или возвращает 404."""
-        return get_object_or_404(OtherService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            OtherService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -1084,7 +1107,7 @@ class QualificationServiceListView(
     context_object_name = 'services'  # Имя переменной для доступа к данным в шаблоне
 
     def get_queryset(self):
-        queryset = self.model.objects.all().order_by('id')
+        queryset = self.model.objects.all().select_related('seller', 'category').order_by('id')
         user = self.request.user
         if user.is_authenticated:
             # Преобразуем ленивый объект в обычный
@@ -1130,7 +1153,9 @@ class QualificationServiceDetailsView(
 
     def get_object(self):
         """Получает объект BattlePassService по ID или возвращает 404."""
-        return get_object_or_404(QualificationService, id=self.kwargs['pk'])
+        return get_object_or_404(
+            QualificationService.objects.select_related('seller', 'category'), id=self.kwargs['pk']
+        )
 
     def get_context_data(self, **kwargs):
         # Сюда передаем slug, чтобы миксин мог правильно его обработать
@@ -1192,16 +1217,31 @@ class MyProductsView(TemplateView):
         user = self.request.user
 
         if user.is_authenticated:
-            rp_services = RPService.objects.filter(seller=user)
-            boost_services = BoostService.objects.filter(seller=user)
-            battlepass_services = BattlePassService.objects.filter(seller=user)
-            account_services = AccountService.objects.filter(seller=user)
-            donation_services = DonationService.objects.filter(seller=user)
-            other_services = OtherService.objects.filter(seller=user)
-            qualification_services = QualificationService.objects.filter(seller=user)
-            general_services = GeneralService.objects.filter(seller=user)
-            training_services = TrainingService.objects.filter(seller=user)
-
+            rp_services = RPService.objects.filter(seller=user).select_related('seller', 'category')
+            boost_services = BoostService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            battlepass_services = BattlePassService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            account_services = AccountService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            donation_services = DonationService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            other_services = OtherService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            qualification_services = QualificationService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            general_services = GeneralService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
+            training_services = TrainingService.objects.filter(seller=user).select_related(
+                'seller', 'category'
+            )
             # Можно объединить в один список
             all_services = (
                 list(rp_services)

@@ -131,7 +131,9 @@ class ServiceChatMixin:
 
         if room:
             logger.info(f'Комната найдена: {room}')
-            messages = ChatMessage.objects.filter(chat_room=room).order_by('timestamp')
+            messages = (
+                ChatMessage.objects.filter(chat_room=room).select_related('sender').order_by('timestamp')
+            )
         else:
             logger.warning(f'Чат между {buyer} и {seller} не найден.')
             messages = []

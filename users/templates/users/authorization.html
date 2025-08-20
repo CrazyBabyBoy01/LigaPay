@@ -5,7 +5,7 @@
   <h2 class="header__title">
     {{title}}
   </h2>
-  <form action={% url "users:autorization" %} method='post' class="header__form">
+  <form action={% url "users:authorization" %} method='post' class="header__form">
     {% csrf_token %}
     <div class="header__form-login form">
       {{form.username}}

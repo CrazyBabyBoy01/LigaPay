@@ -54,8 +54,8 @@ class CreateOrderView(LoginRequiredMixin, View):
                     return JsonResponse({'success': False, 'message': 'Некорректные данные!'})
 
                 try:
-                    product = model.objects.select_for_update().get(
-                        id=product_id
+                    product = (
+                        model.objects.select_for_update().select_related('seller').get(id=product_id)
                     )  # Блокируем запись для других транзакций
                 except model.DoesNotExist:
                     messages.error(request, 'Товар не найден!')
@@ -115,9 +115,11 @@ class CreateOrderView(LoginRequiredMixin, View):
 
                 user1, user2 = sorted([request.user, product.seller], key=lambda u: u.id)
 
-                chat_room = ChatRoom.objects.filter(
-                    Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)
-                ).first()
+                chat_room = (
+                    ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1))
+                    .select_related('buyer', 'seller')
+                    .first()
+                )
 
                 if not chat_room:
                     chat_room = ChatRoom.objects.create(buyer=user1, seller=user2)
@@ -149,15 +151,6 @@ class CreateOrderView(LoginRequiredMixin, View):
                         'is_system': True,
                     },
                 )
-                # # Потом сигнал клиенту отрисовать кнопку
-                # async_to_sync(channel_layer.group_send)(
-                #     f"chat_{chat_room.id}",
-                #     {
-                #         "type": "order_created",
-                #         "order_id": order.id,
-                #         "csrf_token": get_token(request),
-                #     },
-                # )
                 # Потом сигнал клиенту отрисовать кнопку
                 async_to_sync(channel_layer.group_send)(
                     f'chat_{chat_room.id}',
@@ -207,9 +200,11 @@ class ConfirmOrderView(View):
         try:
             user1, user2 = sorted([request.user, order.seller], key=lambda u: u.id)
 
-            chat_room = ChatRoom.objects.filter(
-                Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)
-            ).first()
+            chat_room = (
+                ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1))
+                .select_related('buyer', 'seller')
+                .first()
+            )
         except ChatRoom.DoesNotExist:
             return JsonResponse({'success': True, 'message': 'Покупка подтверждена, но чат не найден.'})
         # 💾 Сохраняем сообщение в чат
@@ -260,7 +255,7 @@ class ConfirmOrderView(View):
 
 class CancelOrderView(LoginRequiredMixin, View):
     def post(self, request, order_id):
-        order = get_object_or_404(Order, id=order_id)
+        order = get_object_or_404(Order.objects.select_related('user', 'seller'), id=order_id)
 
         # Только продавец может отменить
         if request.user != order.seller:
@@ -296,9 +291,11 @@ class CancelOrderView(LoginRequiredMixin, View):
 
         # Отправка сообщения в чат
         user1, user2 = sorted([order.user, order.seller], key=lambda u: u.id)
-        chat_room = ChatRoom.objects.filter(
-            Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1)
-        ).first()
+        chat_room = (
+            ChatRoom.objects.filter(Q(buyer=user1, seller=user2) | Q(buyer=user2, seller=user1))
+            .select_related('buyer', 'seller')
+            .first()
+        )
 
         system_user = User.objects.get(username='LigaPay')
         cancel_message = (
@@ -338,7 +335,11 @@ class OrderListView(LoginRequiredMixin, ContextMixin, ListView):
 
     def get_queryset(self):
         """Фильтруем заказы только для текущего пользователя"""
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        return (
+            Order.objects.filter(user=self.request.user)
+            .select_related('user', 'seller')
+            .order_by('-created_at')
+        )
 
 
 class SaleListView(LoginRequiredMixin, ContextMixin, ListView):
@@ -351,13 +352,17 @@ class SaleListView(LoginRequiredMixin, ContextMixin, ListView):
 
     def get_queryset(self):
         """Фильтруем заказы, где текущий пользователь является продавцом"""
-        return Order.objects.filter(seller=self.request.user).order_by('-created_at')
+        return (
+            Order.objects.filter(seller=self.request.user)
+            .select_related('user', 'seller')
+            .order_by('-created_at')
+        )
 
 
 class ReviewCreateView(LoginRequiredMixin, View):
     def post(self, request):
         order_id = request.POST.get('order_id')
-        order = get_object_or_404(Order, id=order_id)
+        order = get_object_or_404(Order.objects.select_related('user', 'seller'), id=order_id)
 
         # Проверка: только покупатель может оставить отзыв
         if order.user != request.user:

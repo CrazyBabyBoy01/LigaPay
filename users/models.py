@@ -1,52 +1,52 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.core.mail import send_mail
 from django.db import models
-from django.urls import reverse
-from django.utils.timezone import now, timedelta
+from django.utils.timezone import now
 
 
 class User(AbstractUser):
-    image = models.ImageField(upload_to='users_images/', null=True, blank=True)
-    is_verified_email = models.BooleanField(default=False)
-    email = models.EmailField(unique=True)
-    new_email = models.EmailField(null=True, blank=True)
-    email_change_token = models.CharField(max_length=32, null=True, blank=True)
-    last_activity = models.DateTimeField(null=True, blank=True)
+    image = models.ImageField(
+        upload_to='users_images/', null=True, blank=True, verbose_name='Изображение'
+    )
+    is_verified_email = models.BooleanField(default=False, verbose_name='Подтверждение почты')
+    email = models.EmailField(unique=True, verbose_name='Почта')
+    new_email = models.EmailField(null=True, blank=True, verbose_name='Новая почта')
+    email_change_token = models.CharField(
+        max_length=32, null=True, blank=True, verbose_name='Токен смены email'
+    )
+    last_activity = models.DateTimeField(null=True, blank=True, verbose_name='Когда был(а) в сети')
 
-    def is_online(self):
-        if self.last_activity:
-            return now() - self.last_activity < timedelta(minutes=5)
-        return False
+    def is_online(self) -> bool:
+        """Проверяет, был ли пользователь активен за последние ONLINE_MINUTES минут."""
+        if not self.last_activity:
+            return False
+        return now() - self.last_activity < timedelta(minutes=settings.USER_ONLINE_MINUTES)
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
 
 class EmailVerification(models.Model):
-    code = models.UUIDField(unique=True)
-    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
-    expiration = models.DateTimeField()
+    code = models.UUIDField(unique=True, verbose_name='Токен')
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания токена')
+    expiration = models.DateTimeField(verbose_name='Дата жизни токена')
 
     def __str__(self):
         return f'EmailVerification object {self.user.email}'
 
     def send_verification_email(self):
-        link = reverse(
-            'users:email_verification',
-            kwargs={'email': self.user.email, 'code': self.code},
-        )
-        verification_link = f'{settings.DOMAIN_NAME}{link}'
-        subject = f'Подтверждение учетной записи для {self.user.username}'
-        message = (
-            f'Для подтверждения учетной записи для {self.user.email} '
-            f'перейдите по ссылке: {verification_link}'
-        )
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[self.user.email],
-            fail_silently=False,
-        )
+        from .services import send_verification_email as send_email
 
-    def is_expired(self):
+        send_email(self)
+
+    def is_expired(self) -> bool:
+        """Проверяет, истёк ли срок действия токена."""
         return now() >= self.expiration
+
+    class Meta:  # noqa: DJ012
+        verbose_name = 'Подтверждение почты'
+        verbose_name_plural = 'Подтверждения почты'

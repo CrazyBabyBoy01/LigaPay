@@ -13,6 +13,11 @@ from users.tasks import send_email_verification, send_reset_email
 
 
 class UserLoginForm(AuthenticationForm):
+    """
+    Форма авторизации пользователя.
+    Переопределяет стандартные поля для стилизации под шаблон.
+    """
+
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'header__input', 'placeholder': 'Введите Ваш Логин'})
     )
@@ -26,6 +31,11 @@ class UserLoginForm(AuthenticationForm):
 
 
 class UserRegistrationForm(UserCreationForm):
+    """
+    Форма регистрации нового пользователя.
+    Включает капчу и вызывает задачу на отправку письма с подтверждением.
+    """
+
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'header__input', 'placeholder': 'Введите Логин'})
     )
@@ -51,6 +61,11 @@ class UserRegistrationForm(UserCreationForm):
 
 
 class UserProfileForm(UserChangeForm):
+    """
+    Форма редактирования профиля.
+    Логин и почта доступны только для чтения, редактируются только остальные данные.
+    """
+
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'input-group__input', 'readonly': True})
     )
@@ -69,6 +84,11 @@ class UserProfileForm(UserChangeForm):
 
 
 class CustomPasswordResetForm(PasswordResetForm):
+    """
+    Кастомная форма сброса пароля.
+    Позволяет искать пользователя как по email, так и по логину.
+    """
+
     email = forms.CharField(label='Логин или Email', max_length=254)
 
     def clean_email(self):
@@ -89,13 +109,21 @@ class CustomPasswordResetForm(PasswordResetForm):
         Переопределённый метод save для кастомной логики отправки письма.
         """
         user_email = self.cleaned_data['email']
-        # Вызываем отправку email через Celery или другую логику
-        transaction.on_commit(lambda: send_reset_email.delay(user_email))
+        subject = 'Сброс пароля'
+        message = 'Мы получили запрос на сброс пароля. Перейдите по ссылке, чтобы изменить пароль.'
+        recipient_list = [user_email]
+
+        transaction.on_commit(lambda: send_reset_email.delay(subject, message, recipient_list))
         super().save(*args, **kwargs)  # Не забываем вызвать оригинальный метод
         # Отправка письма через Celery
 
 
 class EmailChangeForm(forms.ModelForm):
+    """
+    Форма для смены email.
+    Проверяет уникальность нового адреса.
+    """
+
     new_email = forms.EmailField(required=True)
 
     class Meta:
