@@ -34,7 +34,7 @@ class CustomUserChangeForm(UserChangeForm):
 
 'Отображение баланса в админке для юзера'
 
-
+# ✅ Кастомная админка для пользователя
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm

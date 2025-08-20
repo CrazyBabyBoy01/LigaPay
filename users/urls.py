@@ -20,7 +20,7 @@ app_name = 'users'
 
 urlpatterns = [
     path('registration/', UserRegistrationView.as_view(), name='registration'),
-    path('autorization/', UserLoginView.as_view(), name='autorization'),
+    path('authorization/', UserLoginView.as_view(), name='authorization'),
     path('profile/<int:pk>/', login_required(UserProfileView.as_view()), name='profile'),
     path('logout/', logout, name='logout'),
     path(

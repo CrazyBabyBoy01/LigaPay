@@ -30,7 +30,7 @@ class StoreSkinsView(ContextMixin, TemplateView):
                 f"Неавторизованный пользователь попытался оформить заказ "
                 f"с IP {request.META.get('REMOTE_ADDR')}"
             )
-            return redirect('users:autorization')
+            return redirect('users:authorization')
 
         form = SkinsOrderForm(request.POST)
         form.request = self.request
