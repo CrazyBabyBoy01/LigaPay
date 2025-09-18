@@ -5,6 +5,21 @@ from django.db import models
 
 from orders.models import Order
 
+from .choices import (
+    ACCOUNT_FILTER_CHOICES,
+    BOOST_FILTER_CHOICES,
+    BP_FILTER_CHOICES,
+    DONATION_FILTER_CHOICES,
+    GENERAL_FILTER_CHOICES,
+    OTHER_FILTER_CHOICES,
+    RANK_CHOICES,
+    RANK_RANGE_CHOICES,
+    RECEIVING_METHOD_CHOICES,
+    RP_FILTER_CHOICES,
+    SERVER_CHOICES,
+    TRAINING_FILTER_CHOICES,
+)
+
 
 # Create your models here.
 
@@ -104,18 +119,6 @@ class ServerBasedService(BaseService):
     Базовая модель для услуг, связанных с сервером.
     """
 
-    SERVER_CHOICES = [
-        ('nordic', 'EU Nordic & East'),
-        ('west', 'EU West'),
-        ('japan', 'Japan'),
-        ('north', 'Latin America North'),
-        ('south', 'Latin America South'),
-        ('namerica', 'North America'),
-        ('russia', 'Russia'),
-        ('turkey', 'Turkey'),
-        ('other', 'Другой сервер'),
-    ]
-
     server = models.CharField(
         max_length=50,
         choices=SERVER_CHOICES,
@@ -134,14 +137,9 @@ class RPService(ServerBasedService, AutoDeliveryFilter):
     Наследуется от базовой модели BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('gifts_for_rp', 'Подарки за RP'),
-        ('prepaid_cards', 'Карты предоплаты'),
-        ('rp_account', 'RP с заходом на аккаунт'),
-    ]
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=RP_FILTER_CHOICES,
         verbose_name='Тип',
         default='gifts_for_rp',
         help_text='Выберите, к какому фильтру относится эта запись',
@@ -167,24 +165,6 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     Наследуется от базовой модели BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('sell', 'Продажа'),
-        ('rent', 'Аренда'),
-    ]
-    RANK_CHOICES = [
-        ('IRON', 'Железо'),
-        ('BRONZE', 'Бронза'),
-        ('SILVER', 'Серебро'),
-        ('GOLD', 'Золото'),
-        ('PLATINUM', 'Платина'),
-        ('EMERALD', 'Изумруд'),
-        ('DIAMOND', 'Алмаз'),
-        ('MASTER', 'Мастер'),
-        ('GRANDMASTER', 'Гранмастер'),
-        ('CHALLENGER', 'Претендент'),
-        ('NO_RANK', 'Нет ранга'),
-    ]
-
     rank = models.CharField(
         max_length=20,
         choices=RANK_CHOICES,
@@ -193,7 +173,7 @@ class AccountService(ServerBasedService, AutoDeliveryFilter):
     )
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=ACCOUNT_FILTER_CHOICES,
         verbose_name='Тип фильтра',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='sell',
@@ -223,18 +203,6 @@ class DonationService(ServerBasedService):
     Наследуется от базовой модели BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('chests', 'Сундуки'),
-        ('chests_with_keys', 'Сундуки+ключи'),
-        ('skins', 'Скины'),
-        ('spheres', 'Сферы'),
-        ('other', 'Прочее'),
-    ]
-    RECEIVING_METHOD_CHOICES = [
-        ('GIFT', 'Подарком'),
-        ('LOGIN', 'С заходом на аккаунт'),
-    ]
-
     receiving_method = models.CharField(
         max_length=10,
         choices=RECEIVING_METHOD_CHOICES,
@@ -243,7 +211,7 @@ class DonationService(ServerBasedService):
     )
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=DONATION_FILTER_CHOICES,
         verbose_name='Тип фильтра',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='chests',
@@ -267,28 +235,12 @@ class BoostService(ServerBasedService):
     Наследуется от ServerBasedService.
     """
 
-    FILTER_CHOICES = [
-        ('solo', 'Соло буст'),
-        ('duo', 'Дуо буст'),
-    ]
-    RANK_RANGE_CHOICES = [
-        ('IRON_BRONZE', 'Железо 4 - Бронза 4'),
-        ('BRONZE_SILVER', 'Бронза 4 - Серебро 4'),
-        ('SILVER_GOLD', 'Серебро 4 - Золото 4'),
-        ('GOLD_PLATINUM', 'Золото 4 - Платина 4'),
-        ('PLATINUM_EMERALD', 'Платина 4 - Изумруд 4'),
-        ('EMERALD_DIAMOND', 'Изумруд 4 - Алмаз 4'),
-        ('DIAMOND_MASTER', 'Алмаз 4 - Мастер'),
-        ('MASTER_GRANDMASTER', 'Мастер - Грандмастер'),
-        ('GRANDMASTER_PRETENDER', 'Грандмастер - Претендент'),
-    ]
-
     rank_range = models.CharField(
         max_length=21, choices=RANK_RANGE_CHOICES, default='IRON_BRONZE', verbose_name='Диапазон'
     )
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=BOOST_FILTER_CHOICES,
         verbose_name='Тип фильтра',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='default_value',
@@ -311,22 +263,9 @@ class GeneralService(BaseService):
     Наследуется от BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('battle_pass_boost', 'Прокачка боевого пропуска'),
-        ('champion_mastery_boost', 'Прокачка мастерства чемпиона'),
-        ('aram', 'ARAM'),
-        ('clash', 'Clash'),
-        ('normal_game', 'Обычная игра'),
-        ('cooperative_game', 'Совместная игра'),
-        ('leaverbuster_recovery', 'Отыгрыш ливбустера'),
-        ('chat_ban_recovery', 'Отыгрыш банчата'),
-        ('account_leveling', 'Прокачка уровня аккаунта'),
-        ('mastery_token_farm', 'Фарм жетонов мастерства'),
-        ('deboost', 'Дебуст'),
-    ]
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=GENERAL_FILTER_CHOICES,
         verbose_name='Тип фильтра',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='default_value',
@@ -343,7 +282,7 @@ class GeneralService(BaseService):
         return self.title
 
 
-class QualificationService(ServerBasedService, BaseService):
+class QualificationService(ServerBasedService):
     """
     Модель услуги квалификации.
     Наследуется от ServerBasedService.
@@ -367,17 +306,9 @@ class TrainingService(BaseService):
     Наследуется от BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('top', 'Топ'),
-        ('jungle', 'Лес'),
-        ('mid', 'Мид'),
-        ('adc', 'АДК'),
-        ('support', 'Сап'),
-        ('any role', 'Любая роль'),
-    ]
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=TRAINING_FILTER_CHOICES,
         verbose_name='Позиция',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='default_value',
@@ -400,14 +331,9 @@ class BattlePassService(ServerBasedService):
     Наследуется от BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('1650 RP', '1650 RP'),
-        ('2650 RP', '2650 RP'),
-        ('3650 RP', '3650 RP'),
-    ]
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=BP_FILTER_CHOICES,
         verbose_name='Тип фильтра',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='default_value',
@@ -433,13 +359,9 @@ class OtherService(BaseService, AutoDeliveryFilter):
     Наследуется от BaseService.
     """
 
-    FILTER_CHOICES = [
-        ('guides', 'Гайды'),
-        ('other', 'Прочее'),
-    ]
     filter_type = models.CharField(
         max_length=50,
-        choices=FILTER_CHOICES,
+        choices=OTHER_FILTER_CHOICES,
         verbose_name='Тип фильтра',
         help_text='Выберите, к какому фильтру относится эта запись',
         default='default_value',

@@ -29,7 +29,7 @@
 
                 <div class="filter-container__search-form">
                     <div class="search-input-container">
-                        {{ filter_form.search }}
+                        {{ filter_form.q }}
                         <span class="search-icon">&#128269;</span> <!-- Иконка лупы -->
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                     <div class="tc__header-item tc-server">{{ service.server }}</div>
                     <div class="tc__header-item tc-desc">{{ service.description }}</div>
                     <div class="tc__header-item tc-user">
-                        <img width="20" height="20" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
+                        <img width="20" height="20" src="{% if service.seller.image %} {{service.seller.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
                         {{ service.seller }}
                     </div>
                     <div class="tc__header-item tc-price">{{ service.price }}</div>
@@ -83,7 +83,7 @@
                 <h3 class="offer__title">
                     Добавьте оффер
                 </h3>
-                <form action={% url "products:account" %} method='post' enctype="multipart/form-data" class="offer__form">
+                <form action="{% url "products:account" %}" method='post' enctype="multipart/form-data" class="offer__form">
                     {% csrf_token %}
                     <div class="offer__form form">
                         <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>
@@ -135,7 +135,7 @@
                         <label for="{{ image_form.image.id_for_label }}">{{ image_form.image.label }}</label>
                         {{ image_form.image }}
                     </div>
-                    
+
                     <button class="header__btn" type="submit">Отправить</button>
                 </form>
 

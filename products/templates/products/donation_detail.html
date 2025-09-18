@@ -122,7 +122,7 @@
                             {% for img in images %}
                                 <div style="position: relative; display: inline-block;">
                                     <img src="{{ img.image.url }}" alt="Image {{ forloop.counter }}" style="max-width: 100px; max-height: 100px; border: 1px solid #ccc;"/>
-                                    <form method="post" action="{% url 'products:donation_detail' service.id %}" style="position: absolute; top: -5px; right: -5px;">
+                                    <form method="post" action="{% url 'products:donation_detail' service.id %}"  class="image-delete-form" style="position: absolute; top: -5px; right: -5px;">
                                         {% csrf_token %}
                                         <input type="hidden" name="delete_image" value="1">
                                         <input type="hidden" name="image_id" value="{{ img.id }}">
@@ -163,6 +163,7 @@
                 </a>
             </div>
         </div>
+        <div id="notifications"></div>
     {% endif %}
     <div id="service-type" data-type="{{ slug }}"></div>
     <div id="service-id" data-id="{{ service.id }}"></div>
@@ -176,7 +177,7 @@
 
             <form action="{% url 'products:donation_detail' service.id %}" id="offer-form" method='post'>
                 {% csrf_token %}
-
+                <input type="hidden" name="edit_service" value="1">
                 <!-- Поля формы -->
                 <div class="offer__form form">
                     <label for="{{ form.server.id_for_label }}">{{ form.server.label }}</label>

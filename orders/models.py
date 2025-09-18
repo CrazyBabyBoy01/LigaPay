@@ -1,9 +1,8 @@
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, transaction
-
-from wallet.models import Wallet  # Импортируем кошелек пользователя
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 
 
 class Order(models.Model):
@@ -50,61 +49,23 @@ class Order(models.Model):
         return f'Заказ {self.id} - {self.product} ({self.status})'
 
     def hold_payment(self):
-        try:
-            buyer_wallet = Wallet.objects.get(user=self.user)
-        except Wallet.DoesNotExist:
-            print('Ошибка: у покупателя нет кошелька.')
-            return False
+        from .services import OrderService
 
-        total_price = self.price * self.amount
-
-        if buyer_wallet.balance < total_price:
-            print('Ошибка: недостаточно средств.')
-            return False
-
-        with transaction.atomic():
-            # Списываем с баланса покупателя
-            buyer_wallet.balance -= total_price
-            # Добавляем в замороженные средства
-            buyer_wallet.held_balance += total_price
-            buyer_wallet.save()
-
-            self.status = 'pending'
-            self.save()
-
-        print(f'Сумма {total_price}₽ заморожена на кошельке {self.user.username}')
-        return True
+        return OrderService.hold_payment(self)
 
     def process_payment(self):
         """Метод обработки оплаты с учетом количества товара"""
 
-        try:
-            buyer_wallet = Wallet.objects.get(user=self.user)  # Кошелек покупателя
-            seller_wallet = Wallet.objects.get(user=self.seller)  # Кошелек продавца
-        except Wallet.DoesNotExist:
-            print('Ошибка: у одного из пользователей нет кошелька.')
-            return False
+        from .services import OrderService
 
-        total_price = self.price * self.amount  # Общая стоимость заказа
+        return OrderService.process_payment(self)
 
-        if buyer_wallet.balance < total_price:
-            print('Ошибка: недостаточно средств.')
-            return False  # Покупка невозможна
+    def refund(self):
+        """Метод обработки оплаты с учетом количества товара"""
 
-        with transaction.atomic():
-            # 1. Списываем деньги у покупателя
-            buyer_wallet.balance -= total_price
-            buyer_wallet.save()
+        from .services import OrderService
 
-            # 2. Зачисляем деньги продавцу
-            seller_wallet.balance += total_price
-            seller_wallet.save()
-
-            # 4. Меняем статус заказа на "оплачено"
-            self.status = 'paid'
-            self.save()
-
-        return True  # Покупка успешно завершена
+        return OrderService.refund(self)
 
 
 # Модель для отзывов
@@ -124,7 +85,9 @@ class Review(models.Model):
         related_name='reviews_received',
         verbose_name='Продавец',
     )
-    rating = models.PositiveSmallIntegerField(verbose_name='Оценка (1-5)')
+    rating = models.PositiveSmallIntegerField(
+        verbose_name='Оценка (1-5)', validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
     comment = models.TextField(verbose_name='Комментарий', blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата отзыва')
 
