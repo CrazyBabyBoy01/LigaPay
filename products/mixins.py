@@ -9,29 +9,6 @@ from .models import Category
 
 logger = logging.getLogger(__name__)
 
-
-class ExcludeOwnServicesMixin:
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        user = self.request.user
-
-        # Проверяем, анонимный ли пользователь
-        if user.is_authenticated:
-            logger.debug('🔍 Пользователь анонимный — возвращаем все карточки')
-            return queryset
-
-        before_count = queryset.count()
-        # Фильтруем по исключению собственных услуг
-        filtered_qs = queryset.exclude(seller=user)
-        after_count = filtered_qs.count()
-
-        # Логируем до и после фильтрации
-        logger.debug(
-            f'🔍 Фильтрация карточек: было {before_count}, после фильтрации своих — {after_count}'
-        )
-        return filtered_qs
-
-
 class CategoryMixin:
     """
     Миксин для получения категории по slug и добавления ее в контекст.

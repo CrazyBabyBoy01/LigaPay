@@ -39,7 +39,7 @@
                 <div class="tc__header-item tc-server">{{ service.server }}</div>
                 <div class="tc__header-item tc-desc">{{ service.description }}</div>
                 <div class="tc__header-item tc-user">
-                    <img width="20" height="20" src="{% if user.image %} {{user.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
+                    <img width="20" height="20" src="{% if service.seller.image %} {{service.seller.image.url}} {% else %} {% static "deps/images/profile.png" %} {% endif %}" alt="" >
                     {{ service.seller }}
                 </div>
                 <div class="tc__header-item tc-quantity">
