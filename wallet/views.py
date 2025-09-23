@@ -24,14 +24,10 @@ class DepositView(ContextMixin, LoginRequiredMixin, View):
         amount = request.POST.get('amount')
 
         try:
-            amount = Decimal(amount)
-            if amount <= 0:
-                raise ValidationError('Сумма пополнения должна быть больше 0.')
-
-            request.user.wallet.deposit(amount)  # Вызываем метод кошелька
+            request.user.wallet.deposit(amount)
         except (ValidationError, ValueError) as e:
             return render(request, self.template_name, {'error': str(e)})
 
         return redirect(
             reverse('users:profile', kwargs={'pk': request.user.pk})
-        )  # После пополнения возвращаем в профиль
+        )

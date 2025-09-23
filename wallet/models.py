@@ -1,3 +1,5 @@
+# Create your models here.
+import logging
 from decimal import Decimal
 
 from django.conf import settings
@@ -6,7 +8,11 @@ from django.forms import ValidationError
 from django.utils.timezone import now
 
 
-# Create your models here.
+class NotEnoughFunds(Exception):
+    """Недостаточно средств"""
+
+
+logger = logging.getLogger(__name__)
 
 
 class Wallet(models.Model):
@@ -19,38 +25,88 @@ class Wallet(models.Model):
     def __str__(self):
         return f'Wallet({self.user.username} - {self.balance})'
 
-    def deposit(self, amount):
-        """Пополнение баланса"""
+    def _normalize_amount(self, amount):
         amount = Decimal(amount).quantize(Decimal('0.01'))
         if amount <= 0:
-            raise ValidationError('Сумма пополнения должна быть положительной.')
+            raise ValidationError('Сумма должна быть положительной.')
+        return amount
+
+    def deposit(self, amount):
+        """
+        Пополнение баланса.
+        Создаёт транзакцию 'deposit'.
+        Бросает ValidationError, если сумма некорректна.
+        """
+        amount = self._normalize_amount(amount)
         self.balance += amount
         self.save()
         Transaction.objects.create(wallet=self, amount=amount, transaction_type='deposit')
 
     def withdraw(self, amount):
-        """Списание средств"""
-        amount = Decimal(amount).quantize(Decimal('0.01'))
-        if amount <= 0:
-            raise ValidationError('Сумма списания должна быть положительной.')
+        """
+        Списание средств с баланса.
+        Создаёт транзакцию 'withdraw'.
+        Бросает NotEnoughFunds, если денег недостаточно.
+        """
+        amount = self._normalize_amount(amount)
         if self.balance < amount:
+            logger.warning(
+                'Недостаточно средств на балансе. wallet=%s, balance=%s, attempted=%s',
+                self.id,
+                self.balance,
+                amount,
+            )
             raise ValidationError('Недостаточно средств на балансе.')
         self.balance -= amount
         self.save()
-        print(f'==> Balance after withdraw: {self.balance}')
         Transaction.objects.create(wallet=self, amount=-amount, transaction_type='withdraw')
 
-    def transfer(self, recipient_wallet, amount):
-        """Перевод денег другому пользователю"""
-        if recipient_wallet == self:
-            raise ValidationError('Нельзя переводить деньги самому себе.')
+    def hold(self, amount):
+        """
+        Замораживает деньги на балансе.
+        Переносит сумму из balance в held_balance.
+        Создаёт транзакцию 'hold'.
+        """
+        amount = self._normalize_amount(amount)
+        if self.balance < amount:
+            raise NotEnoughFunds('Недостаточно средств')
         with transaction.atomic():
-            self.withdraw(amount)
-            recipient_wallet.deposit(amount)
-        Transaction.objects.create(wallet=self, amount=-amount, transaction_type='transfer_out')
-        Transaction.objects.create(
-            wallet=recipient_wallet, amount=amount, transaction_type='transfer_in'
-        )
+            self.balance -= amount
+            self.held_balance += amount
+            self.save()
+            Transaction.objects.create(wallet=self, amount=-amount, transaction_type='hold')
+
+    def release_to(self, amount, recipient_wallet):
+        """
+        Перевод замороженных средств продавцу.
+        Уменьшает held_balance покупателя и увеличивает balance продавца.
+        Создаёт транзакции 'purchase' и 'sale'.
+        """
+        amount = self._normalize_amount(amount)
+        if self.held_balance < amount:
+            raise NotEnoughFunds('Недостаточно средств')
+        with transaction.atomic():
+            self.held_balance -= amount
+            self.save()
+            recipient_wallet.balance += amount
+            recipient_wallet.save()
+            Transaction.objects.create(wallet=self, amount=-amount, transaction_type='purchase')
+            Transaction.objects.create(wallet=recipient_wallet, amount=amount, transaction_type='sale')
+
+    def refund(self, amount):
+        """
+        Возврат замороженных средств покупателю.
+        Уменьшает held_balance и увеличивает balance.
+        Создаёт транзакцию 'refund'.
+        """
+        amount = self._normalize_amount(amount)
+        if self.held_balance < amount:
+            raise NotEnoughFunds('Возврат невозможен')
+        with transaction.atomic():
+            self.held_balance -= amount
+            self.balance += amount
+            self.save()
+            Transaction.objects.create(wallet=self, amount=amount, transaction_type='refund')
 
 
 """История транзакций"""
@@ -60,8 +116,10 @@ class Transaction(models.Model):
     TRANSACTION_TYPES = (
         ('deposit', 'Пополнение'),
         ('withdraw', 'Вывод'),
+        ('sale', 'Продажа'),
         ('purchase', 'Покупка'),
         ('refund', 'Возврат'),
+        ('hold', 'Заморозка'),
     )
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='transactions')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
