@@ -8,12 +8,17 @@ from wallet.models import Wallet
 class WalletNotFound(Exception):
     """У пользователя нет кошелька"""
 
+
 class SellerNotFound(Exception):
     """У заказа не указан продавец"""
 
 
 class BuyerNotFound(Exception):
     """У заказа не указан покупатель"""
+
+
+class NotEnoughFunds(Exception):
+    """Недостаточно средств"""
 
 
 class OrderService:
@@ -53,14 +58,12 @@ class OrderService:
             order.status = 'paid'
             order.save()
 
-
     @staticmethod
     def refund(order):
         """
         Вернуть деньги покупателю, если заказ отменён.
         """
         with transaction.atomic():
-
             if not order.user:
                 raise BuyerNotFound('У заказа не указан покупатель')
             try:
