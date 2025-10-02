@@ -12,31 +12,33 @@ User = get_user_model()
 
 
 def get_unread_message_count(user):
-    # Для покупателя
+    """
+    Счетчик для подсчитывания непрочитанных сообщений пользователя
+    """
     buyer_messages = (
         ChatMessage.objects.filter(
-            chat_room__buyer=user  # Ищем чаты, где пользователь - покупатель
+            chat_room__buyer=user
         )
         .exclude(sender=user)
         .filter(is_read=False)
         .count()
-    )  # Исключаем сообщения от пользователя и считаем непрочитанные
-
-    # Для продавца
+    )
     seller_messages = (
         ChatMessage.objects.filter(
-            chat_room__seller=user  # Ищем чаты, где пользователь - продавец
+            chat_room__seller=user
         )
         .exclude(sender=user)
         .filter(is_read=False)
         .count()
-    )  # Исключаем сообщения от пользователя и считаем непрочитанные
-
-    # Складываем количество непрочитанных сообщений
+    )
     return buyer_messages + seller_messages
 
 
 def get_or_create_chat(buyer, seller):
+    """
+    Возвращает существующий чат между покупателем и продавцом
+    или создаёт новый, если его ещё нет.
+    """
     user1, user2 = sorted([buyer, seller], key=lambda u: u.id)
 
     chat_room = (
@@ -51,6 +53,11 @@ def get_or_create_chat(buyer, seller):
 
 
 def send_chat_event(chat_room, order, message_text, request=None, event_type=None):
+    """
+    Отправляет системное сообщение в чат и рассылает событие через WebSocket.
+    Может также отправить дополнительный ивент (event_type),
+    связанный с заказом.
+    """
     system_user = User.objects.get(username='LigaPay')
     ChatMessage.objects.create(
         chat_room=chat_room,
@@ -70,7 +77,6 @@ def send_chat_event(chat_room, order, message_text, request=None, event_type=Non
     )
     if event_type:
         if request:
-            # Потом сигнал клиенту отрисовать кнопку
             async_to_sync(channel_layer.group_send)(
                 f'chat_{chat_room.id}',
                 {

@@ -4,6 +4,11 @@ from datetime import timedelta
 
 
 class GroupedMessagesMixin:
+    """
+    Группирует список сообщений по отправителю и времени.
+
+    """
+
     def group_messages(self, messages):
         grouped = []
         current_group = None

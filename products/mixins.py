@@ -9,6 +9,7 @@ from .models import Category
 
 logger = logging.getLogger(__name__)
 
+
 class CategoryMixin:
     """
     Миксин для получения категории по slug и добавления ее в контекст.
@@ -91,7 +92,8 @@ class SearchDescriptionMixin:
 
 class ChatMixin:
     def get_chat_messages(self):
-        return ChatMessage.objects.filter(room_name='global_chat').order_by('timestamp')
+        global_room = ChatRoom.objects.get(is_global=True)
+        return global_room.messages.order_by('timestamp')
 
     def get_context_data(self, **kwargs):
         # Получаем сообщения и добавляем их в контекст

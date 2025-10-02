@@ -9,7 +9,7 @@ class ChatRoomAdmin(admin.ModelAdmin):
 
 
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ('chat_room', 'sender', 'message', 'timestamp', 'room_name')
+    list_display = ('chat_room', 'sender', 'message', 'timestamp')
 
 
 admin.site.register(ChatRoom, ChatRoomAdmin)
