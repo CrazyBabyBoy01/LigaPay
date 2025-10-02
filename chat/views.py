@@ -1,106 +1,74 @@
-# Create your views here.
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import OuterRef, Q, Subquery
-from django.http import JsonResponse
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 from django.views import View
 
 from chat.mixin import GroupedMessagesMixin
 from chat.models import ChatMessage, ChatRoom
-from orders.models import Order
 
 from .utils import get_unread_message_count
 
 
-# Create your views here.
-
-
 def lobby(request):
+    """Отображает страницу «лобби» для чата (точка входа в систему чатов)."""
     return render(request, 'chat/lobby.html')
 
 
 @login_required
 def unread_message_count_api(request):
+    """API-эндпоинт для получения количества непрочитанных сообщений у пользователя."""
     count = get_unread_message_count(request.user)
     return JsonResponse({'unread_count': count})
 
 
 class ChatRoomView(View):
-    def get(self, request, room_name='global_chat'):
-        """Загружаем страницу чата с сохранёнными сообщениями"""
-        messages = (
-            ChatMessage.objects.filter(room_name=room_name)
-            .select_related('sender')
-            .order_by('timestamp')
+    """Загружаем страницу глобального чата с сохранёнными сообщениями."""
+
+    def get(self, request):
+        chat_room, _ = ChatRoom.objects.get_or_create(is_global=True)
+        messages = chat_room.messages.select_related('sender').order_by('timestamp')
+        return render(
+            request,
+            'chat/chat.html',
+            {
+                'chat_room': chat_room,
+                'messages': messages,
+            },
         )
-        return render(request, 'chat/chat.html', {'room_name': room_name, 'messages': messages})
 
 
 class DialogsView(LoginRequiredMixin, View):
-    """Представление для списка чатов пользователя (слева)"""
+    """Формируем список всех чатов пользователя с последними сообщениями и количеством непрочитанных."""
 
     def get(self, request):
         user = request.user
 
-        # Все чаты с участием пользователя
-        chat_rooms = ChatRoom.objects.filter(buyer=user) | ChatRoom.objects.filter(seller=user)
-        chat_rooms = chat_rooms.select_related('buyer', 'seller').order_by('-created_at')
-
-        # Subquery для последнего сообщения
-        last_messages = ChatMessage.objects.filter(
-            chat_room=OuterRef('pk'),  # только сообщения с привязкой к комнате
-            room_name__isnull=True,  # исключаем глобальный чат
-        ).order_by('-timestamp')
-
-        chat_rooms = chat_rooms.annotate(
-            last_message_text=Subquery(last_messages.values('message')[:1]),
-            last_message_time=Subquery(last_messages.values('timestamp')[:1]),
-        ).order_by('-last_message_time')  # сортировка по последнему сообщению
-        for room in chat_rooms:
-            room.unread_count = (
-                ChatMessage.objects.filter(
-                    chat_room=room,
-                    is_read=False,
-                )
-                .exclude(sender=request.user)
-                .count()
-            )
+        chat_rooms = (
+            ChatRoom.objects.for_user(user)
+            .select_related('buyer', 'seller')
+            .last_messages()
+            .with_unread_counts(user)
+        )
         return render(request, 'chat/dialogs.html', {'chat_rooms': chat_rooms})
 
 
 class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
-    """Представление для конкретного диалога (справа)"""
+    """Отображение конкретного диалога. Проверка доступа, отметка сообщений прочитанными,
+    подготовка списка чатов и сообщений."""
 
     def get(self, request, chat_id):
         user = request.user
-        last_messages = ChatMessage.objects.filter(
-            chat_room=OuterRef('pk'), chat_room__isnull=False
-        ).order_by('-timestamp')
 
-        chat_rooms = ChatRoom.objects.filter(buyer=user) | ChatRoom.objects.filter(seller=user)
         chat_rooms = (
-            chat_rooms.select_related('buyer', 'seller')
-            .annotate(
-                last_message_text=Subquery(last_messages.values('message')[:1]),
-                last_message_time=Subquery(last_messages.values('timestamp')[:1]),
-            )
-            .order_by('-last_message_time')
+            ChatRoom.objects.for_user(user)
+            .select_related('buyer', 'seller')
+            .last_messages()
+            .with_unread_counts(user)
         )
-        for room in chat_rooms:
-            room.unread_count = (
-                ChatMessage.objects.filter(
-                    chat_room=room,
-                    is_read=False,
-                )
-                .exclude(sender=request.user)
-                .count()
-            )
         chat = ChatRoom.objects.select_related('buyer', 'seller').get(id=chat_id)
         if request.user != chat.buyer and request.user != chat.seller:
-            return render(request, 'chat/forbidden.html', status=403)
-        # ✅ Помечаем входящие сообщения как прочитанные
+            return HttpResponseForbidden('У вас нет доступа к этому чату')
         ChatMessage.objects.filter(chat_room=chat, is_read=False).exclude(sender=request.user).update(
             is_read=True
         )
@@ -108,15 +76,6 @@ class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
         messages = chat.messages.all().order_by('timestamp')
         interlocutor = chat.seller if request.user == chat.buyer else chat.buyer
         pending_order = None
-        if request.user.is_authenticated:
-            pending_order = (
-                Order.objects.select_related('user', 'seller')
-                .filter(
-                    status='pending',
-                )
-                .filter(Q(user=chat.buyer, seller=chat.seller) | Q(user=chat.seller, seller=chat.buyer))
-                .first()
-            )
         grouped_messages = self.group_messages(messages)
         return render(
             request,
