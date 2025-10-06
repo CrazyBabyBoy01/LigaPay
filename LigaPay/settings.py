@@ -144,7 +144,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -212,7 +212,7 @@ CELERY_TIMEZONE = 'UTC'
 CELERY_BEAT_SCHEDULE = {
     # Пример периодической задачи, которая запускается ежедневно
     'update-news-every-day': {
-        'task': 'news.tasks.update_news_task',
+        'task': 'news.tasks.scrape_news_task',
         'schedule': crontab(minute=0, hour=0),  # Например, каждый день в полночь
     },
 }
