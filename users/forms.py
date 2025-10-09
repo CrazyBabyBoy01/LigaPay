@@ -114,8 +114,7 @@ class CustomPasswordResetForm(PasswordResetForm):
         recipient_list = [user_email]
 
         transaction.on_commit(lambda: send_reset_email.delay(subject, message, recipient_list))
-        super().save(*args, **kwargs)  # Не забываем вызвать оригинальный метод
-        # Отправка письма через Celery
+        super().save(*args, **kwargs)
 
 
 class EmailChangeForm(forms.ModelForm):

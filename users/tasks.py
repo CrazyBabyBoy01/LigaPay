@@ -17,7 +17,6 @@ def send_email_verification(user_identifier):
     user_identifier может быть числовым id или email.
     """
     try:
-        # Определяем, что передано: id или email
         if isinstance(user_identifier, int):
             user = User.objects.get(id=user_identifier)
         elif isinstance(user_identifier, str):
@@ -25,7 +24,6 @@ def send_email_verification(user_identifier):
         else:
             raise ValueError('Invalid user identifier type')
 
-        # Создаём запись подтверждения email
         expiration = now() + timedelta(hours=48)
         record = EmailVerification.objects.create(code=uuid.uuid4(), user=user, expiration=expiration)
         record.send_verification_email()

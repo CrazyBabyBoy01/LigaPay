@@ -4,6 +4,13 @@ from django.utils.timezone import now
 
 
 class UpdateLastActivityMiddleware:
+    """
+    Middleware для обновления активности пользователя.
+
+    После каждого запроса проверяет поле last_activity у аутентифицированного пользователя.
+    Если прошло более 30 секунд с момента последней активности,
+    поле обновляется на текущее время.
+    """
     def __init__(self, get_response):
         self.get_response = get_response
 
