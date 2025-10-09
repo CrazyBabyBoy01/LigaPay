@@ -41,13 +41,14 @@ class UserLoginView(ContextMixin, LoginView):
     title = 'Авторизация'
 
     def form_valid(self, form):
+        response = super().form_valid(form)
         remember_me = bool(self.request.POST.get('remember_me'))
 
         if not remember_me:
             self.request.session.set_expiry(0)
         else:
             self.request.session.set_expiry(TWO_WEEKS)
-        return super().form_valid(form)
+        return response
 
 
 class UserRegistrationView(SuccessMessageMixin, ContextMixin, CreateView):
@@ -120,7 +121,7 @@ class EmailVerificationView(ContextMixin, TemplateView):
 
     def change_email(self, user, code):
         """Подтверждает смену email."""
-        if user.email_change_token == code and user.new_email:
+        if user.email_change_token == str(code) and user.new_email:
             user.email = user.new_email
             user.new_email = None
             user.email_change_token = None

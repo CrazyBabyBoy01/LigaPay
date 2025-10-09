@@ -4,6 +4,12 @@ from django.urls import reverse
 
 
 def send_verification_email(self):
+    """
+    Отправляет пользователю письмо для подтверждения email.
+
+    Формирует ссылку с кодом подтверждения, включает её в сообщение
+    и отправляет письмо на текущий адрес пользователя.
+    """
     link = reverse(
         'users:email_verification',
         kwargs={'email': self.user.email, 'code': self.code},
