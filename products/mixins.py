@@ -26,14 +26,12 @@ class CategoryMixin:
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Получаем слаг из URL или передаем его явно (например, для страницы AccountService)
         slug = kwargs.get('slug', None)
 
         if slug:
-            category = self.get_category(slug)  # Получаем категорию по переданному слагу
+            category = self.get_category(slug)
             context['category'] = category
 
-        # Получаем все категории для списка
         context['categories'] = Category.objects.all()
 
         return context
@@ -43,60 +41,12 @@ class PaginateMixin:
     paginate_by = 3
 
 
-class SearchDescriptionMixin:
-    """
-    Миксин для обработки поиска и фильтров по полям `title`,
-    `search_description`, а также других фильтров.
-    """
-
-    def get_search_query(self):
-        """
-        Возвращает строку запроса для поиска по полям `title` и `search_description`.
-        """
-        query = self.request.GET.get('q', '')
-        return query.strip()
-
-    def get_filters(self):
-        """
-        Возвращает фильтры из запроса.
-        """
-        return {
-            'online_sellers': self.request.GET.get('online_sellers') == 'on',
-            'auto_delivery': self.request.GET.get('auto_delivery') == 'on',
-        }
-
-    def get_queryset(self):
-        """
-        Фильтрует объекты модели на основе запроса по полям `title`,
-        `search_description` и дополнительных фильтров.
-        """
-        queryset = super().get_queryset()
-        query = self.get_search_query()
-        filters = self.get_filters()
-
-        # Фильтрация по полям `title` и `search_description`
-        if query:
-            queryset = queryset.filter(
-                Q(title__icontains=query) | Q(search_description__icontains=query)
-            )
-
-        # Применение фильтра "Только продавцы онлайн"
-        if filters['online_sellers']:
-            queryset = queryset.filter(seller__is_online=True)
-
-        # Применение фильтра "Автоматическая доставка"
-        if filters['auto_delivery']:
-            queryset = queryset.filter(is_auto_delivery=True)
-        return queryset
-
-
 class ChatMixin:
     def get_chat_messages(self):
         global_room = ChatRoom.objects.get(is_global=True)
         return global_room.messages.order_by('timestamp')
 
     def get_context_data(self, **kwargs):
-        # Получаем сообщения и добавляем их в контекст
         context = super().get_context_data(**kwargs)
         context['messages'] = self.get_chat_messages()
         return context
@@ -133,7 +83,6 @@ class ServiceChatMixin:
             if seller:
                 messages = self.get_chat_messages(buyer, seller)
 
-                # 👉 группируем сообщения, если есть миксин
                 if hasattr(self, 'group_messages'):
                     context['grouped_messages'] = self.group_messages(messages)
                 else:

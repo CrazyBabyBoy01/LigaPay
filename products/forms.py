@@ -28,7 +28,6 @@ from .models import (
 )
 
 
-# Сопоставление моделей категориям
 CATEGORY_MODEL_MAPPING = {
     'accounts': AccountService,
     'training': TrainingService,
@@ -38,6 +37,10 @@ CATEGORY_MODEL_MAPPING = {
 
 
 class ServiceImageForm(forms.ModelForm):
+    """
+    Форма для загрузки изображения к услуге.
+    Поддерживает необязательное поле image.
+    """
     image = forms.ImageField(required=False, label='Загрузить изображение')
 
     class Meta:
@@ -47,34 +50,42 @@ class ServiceImageForm(forms.ModelForm):
 
 class AccountServiceForm(forms.ModelForm):
     """
-    Форма для создания и редактирования услуг категории 'AccountService',
-    включая поля, унаследованные от BaseService.
+    Форма для создания и редактирования услуг категории «Аккаунты».
+
+    Включает стандартные поля из BaseService и уникальные характеристики аккаунта:
+    ранг, сервер, уровень, количество скинов и персонажей.
     """
 
     class Meta:
         model = AccountService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
-            'rank',  # Уникальное для AccountService
-            'server',  # Уникальное для AccountService
-            'account_level',  # Уникальное для AccountService
-            'skin_count',  # Уникальное для AccountService
-            'character_count',  # Уникальное для AccountService
+            'rank',
+            'server',
+            'account_level',
+            'skin_count',
+            'character_count',
             'is_auto_delivery',
             'quantity',
         ]
 
 
 class RPServiceForm(forms.ModelForm):
+    """
+    Форма для услуг категории «RP» (внутриигровая валюта).
+
+    Используется для создания и редактирования предложений по продаже RP.
+    """
+
     class Meta:
         model = RPService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'server',
             'quantity',
@@ -83,6 +94,10 @@ class RPServiceForm(forms.ModelForm):
 
 
 class RPServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации списка RP-услуг.
+    Позволяет фильтровать по серверу, типу сделки, авто-доставке и онлайн-статусу продавца.
+    """
     server = forms.ChoiceField(
         choices=SERVER_CHOICES,
         required=False,
@@ -91,7 +106,7 @@ class RPServiceFilterForm(forms.Form):
     filter_type = forms.ChoiceField(
         choices=RP_FILTER_CHOICES,
         required=False,
-        widget=forms.Select(attrs={ 'class': 'filter-container__btn'}),
+        widget=forms.Select(attrs={'class': 'filter-container__btn'}),
     )
     is_auto_delivery = forms.BooleanField(
         help_text='Пометить, если услуга поддерживает автоматическую доставку',
@@ -108,6 +123,10 @@ class RPServiceFilterForm(forms.Form):
 
 
 class AccountServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации аккаунтов по параметрам:
+    сервер, тип сделки, ранг, уровень, количество скинов/персонажей и авто-доставка.
+    """
     server = forms.ChoiceField(
         choices=SERVER_CHOICES,
         required=False,
@@ -168,6 +187,10 @@ class AccountServiceFilterForm(forms.Form):
 
 
 class BoostServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации услуг буста.
+    Поддерживает фильтрацию по серверу, типу сделки, диапазону рангов и активности продавца.
+    """
     server = forms.ChoiceField(
         choices=SERVER_CHOICES,
         required=False,
@@ -197,12 +220,16 @@ class BoostServiceFilterForm(forms.Form):
 
 
 class BoostServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования услуг категории «Буст».
+    Включает базовые поля и параметры диапазона рангов.
+    """
     class Meta:
         model = BoostService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'server',
             'is_auto_delivery',
@@ -211,6 +238,10 @@ class BoostServiceForm(forms.ModelForm):
 
 
 class TrainingServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации услуг обучения.
+    Позволяет отбирать предложения по типу и онлайн-статусу продавца.
+    """
     filter_type = forms.ChoiceField(
         choices=TRAINING_FILTER_CHOICES,
         required=False,
@@ -230,18 +261,26 @@ class TrainingServiceFilterForm(forms.Form):
 
 
 class TrainingServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования услуг категории «Обучение».
+    Используется для добавления предложений по тренировкам.
+    """
     class Meta:
         model = TrainingService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'seller_is_online',
         ]
 
 
 class BattlePassServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации услуг категории «Боевой пропуск».
+    Позволяет фильтровать по серверу, типу сделки и авто-доставке.
+    """
     server = forms.ChoiceField(
         choices=SERVER_CHOICES,
         required=False,
@@ -250,7 +289,7 @@ class BattlePassServiceFilterForm(forms.Form):
     filter_type = forms.ChoiceField(
         choices=BP_FILTER_CHOICES,
         required=False,
-        widget=forms.Select(attrs={ 'class': 'filter-container__btn'}),
+        widget=forms.Select(attrs={'class': 'filter-container__btn'}),
     )
     is_auto_delivery = forms.BooleanField(
         help_text='Пометить, если услуга поддерживает автоматическую доставку',
@@ -267,12 +306,16 @@ class BattlePassServiceFilterForm(forms.Form):
 
 
 class BattlePassServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования услуг категории «Боевой пропуск».
+    Содержит поля сервера, авто-доставки и количества.
+    """
     class Meta:
         model = BattlePassService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'seller_is_online',
             'is_auto_delivery',
@@ -282,6 +325,10 @@ class BattlePassServiceForm(forms.ModelForm):
 
 
 class DonationServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации донат-услуг.
+    Позволяет отбирать предложения по серверу, типу сделки, авто-доставке и способу получения.
+    """
     server = forms.ChoiceField(
         choices=SERVER_CHOICES,
         required=False,
@@ -290,7 +337,7 @@ class DonationServiceFilterForm(forms.Form):
     filter_type = forms.ChoiceField(
         choices=DONATION_FILTER_CHOICES,
         required=False,
-        widget=forms.Select(attrs={ 'class': 'filter-container__btn'}),
+        widget=forms.Select(attrs={'class': 'filter-container__btn'}),
     )
     receiving_method = forms.ChoiceField(
         choices=RECEIVING_METHOD_CHOICES,
@@ -317,12 +364,16 @@ class DonationServiceFilterForm(forms.Form):
 
 
 class DonationServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования услуг категории «Донат».
+    Включает выбор способа получения (receiving_method) и сервера.
+    """
     class Meta:
         model = DonationService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'seller_is_online',
             'is_auto_delivery',
@@ -332,6 +383,10 @@ class DonationServiceForm(forms.ModelForm):
 
 
 class GeneralServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации общих услуг.
+    Позволяет искать предложения по типу и онлайн-статусу продавца.
+    """
     filter_type = forms.ChoiceField(
         choices=GENERAL_FILTER_CHOICES,
         required=False,
@@ -351,18 +406,26 @@ class GeneralServiceFilterForm(forms.Form):
 
 
 class GeneralServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования общих услуг.
+    Используется для универсальных предложений без особых параметров.
+    """
     class Meta:
         model = GeneralService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'seller_is_online',
         ]
 
 
 class QualificationServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации квалификационных услуг.
+    Позволяет искать предложения по серверу и онлайн-статусу продавца.
+    """
     server = forms.ChoiceField(
         choices=SERVER_CHOICES,
         required=False,
@@ -382,18 +445,25 @@ class QualificationServiceFilterForm(forms.Form):
 
 
 class QualificationServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования услуг категории «Квалификация».
+    Содержит поля сервера и информации о продавце.
+    """
     class Meta:
         model = QualificationService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
             'server',
             'seller_is_online',
         ]
 
 
 class OtherServiceFilterForm(forms.Form):
+    """
+    Форма фильтрации услуг категории «Прочее».
+    Позволяет отбирать предложения по типу, авто-доставке и активности продавца.
+    """
     filter_type = forms.ChoiceField(
         choices=OTHER_FILTER_CHOICES,
         required=False,
@@ -419,12 +489,16 @@ class OtherServiceFilterForm(forms.Form):
 
 
 class OtherServiceForm(forms.ModelForm):
+    """
+    Форма для создания и редактирования услуг категории «Прочее».
+    Используется для дополнительных предложений, не входящих в другие категории.
+    """
     class Meta:
         model = OtherService
         fields = [
-            'title',  # Из BaseService
-            'description',  # Из BaseService
-            'price',  # Из BaseService
+            'title',
+            'description',
+            'price',
             'filter_type',
             'is_auto_delivery',
             'quantity',
@@ -432,6 +506,11 @@ class OtherServiceForm(forms.ModelForm):
 
 
 class PurchaseForm(forms.Form):
+    """
+    Форма оформления покупки услуги.
+
+    Позволяет выбрать способ оплаты, указать количество, итоговую цену и идентификатор игрока.
+    """
     payment_method = forms.ChoiceField(
         choices=[
             ('', 'Не выбран'),
