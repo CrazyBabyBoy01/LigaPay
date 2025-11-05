@@ -256,3 +256,12 @@ if 'test' in sys.argv:
 
 USER_ONLINE_MINUTES = 5
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+if 'test' in sys.argv:
+    from django.db.backends.signals import connection_created
+
+    def disable_fk_checks(sender, connection, **kwargs):
+        if connection.vendor == 'postgresql':
+            with connection.cursor() as cursor:
+                cursor.execute('SET session_replication_role = replica;')
+
+    connection_created.connect(disable_fk_checks)

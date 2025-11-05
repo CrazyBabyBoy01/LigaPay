@@ -24,7 +24,6 @@ from django.urls import include, path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path("", IndexView.as_view(), name="index"),
     path('', include('main.urls', namespace='main')),
     path('users/', include('users.urls', namespace='users')),
     path('', include('news.urls', namespace='news')),

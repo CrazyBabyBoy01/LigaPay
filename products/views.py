@@ -81,6 +81,11 @@ SERVICE_MODELS = [
 
 
 class CategoryView(View):
+    """
+    Отображает страницу категории услуг по её slug.
+    Если slug отсутствует, выполняет редирект на главную страницу.
+    """
+
     model = Category
     title = 'Услуги'
     template_name = 'products/products.html'
@@ -89,7 +94,6 @@ class CategoryView(View):
 
     def get(self, request, slug=None):
         if slug:
-            # Если слаг передан, получаем соответствующую категорию
             category = get_object_or_404(Category, slug=slug)
             return render(
                 request,
@@ -99,17 +103,28 @@ class CategoryView(View):
                     'title': self.title,
                 },
             )
+        else:
+            return redirect('main:index')
 
 
 class BaseServiceDetailView(
     CategoryMixin, ServiceChatMixin, GroupedMessagesMixin, ContextMixin, DetailView
 ):
+    """
+    Базовое представление для отображения детальной информации об услуге.
+
+    Реализует:
+    - получение объекта услуги с предзагрузкой связанных данных (продавец, категория, изображения);
+    - формирование контекста с формами покупки и редактирования;
+    - обработку POST-запросов: редактирование, удаление услуги и управление изображениями.
+    """
+
     context_object_name = 'service'
     title = ''
     slug = ''
 
     def get_object(self):
-        """Получает объект AccountService по ID или возвращает 404."""
+        """Получает объект или возвращает 404."""
         qs = self.model.objects.select_related('seller', 'category')
         has_images_field = any(f.name == 'images' for f in self.model._meta.get_fields())
         if has_images_field:
@@ -117,16 +132,14 @@ class BaseServiceDetailView(
         return get_object_or_404(qs, id=self.kwargs['pk'])
 
     def get_context_data(self, **kwargs):
-        # Сюда передаем slug, чтобы миксин мог правильно его обработать
-        kwargs['slug'] = self.slug  # или динамически передавайте нужный слаг
+        kwargs['slug'] = self.slug
         context = super().get_context_data(**kwargs)
         service = self.object
         context['form'] = self.form_class(instance=service)
-        context['form_purchase'] = PurchaseForm()  # форма для покупки
-        context['is_buyer'] = self.request.user != service.seller  # Проверка, покупатель ли это
+        context['form_purchase'] = PurchaseForm()
+        context['is_buyer'] = self.request.user != service.seller
         context['model_name'] = self.model._meta.model_name
         context['seller_reviews'] = Review.objects.filter(seller=service.seller).order_by('-id')
-        # Только для авторизованных пользователей — проверка заказов
         if self.request.user.is_authenticated:
             pending_order = Order.objects.filter(
                 content_type=ContentType.objects.get_for_model(service),
@@ -143,28 +156,27 @@ class BaseServiceDetailView(
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         service = self.object
-        # Проверка, что пользователь — продавец
         if not self.can_edit(service, request.user):
             return JsonResponse(
                 {'success': False, 'message': 'У вас нет прав на это действие.'}, status=403
             )
-        # Удаление
+
         if 'delete' in request.POST:
             service.delete()
             return redirect('products:my_products')
-        # Редактирование
+
         elif 'edit_service' in request.POST:
             return self.edit_service(request.POST, request.FILES, service)
-        # Удаление изображения
+
         elif 'delete_image' in request.POST and self.has_images():
             image_id = request.POST.get('image_id')
-            if not image_id:  # если не передали id
+            if not image_id:
                 return JsonResponse({'success': False, 'message': 'image_id обязателен'}, status=400)
             success = self.delete_image(image_id)
             if success:
                 return JsonResponse({'success': True, 'message': 'Изображение удалено.'})
             return JsonResponse({'success': False, 'message': 'Ошибка при удалении изображения.'})
-        # Добавление нового изображения
+
         elif 'add_image' in request.POST and self.has_images():
             result = self.add_image(request.POST, request.FILES)
             return JsonResponse(result)
@@ -221,12 +233,21 @@ class BaseServiceDetailView(
 
 
 class BaseServiceListView(CategoryMixin, ChatMixin, ContextMixin, PaginateMixin, ListView):
+    """
+    Базовое представление для отображения списка услуг.
+
+    Реализует:
+    - получение queryset активных услуг с фильтрацией по форме;
+    - исключение услуг текущего пользователя;
+    - создание новой услуги через POST-запрос (с изображениями);
+    - передачу форм в контекст.
+    """
+
     context_object_name = 'services'
     filter_form_class = None
     create_form_class = None
 
     def get_queryset(self):
-        # Получаем все услуги (карточки) для текущего пользователя
         queryset = self.model.objects.filter(is_active=True).select_related('seller', 'category')
         if any(f.name == 'images' for f in self.model._meta.get_fields()):
             queryset = queryset.prefetch_related('images')
@@ -245,7 +266,7 @@ class BaseServiceListView(CategoryMixin, ChatMixin, ContextMixin, PaginateMixin,
 
         return queryset
 
-    def get_context_data(self, **kwargs):  # для передачи контекста в шаблон
+    def get_context_data(self, **kwargs):
         kwargs['slug'] = self.slug
         context = super().get_context_data(**kwargs)
         context['filter_form'] = self.filter_form_class(self.request.GET)
@@ -257,22 +278,20 @@ class BaseServiceListView(CategoryMixin, ChatMixin, ContextMixin, PaginateMixin,
             return HttpResponseForbidden()
         form = self.create_form_class(request.POST)
         if form.is_valid():
-            offer = form.save(commit=False)  # Не сохраняем сразу, а создаем объект
-            offer.seller = request.user  # Привязываем авторизованного пользователя как продавца
-            offer.save()  # Сохраняем данные формы
-            # Обработка загруженных файлов (картинок)
+            offer = form.save(commit=False)
+            offer.seller = request.user
+            offer.save()
+
             if self.has_images() and 'image' in request.FILES:
                 image_form = ServiceImageForm(request.POST, request.FILES)
                 if image_form.is_valid() and image_form.cleaned_data.get('image'):
                     image = image_form.save(commit=False)
-                    image.content_object = offer  # Связываем картинку с сервисом
+                    image.content_object = offer
                     image.save()
-            return redirect(self.request.path)  # Здесь можно перенаправить на страницу успеха
+            return redirect(self.request.path)
 
-        # Добавление ошибок в лог или отладочную информацию
-        # Логируем ошибки
         logger.error(f'Ошибка в форме: {form.errors}')
-        return self.get(request, *args, **kwargs)  # Возвращаем форму с ошибками
+        return self.get(request, *args, **kwargs)
 
     def has_images(self):
         return any(f.name == 'images' for f in self.model._meta.get_fields())
@@ -280,7 +299,7 @@ class BaseServiceListView(CategoryMixin, ChatMixin, ContextMixin, PaginateMixin,
 
 class AccountServiceListView(BaseServiceListView):
     """
-    Вьюха для отображения списка услуг категории "Account".
+    Представление списка услуг категории «Аккаунты».
     """
 
     title = 'Аккаунты'
@@ -291,34 +310,41 @@ class AccountServiceListView(BaseServiceListView):
     create_form_class = AccountServiceForm
     slug = 'accounts'
 
-    def get_context_data(self, **kwargs):  # для передачи контекста в шаблон
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['image_form'] = ServiceImageForm()  # Добавляем форму для загрузки картинки
+        context['image_form'] = ServiceImageForm()
         return context
 
 
 class AccountServiceDetailView(BaseServiceDetailView):
+    """
+    Представление деталей услуги категории «Аккаунты».
+    """
+
     title = 'Покупка Аккунта'
     model = AccountService
-    template_name = 'products/account_detail.html'  # Путь к шаблону
+    template_name = 'products/account_detail.html'
     form_class = AccountServiceForm
     slug = 'accounts'
 
     def get_context_data(self, **kwargs):
-        # Сюда передаем slug, чтобы миксин мог правильно его обработать
         context = super().get_context_data(**kwargs)
-        context['image_form'] = ServiceImageForm()  # Добавляем картинку
+        context['image_form'] = ServiceImageForm()
         context['images'] = self.get_images()
         return context
 
 
 class RPServiceListView(BaseServiceListView):
+    """
+    Представление списка услуг категории «RP».
+    """
+
     title = 'RP'
     model = RPService
     filter = RpFilter
     filter_form_class = RPServiceFilterForm
     create_form_class = RPServiceForm
-    template_name = 'products/riot-points.html'  # Указываем путь к твоему шаблону
+    template_name = 'products/riot-points.html'
     slug = 'riot-points'
 
     def get_queryset(self):
@@ -329,18 +355,20 @@ class RPServiceListView(BaseServiceListView):
 class RPServiceDetailView(
     BaseServiceDetailView,
 ):
-    """Представление для отображения деталей услуги (RPService)."""
+    """
+    Представление деталей услуги категории «RP».
+    """
 
     title = 'Покупка RP'
     model = RPService
-    template_name = 'products/riot-points_detail.html'  # Путь к шаблону
+    template_name = 'products/riot-points_detail.html'
     form_class = RPServiceForm
     slug = 'riot-points'
 
 
 class BoostServiceListView(BaseServiceListView):
     """
-    Вьюха для отображения списка услуг категории "Boost".
+    Представление списка услуг категории «Буст».
     """
 
     title = 'Буст'
@@ -349,92 +377,115 @@ class BoostServiceListView(BaseServiceListView):
     filter_form_class = BoostServiceFilterForm
     create_form_class = BoostServiceForm
     slug = 'boosting'
-    template_name = 'products/boost.html'  # Указываем путь к твоему шаблону
+    template_name = 'products/boost.html'
 
 
 class BoostServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги (RPService)."""
+    """
+    Представление деталей услуги категории «Буст».
+    """
 
-    title = 'Буст аккаунта'
+    title = 'Буст'
     model = BoostService
-    template_name = 'products/boost_detail.html'  # Путь к шаблону
+    template_name = 'products/boost_detail.html'
     form_class = BoostServiceForm
     slug = 'boosting'
 
 
 class TrainingServiceListView(BaseServiceListView):
+    """
+    Представление списка услуг категории «Обучение».
+    """
+
     title = 'Обучение'
     model = TrainingService
     filter = TrainingFilter
     filter_form_class = TrainingServiceFilterForm
     create_form_class = TrainingServiceForm
-    template_name = 'products/training.html'  # Указываем путь к твоему шаблону
+    template_name = 'products/training.html'
     slug = 'training'
 
 
 class TrainingServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги (TrainingService)."""
+    """
+    Представление деталей услуги категории «Обучение».
+    """
 
     title = 'Обучение'
     model = TrainingService
-    template_name = 'products/training_detail.html'  # Путь к шаблону
+    template_name = 'products/training_detail.html'
     form_class = TrainingServiceForm
     slug = 'training'
 
 
 class BattlePassServiceListView(BaseServiceListView):
+    """
+    Представление списка услуг категории «Боевой пропуск».
+    """
+
     title = 'Боевой пропуск'
     model = BattlePassService
     filter = BattlePassFilter
     filter_form_class = BattlePassServiceFilterForm
     create_form_class = BattlePassServiceForm
-    template_name = 'products/battlepass.html'  # Указываем путь к твоему шаблону
+    template_name = 'products/battlepass.html'
     slug = 'battle-pass'
 
 
 class BattlePassServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги (BattlePassService)."""
+    """
+    Представление деталей услуги категории «Боевой пропуск».
+    """
 
-    title = 'Обучение'
+    title = 'Боевой пропуск'
     model = BattlePassService
-    template_name = 'products/battlepass_detail.html'  # Путь к шаблону
+    template_name = 'products/battlepass_detail.html'
     form_class = BattlePassServiceForm
     slug = 'battle-pass'
 
 
 class DonationServiceListView(BaseServiceListView):
+    """
+    Представление списка услуг категории «Донат».
+    """
+
     title = 'Донат'
     model = DonationService
     filter = DonationFilter
     filter_form_class = DonationServiceFilterForm
     create_form_class = DonationServiceForm
-    template_name = 'products/donation.html'  # Указываем путь к твоему шаблону
+    template_name = 'products/donation.html'
     slug = 'donation'
 
-    def get_context_data(self, **kwargs):  # для передачи контекста в шаблон
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['image_form'] = ServiceImageForm()  # Добавляем форму для загрузки картинки
+        context['image_form'] = ServiceImageForm()
         return context
 
 
 class DonationServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги DonationService)."""
+    """
+    Представление деталей услуги категории «Донат».
+    """
 
-    title = 'Обучение'
+    title = 'Донат'
     model = DonationService
-    template_name = 'products/donation_detail.html'  # Путь к шаблону
+    template_name = 'products/donation_detail.html'
     form_class = DonationServiceForm
     slug = 'donation'
 
     def get_context_data(self, **kwargs):
-        # Сюда передаем slug, чтобы миксин мог правильно его обработать
         context = super().get_context_data(**kwargs)
-        context['image_form'] = ServiceImageForm()  # Добавляем картинку
+        context['image_form'] = ServiceImageForm()
         context['images'] = self.get_images()
         return context
 
 
 class GeneralServiceListView(BaseServiceListView):
+    """
+    Представление списка услуг категории «Услуги».
+    """
+
     title = 'Услуги'
     model = GeneralService
     filter = GeneralFilter
@@ -445,16 +496,22 @@ class GeneralServiceListView(BaseServiceListView):
 
 
 class GeneralServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги (BattlePassService)."""
+    """
+    Представление деталей услуги категории «Услуги».
+    """
 
-    title = 'Обучение'
+    title = 'Услуги'
     model = GeneralService
-    template_name = 'products/services_detail.html'  # Путь к шаблону
+    template_name = 'products/services_detail.html'
     form_class = GeneralServiceForm
     slug = 'services'
 
 
 class OtherServiceListView(BaseServiceListView):
+    """
+    Представление списка услуг категории «Прочее».
+    """
+
     title = 'Прочее'
     model = OtherService
     filter = OtherFilter
@@ -465,7 +522,9 @@ class OtherServiceListView(BaseServiceListView):
 
 
 class OtherServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги (OtherService)."""
+    """
+    Представление деталей услуги категории «Обучение».
+    """
 
     title = 'Обучение'
     model = OtherService
@@ -476,7 +535,7 @@ class OtherServiceDetailsView(BaseServiceDetailView):
 
 class QualificationServiceListView(BaseServiceListView):
     """
-    Вьюха для отображения списка услуг категории "Account".
+    Представление списка услуг категории «Квалификация».
     """
 
     title = 'Квалификация'
@@ -489,7 +548,9 @@ class QualificationServiceListView(BaseServiceListView):
 
 
 class QualificationServiceDetailsView(BaseServiceDetailView):
-    """Представление для отображения деталей услуги (BattlePassService)."""
+    """
+    Представление деталей услуги категории «Обучение».
+    """
 
     title = 'Обучение'
     model = QualificationService
@@ -499,7 +560,13 @@ class QualificationServiceDetailsView(BaseServiceDetailView):
 
 
 class MyProductsView(LoginRequiredMixin, ContextMixin, TemplateView):
-    # Вьюха для отображения карточек в услугах(кроме своих)
+    """
+    Отображает все услуги, созданные текущим пользователем.
+
+    Собирает объекты из всех моделей услуг (Account, RP, Boost и др.),
+    фильтрует по продавцу и сортирует по дате создания.
+    """
+
     template_name = 'products/my_products.html'
     title = 'Мои продукты'
     login_url = 'users:authorization'
@@ -514,18 +581,15 @@ class MyProductsView(LoginRequiredMixin, ContextMixin, TemplateView):
         for M in SERVICE_MODELS:
             qs = M.objects.filter(seller=user).select_related('seller', 'category')
 
-            # если есть поле images — подгружаем
             if any(f.name == 'images' for f in M._meta.get_fields()):
                 qs = qs.prefetch_related('images')
 
-            # если есть поле quantity — фильтруем по > 0
             if any(f.name == 'quantity' for f in M._meta.get_fields()):
                 qs = qs.filter(quantity__gt=0)
 
             all_services.extend(qs)
 
-        # Если нужно — отсортируй по дате
-        all_services.sort(key=lambda s: s.created_at, reverse=True)  # если есть поле created_at
+        all_services.sort(key=lambda s: s.created_at, reverse=True)
 
         context['services'] = all_services
         context['category_slug'] = category_slug

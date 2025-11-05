@@ -27,7 +27,7 @@ from products.views import (
 app_name = 'products'
 
 urlpatterns = [
-    path('category/<slug:category_slug>/', CategoryView.as_view(), name='category'),
+    path('category/<slug:slug>/', CategoryView.as_view(), name='category'),
     path('accounts/', AccountServiceListView.as_view(), name='account'),
     path('riot-points/', RPServiceListView.as_view(), name='riot-points'),
     path('riot-points/<int:pk>/', RPServiceDetailView.as_view(), name='riot-points_detail'),

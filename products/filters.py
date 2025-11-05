@@ -17,6 +17,19 @@ from products.models import (
 
 
 class BaseServiceFilter(django_filters.FilterSet):
+    """
+    Базовый фильтр для моделей, наследующих BaseService.
+
+    Предоставляет общие фильтры:
+      - q — текстовый поиск по названию, описанию и полю search_description;
+      - is_auto_delivery — фильтрация услуг с автоматической выдачей;
+      - seller_is_online — фильтрация по активности продавца за последние N минут.
+
+    Этот фильтр используется как родитель для конкретных фильтров услуг (например, AccountFilter,
+    RpFilter и др.).
+    обеспечивая единообразную логику поиска и стандартные фильтры для всех категорий.
+    """
+
     q = django_filters.CharFilter(method='filter_q', label='Поиск')
     is_auto_delivery = django_filters.BooleanFilter(method='filter_auto_delivery')
     seller_is_online = django_filters.BooleanFilter(method='filter_seller_online')
@@ -32,7 +45,7 @@ class BaseServiceFilter(django_filters.FilterSet):
         return queryset
 
     def filter_auto_delivery(self, queryset, name, value):
-        if value is True:  # Если чекбокс включен
+        if value is True:
             return queryset.filter(is_auto_delivery=True)
         return queryset
 
@@ -93,6 +106,7 @@ class DonationFilter(BaseServiceFilter):
             'filter_type',
             'receiving_method',
         ]
+
 
 class GeneralFilter(BaseServiceFilter):
     class Meta:
