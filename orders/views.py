@@ -271,7 +271,7 @@ class CancelOrderView(LoginRequiredMixin, View):
                     return JsonResponse({'success': False, 'message': 'У заказа не указан покупатель'})
                 except WalletNotFound:
                     logger.warning(
-                        'У пользователя нет кошелька. Продавец=%s, order_id=%s',
+                        'У пользователя . Продавец=%s, order_id=%s',
                         request.user.id,
                         order_id,
                     )
@@ -378,14 +378,14 @@ class ReviewCreateView(LoginRequiredMixin, View):
                 'Пользователь не может оставить отзыв. user=%s, order_id=%s', request.user.id, order.id
             )
             messages.error(request, 'Вы не можете оставить отзыв к этому заказу.')
-            return redirect('orders:order_detail', order_id=order.id)
+            return redirect('orders:my_orders')
 
         if hasattr(order, 'review'):
             logger.warning(
                 'Повторная попытка оставить отзыв. user=%s, order_id=%s', request.user.id, order.id
             )
             messages.warning(request, 'Вы уже оставили отзыв для этого заказа.')
-            return redirect('orders:order_detail', order_id=order.id)
+            return redirect('orders:my_orders')
 
         rating = request.POST.get('rating')
         comment = request.POST.get('comment', '').strip()
@@ -399,7 +399,8 @@ class ReviewCreateView(LoginRequiredMixin, View):
                 'Некорректная оценка. user=%s, order_id=%s, rating=%s', request.user.id, order.id, rating
             )
             messages.error(request, 'Оценка должна быть числом от 1 до 5.')
-            return redirect('orders:order_detail', order_id=order.id)
+            return redirect('orders:my_orders')
+
 
         Review.objects.create(
             order=order,
