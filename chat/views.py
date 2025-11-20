@@ -30,7 +30,7 @@ class ChatRoomView(View):
         messages = chat_room.messages.select_related('sender').order_by('timestamp')
         return render(
             request,
-            'chat/chat.html',
+            'chat/lobby.html',
             {
                 'chat_room': chat_room,
                 'messages': messages,

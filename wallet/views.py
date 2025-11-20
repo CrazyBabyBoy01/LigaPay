@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
@@ -28,6 +26,4 @@ class DepositView(ContextMixin, LoginRequiredMixin, View):
         except (ValidationError, ValueError) as e:
             return render(request, self.template_name, {'error': str(e)})
 
-        return redirect(
-            reverse('users:profile', kwargs={'pk': request.user.pk})
-        )
+        return redirect(reverse('users:profile', kwargs={'pk': request.user.pk}))

@@ -6,4 +6,4 @@ class WalletConfig(AppConfig):
     name = 'wallet'
 
     def ready(self):
-        pass  # Подключаем сигналы при запуске приложения
+        import wallet.signals  # noqa: F401
