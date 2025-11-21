@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 
 
 class News(models.Model):
@@ -24,10 +23,6 @@ class News(models.Model):
     def __str__(self):
         """Возвращает строковое представление новости (заголовок)."""
         return self.title
-
-    def get_absolute_url(self):
-        """Возвращает ссылку на детальную страницу новости."""
-        return reverse('news_detail', kwargs={'pk': self.pk})
 
     def short_description(self):
         """Возвращает первые 100 символов описания."""

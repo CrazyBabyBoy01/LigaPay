@@ -16,6 +16,6 @@ def scrape_news_task():
     Запускается через Celery Beat (по расписанию).
     Использует функцию `scrape_and_save_news` из services.py.
     """
-    logger.info('🔄 Запуск задачи scrape_news_task через Celery Beat')
+    logger.info('Запуск задачи scrape_news_task через Celery Beat')
     scrape_and_save_news()
-    logger.info('✅ Задача scrape_news_task завершена')
+    logger.info('Задача scrape_news_task завершена')
