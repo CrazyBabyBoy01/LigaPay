@@ -36,7 +36,7 @@ class ChatRoom(models.Model):
     object_id = models.PositiveIntegerField(null=True, blank=True)
     service = GenericForeignKey('content_type', 'object_id')
     # НОВЫЕ ПОЛЯ — основа для общего чата
-    objects = ChatRoomManager()
+
     created_at = models.DateTimeField(auto_now_add=True)
     is_global = models.BooleanField(default=False)
     buyer = models.ForeignKey(
@@ -53,6 +53,7 @@ class ChatRoom(models.Model):
         null=True,
         blank=True,
     )
+    objects = ChatRoomManager()
 
     class Meta:
         constraints = [

@@ -561,7 +561,8 @@ class BaseServiceListViewTestCase(BaseTestUtils):
 
     def test_get_queryset_ignores_filter_when_form_invalid(self, **kwargs):
         """
-        Проверяет, что при невалидной форме фильтрации queryset остаётся неизменным (все активные услуги).
+        Проверяет, что при невалидной форме фильтрации queryset остаётся неизменным
+        (все активные услуги).
         """
         user, category, _ = self._create_test_service(AccountService)
         AccountService.objects.create(

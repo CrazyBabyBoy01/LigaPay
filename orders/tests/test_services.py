@@ -65,8 +65,9 @@ class OrderServiceTest(TestCase):
     def test_process_payment_success(self):
         """Проверяет, что при успешной оплате вызывается release_to и заказ становится 'paid'."""
         user, seller, _, order = self._create_test_service()
-        Wallet.objects.create(user=user, balance=1300, held_balance=1000)
-        Wallet.objects.create(user=seller, balance=100, held_balance=1000)
+        wallet = Wallet.objects.get(user=user)
+        wallet.held_balance = 1000
+        wallet.save()
         OrderService.process_payment(order)
         self.assertEqual(order.status, 'paid')
 
@@ -92,12 +93,15 @@ class OrderServiceTest(TestCase):
     def test_refund_success(self):
         """Проверяет, что при возврате денег вызывается refund и заказ становится 'canceled'."""
         user, _, _, order = self._create_test_service()
-        Wallet.objects.create(user=user, balance=1300, held_balance=1000)
+        wallet = Wallet.objects.get(user=user)
+        wallet.held_balance = 1000
+        wallet.save()
         OrderService.refund(order)
         self.assertEqual(order.status, 'canceled')
 
     def test_refund_wallet_not_found(self):
         """Проверяет, что при отсутствии кошелька выбрасывается WalletNotFound."""
-        _, _, _, order = self._create_test_service()
+        user, _, _, order = self._create_test_service()
+        Wallet.objects.filter(user=user).delete()
         with self.assertRaises(WalletNotFound):
             OrderService.refund(order)

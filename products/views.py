@@ -103,8 +103,7 @@ class CategoryView(View):
                     'title': self.title,
                 },
             )
-        else:
-            return redirect('main:index')
+        return redirect('main:index')
 
 
 class BaseServiceDetailView(
@@ -165,10 +164,10 @@ class BaseServiceDetailView(
             service.delete()
             return redirect('products:my_products')
 
-        elif 'edit_service' in request.POST:
+        if 'edit_service' in request.POST:
             return self.edit_service(request.POST, request.FILES, service)
 
-        elif 'delete_image' in request.POST and self.has_images():
+        if 'delete_image' in request.POST and self.has_images():
             image_id = request.POST.get('image_id')
             if not image_id:
                 return JsonResponse({'success': False, 'message': 'image_id обязателен'}, status=400)
@@ -177,11 +176,10 @@ class BaseServiceDetailView(
                 return JsonResponse({'success': True, 'message': 'Изображение удалено.'})
             return JsonResponse({'success': False, 'message': 'Ошибка при удалении изображения.'})
 
-        elif 'add_image' in request.POST and self.has_images():
+        if 'add_image' in request.POST and self.has_images():
             result = self.add_image(request.POST, request.FILES)
             return JsonResponse(result)
-        else:
-            return JsonResponse({'success': False, 'message': 'Неизвестное действие'}, status=400)
+        return JsonResponse({'success': False, 'message': 'Неизвестное действие'}, status=400)
 
     def can_edit(self, service, user) -> bool:
         return getattr(user, 'is_authenticated', False) and service.seller_id == getattr(
@@ -194,8 +192,7 @@ class BaseServiceDetailView(
     def get_images(self):
         if self.has_images():
             return self.object.images.all()
-        else:
-            return []
+        return []
 
     def delete_image(self, image_id):
         """Удаляет изображение по ID, если есть."""
@@ -578,13 +575,13 @@ class MyProductsView(LoginRequiredMixin, ContextMixin, TemplateView):
         category_slug = kwargs.get('category_slug')
         all_services = []
 
-        for M in SERVICE_MODELS:
-            qs = M.objects.filter(seller=user).select_related('seller', 'category')
+        for m in SERVICE_MODELS:
+            qs = m.objects.filter(seller=user).select_related('seller', 'category')
 
-            if any(f.name == 'images' for f in M._meta.get_fields()):
+            if any(f.name == 'images' for f in m._meta.get_fields()):
                 qs = qs.prefetch_related('images')
 
-            if any(f.name == 'quantity' for f in M._meta.get_fields()):
+            if any(f.name == 'quantity' for f in m._meta.get_fields()):
                 qs = qs.filter(quantity__gt=0)
 
             all_services.extend(qs)

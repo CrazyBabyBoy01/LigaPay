@@ -78,7 +78,7 @@ def scrape_news():
                 time_element = article.find_element(By.CSS_SELECTOR, '[data-testid="card-date"] time')
                 raw_date = time_element.get_attribute('datetime')
 
-                date_published = make_aware(datetime.strptime(raw_date, '%Y-%m-%dT%H:%M:%S.%fZ'))
+                date_published = make_aware(datetime.strptime(raw_date, '%Y-%m-%dT%H:%M:%S.%fZ'))  # noqa: DTZ007
 
                 image_url = article.find_element(
                     By.CSS_SELECTOR, '[data-testid="card-image"] img'

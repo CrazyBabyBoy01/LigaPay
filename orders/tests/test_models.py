@@ -68,9 +68,10 @@ class OrderModelTest(TestCase):
 
     def test_process_payment_changes_status(self):
         """Проверяет, что после process_payment статус заказа становится 'paid'."""
-        _, _, _, order = self._create_test_service()
-        Wallet.objects.create(user=order.user, held_balance=1000)
-        Wallet.objects.create(user=order.seller, balance=2000)
+        user, _, _, order = self._create_test_service()
+        wallet = Wallet.objects.get(user=user)
+        wallet.held_balance = 1000
+        wallet.save()
 
         self.assertEqual(order.status, 'pending')
         order.process_payment()
@@ -79,8 +80,10 @@ class OrderModelTest(TestCase):
 
     def test_refund_changes_status(self):
         """Проверяет, что при refund статус меняется на 'canceled'."""
-        _, _, _, order = self._create_test_service()
-        Wallet.objects.create(user=order.user, held_balance=1000)
+        user, _, _, order = self._create_test_service()
+        wallet = Wallet.objects.get(user=user)
+        wallet.held_balance = 1000
+        wallet.save()
         self.assertEqual(order.status, 'pending')
         order.refund()
         order.refresh_from_db()

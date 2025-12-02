@@ -16,7 +16,7 @@ class DepositViewTests(TestCase):
     def setUp(self):
         """Создаёт пользователя и авторизует его перед каждым тестом."""
         self.user = User.objects.create_user(username='testuser', password='12345')
-        self.wallet = Wallet.objects.create(user=self.user)
+        self.wallet = Wallet.objects.get(user=self.user)
         self.client.login(username='testuser', password='12345')
         self.url = reverse('wallet:wallet_deposit')
 

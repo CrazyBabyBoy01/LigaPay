@@ -74,8 +74,7 @@ class ChatConsumer(WebsocketConsumer):
         ).first()
         if chat_room:
             return chat_room
-        else:
-            return ChatRoom.objects.create(buyer=buyer, seller=seller)
+        return ChatRoom.objects.create(buyer=buyer, seller=seller)
 
     def connect(self):
         """Обработчик подключения к WebSocket.
@@ -97,7 +96,11 @@ class ChatConsumer(WebsocketConsumer):
             try:
                 self.chat_room = ChatRoom.objects.get(id=chat_id)
                 if not self._ensure_participant(user, self.chat_room):
-                    logger.warning(f'Пользователь {user} не является участником комнаты {self.chat_room}')
+                    logger.warning(
+                        'Пользователь %s не является участником комнаты %s',
+                        user,
+                        self.chat_room,
+                    )
                     self.close()
                     return
                 self._set_room_and_group(self.chat_room)

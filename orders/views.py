@@ -32,8 +32,7 @@ class CreateOrderView(LoginRequiredMixin, View):
         if not model:
             return None
         try:
-            product = model.objects.select_for_update().select_related('seller').get(id=product_id)
-            return product
+            return model.objects.select_for_update().select_related('seller').get(id=product_id)
         except model.DoesNotExist:
             return None
 
@@ -112,9 +111,9 @@ class CreateOrderView(LoginRequiredMixin, View):
                 logger.info('Заказ успешно создан и оплата зарезервирована. Order=%s', order.id)
                 chat_room = get_or_create_chat(request.user, product.seller)
                 message_text = (
-                    f'✅ Покупатель <span class="username">{escape(request.user.username)}</span> создал <span class="order-id">заказ #{order.id}</span>.'
+                    f'✅ Покупатель <span class="username">{escape(request.user.username)}</span> создал <span class="order-id">заказ #{order.id}</span>.'  # noqa: E501
                     f'{escape(product.title)}, {amount} шт.'
-                    f'<span class="username">{escape(request.user.username)}</span>, не забудьте потом нажать кнопку '
+                    f'<span class="username">{escape(request.user.username)}</span>, не забудьте потом нажать кнопку '  # noqa: E501
                     f'«Подтвердить покупку».'
                 )
                 send_chat_event(chat_room, order, message_text, request, event_type='order_created')
@@ -257,7 +256,8 @@ class CancelOrderView(LoginRequiredMixin, View):
                 try:
                     order.refund()
                     logger.info(
-                        'Заказ отменен и деньги возвращены покупателю.Продавец=%s,покупатель= %s,order_id=%s',
+                        'Заказ отменен и деньги возвращены покупателю. '
+                        'Продавец=%s, покупатель=%s, order_id=%s',
                         request.user.id,
                         order.user.id,
                         order_id,
@@ -400,7 +400,6 @@ class ReviewCreateView(LoginRequiredMixin, View):
             )
             messages.error(request, 'Оценка должна быть числом от 1 до 5.')
             return redirect('orders:my_orders')
-
 
         Review.objects.create(
             order=order,

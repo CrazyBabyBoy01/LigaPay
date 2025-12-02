@@ -5,19 +5,19 @@ from django.db import transaction
 from wallet.models import Wallet
 
 
-class WalletNotFound(Exception):
+class WalletNotFound(Exception):  # noqa: N818
     """У пользователя нет кошелька"""
 
 
-class SellerNotFound(Exception):
+class SellerNotFound(Exception):  # noqa: N818
     """У заказа не указан продавец"""
 
 
-class BuyerNotFound(Exception):
+class BuyerNotFound(Exception):  # noqa: N818
     """У заказа не указан покупатель"""
 
 
-class NotEnoughFunds(Exception):
+class NotEnoughFunds(Exception):  # noqa: N818
     """Недостаточно средств"""
 
 
@@ -33,7 +33,7 @@ class OrderService:
             try:
                 buyer_wallet = Wallet.objects.get(user=order.user)
             except Wallet.DoesNotExist:
-                raise WalletNotFound('У пользователя нет кошелька')
+                raise WalletNotFound('У пользователя нет кошелька')  # noqa: B904
             total_price = order.price * order.amount
             buyer_wallet.hold(total_price)
             order.status = 'pending'
@@ -52,7 +52,7 @@ class OrderService:
                 buyer_wallet = Wallet.objects.get(user=order.user)
                 seller_wallet = Wallet.objects.get(user=order.seller)
             except Wallet.DoesNotExist:
-                raise WalletNotFound('У пользователя нет кошелька')
+                raise WalletNotFound('У пользователя нет кошелька')  # noqa: B904
             total_price = order.price * order.amount
             buyer_wallet.release_to(total_price, seller_wallet)
             order.status = 'paid'
@@ -69,7 +69,7 @@ class OrderService:
             try:
                 buyer_wallet = Wallet.objects.get(user=order.user)
             except Wallet.DoesNotExist:
-                raise WalletNotFound('У пользователя нет кошелька')
+                raise WalletNotFound('У пользователя нет кошелька')  # noqa: B904
             total_price = order.price * order.amount
             buyer_wallet.refund(total_price)
             order.status = 'canceled'
