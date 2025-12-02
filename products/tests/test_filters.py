@@ -14,7 +14,8 @@ User = get_user_model()
 class BaseServiceFilterTestCase(TestCase):
     """
     Тесты для BaseServiceFilter.
-    Проверяют работу пользовательских методов фильтрации: filter_q, filter_auto_delivery, filter_seller_online.
+    Проверяют работу пользовательских методов фильтрации: filter_q, filter_auto_delivery,
+    filter_seller_online.
     """
 
     def _create_services(self, *args, **kwargs):

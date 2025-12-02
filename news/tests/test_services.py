@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
@@ -7,9 +9,6 @@ from news.models import News
 
 
 User = get_user_model()
-
-
-from unittest.mock import patch
 
 
 class TestSaveNews(TestCase):

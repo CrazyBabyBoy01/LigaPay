@@ -8,7 +8,7 @@ from django.forms import ValidationError
 from django.utils.timezone import now
 
 
-class NotEnoughFunds(Exception):
+class NotEnoughFunds(Exception):  # noqa: N818
     """Недостаточно средств"""
 
 

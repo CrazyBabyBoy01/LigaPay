@@ -8,6 +8,7 @@ from django.urls import reverse
 from orders.models import Order, Review
 from orders.services import NotEnoughFunds, WalletNotFound
 from products.models import AccountService, Category
+from wallet.models import Wallet
 
 
 User = get_user_model()
@@ -133,6 +134,7 @@ class CreateOrderViewTest(TestCase):
     def test_create_order_wallet_not_found(self):
         """Проверяет, что при отсутствии кошелька вызывается WalletNotFound и заказ удаляется."""
         user, product = self._create_test_service()
+        Wallet.objects.filter(user=user).delete()
         self.client.force_login(user)
         url = reverse(
             'orders:create_order', kwargs={'model_name': 'AccountService', 'product_id': product.id}

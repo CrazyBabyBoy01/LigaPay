@@ -18,14 +18,15 @@ class WalletModelTests(TestCase):
         self.user = User.objects.create_user(
             username='testuser', password='12345', email='test1@example.com'
         )
-        self.wallet = Wallet.objects.create(user=self.user)
+        self.wallet = Wallet.objects.get(user=self.user)
         self.seller = User.objects.create_user(
             username='seller', password='12345', email='test2@example.com'
         )
-        self.seller_wallet = Wallet.objects.create(user=self.seller)
+        self.seller_wallet = Wallet.objects.get(user=self.seller)
 
     def test_normalize_amount_positive_value(self):
-        """Проверяет, что _normalize_amount возвращает округлённую сумму и выбрасывает ошибку для <= 0."""
+        """Проверяет, что _normalize_amount возвращает округлённую сумму и выбрасывает ошибку для <= 0.
+        """
         result = self.wallet._normalize_amount('10.506')
         self.assertEqual(result, Decimal('10.51'))
         with self.assertRaises(ValidationError):
@@ -57,7 +58,8 @@ class WalletModelTests(TestCase):
             self.wallet.withdraw(100)
 
     def test_hold_moves_balance_to_held_and_creates_transaction(self):
-        """Проверяет, что hold уменьшает balance, увеличивает held_balance и создаёт транзакцию 'hold'."""
+        """Проверяет, что hold уменьшает balance, увеличивает held_balance и создаёт транзакцию 'hold'.
+        """
         self.wallet.balance = Decimal('300.00')
         self.wallet.hold(100)
         self.assertEqual(Transaction.objects.count(), 1)
