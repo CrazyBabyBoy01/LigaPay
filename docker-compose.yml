@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:16
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+  redis:
+    container_name: redis
+    image: redis:7
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+  web:
+    container_name: web
+    build: .
+    command: >
+      daphne -b 0.0.0.0 -p 8000 LigaPay.asgi:application
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - RUN_FROM_DOCKER=1
+  celery-worker:
+    container_name: celery-worker
+    build: .
+    command: celery -A LigaPay worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - RUN_FROM_DOCKER=1
+    depends_on:
+      - redis
+      - postgres
+  celery-beat:
+    container_name: celery-beat
+    build: .
+    command: celery -A LigaPay beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - RUN_FROM_DOCKER=1
+    depends_on:
+      - redis
+      - postgres
+  celery-flower:
+    container_name: celery-flower
+    build: .
+    command: celery -A LigaPay flower --port=5555 --broker=redis://redis:6379/0
+    env_file:
+      - .env
+    environment:
+      - RUN_FROM_DOCKER=1
+    depends_on:
+      - redis
+      - celery-worker
+    ports:
+      - "5555:5555"
+
+volumes:
+  postgres_data:

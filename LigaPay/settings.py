@@ -14,9 +14,10 @@ import os
 import sys
 from pathlib import Path
 
-from celery.schedules import crontab
 from dotenv import find_dotenv, load_dotenv
 
+
+print('DB:', os.environ.get('DB_HOST'), os.environ.get('DB_NAME'), os.environ.get('DB_USER'))
 
 load_dotenv(find_dotenv())
 # Build paths djs;aldj;sasdsadasdasdas
@@ -101,22 +102,32 @@ LOGIN_URL = '/users/authorization/'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+POSTGRES_HOST = os.getenv('POSTGRES_HOST', 'localhost')
+
+# Если приложение запускается в Docker — переопределяем хост
+if os.getenv('RUN_FROM_DOCKER') == '1':
+    POSTGRES_HOST = 'postgres'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('POSTGRES_HOST'),
-        'PORT': os.getenv('POSTGRES_PORT'),
+        'HOST': POSTGRES_HOST,
+        'PORT': os.getenv('POSTGRES_PORT', '5432'),
     }
 }
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+
+if os.getenv('RUN_FROM_DOCKER') == '1':
+    REDIS_HOST = 'redis'
 
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],  # Подключение к локальному Redis
+            'hosts': [(REDIS_HOST, 6379)],  # Подключение к локальному Redis
         },
     },
 }
@@ -202,10 +213,15 @@ CAPTCHA_IMAGE_SIZE = (150, 50)
 
 # Настройка Celery
 
-CELERY_BROKER_URL = (
-    f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0"  # Убедитесь, что Redis запущен
-)
-CELERY_RESULT_BACKEND = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0"
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', '6379')
+
+# если мы в Docker — подключаемся к контейнеру redis
+if os.getenv('RUN_FROM_DOCKER') == '1':
+    REDIS_HOST = 'redis'
+
+CELERY_BROKER_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
@@ -213,7 +229,8 @@ CELERY_BEAT_SCHEDULE = {
     # Пример периодической задачи, которая запускается ежедневно
     'update-news-every-day': {
         'task': 'news.tasks.scrape_news_task',
-        'schedule': crontab(minute=0, hour=0),  # Например, каждый день в полночь
+        # 'schedule': crontab(minute=0, hour=0),  # Например, каждый день в полночь
+        'schedule': 60,  # каждые 60 секунд
     },
 }
 
