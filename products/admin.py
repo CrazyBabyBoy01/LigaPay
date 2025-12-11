@@ -1,6 +1,6 @@
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 from django.utils.html import format_html_join
-from genericadmin.admin import GenericTabularInline
 
 from .models import (
     AccountService,
