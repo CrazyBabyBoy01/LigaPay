@@ -81,21 +81,44 @@ python -m pip install --upgrade pip
 
 **6. Установите зависимости**
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
 **7. Создайте файл .env в корне проекта и заполните переменные окружения**
 
-8. Примените миграции
+```bash
+SECRET_KEY = 'secret-key'
+POSTGRES_DB='dbname'
+POSTGRES_USER='dbuser'
+POSTGRES_PASSWORD='dbpassword'
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
 
-bash
-Копировать код
+RECAPTCHA_PUBLIC_KEY = 'public-key'
+RECAPTCHA_PRIVATE_KEY = 'private-key'
+
+EMAIL_HOST_PASSWORD = 'email-password-IMAP'
+EMAIL_HOST_USER = 'email'
+
+
+REDIS_HOST = 127.0.0.1
+REDIS_PORT = 6379
+```
+
+**8. Примените миграции**
+
+```bash
 python manage.py migrate
-9. Запустите сервер разработки
+```
 
-bash
-Копировать код
+**9. Запустите сервер разработки**
+
+```bash
 python manage.py runserver
-Проект будет доступен по адресу:
+```
+
+**Проект будет доступен по адресу:**
+```bash
 http://127.0.0.1:8000/
+```
