@@ -12,7 +12,7 @@ import os
 from django.core.asgi import get_asgi_application
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LigaPay.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LigaPay.settings.dev')
 
 # Получаем стандартное ASGI-приложение Django
 django_asgi_app = get_asgi_application()

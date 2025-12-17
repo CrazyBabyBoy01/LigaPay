@@ -11,7 +11,7 @@ User = get_user_model()
 
 class UserRegistrationFormTestCase(TestCase):
     @patch('captcha.fields.CaptchaField.clean', return_value='PASSED')
-    @patch('users.forms.send_email_verification.delay')
+    @patch('users.forms.send_verification_email')
     def test_user_registration_form_creates_user_and_sends_verification(self, mock_delay, mock_captcha):
         """
         Проверяет, что форма регистрации:

@@ -35,6 +35,7 @@ services:
       - redis
     environment:
       - RUN_FROM_DOCKER=1
+      - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
   celery-worker:
     container_name: celery-worker
     build: .
@@ -45,6 +46,7 @@ services:
       - .env
     environment:
       - RUN_FROM_DOCKER=1
+      - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
     depends_on:
       - redis
       - postgres
@@ -58,6 +60,7 @@ services:
       - .env
     environment:
       - RUN_FROM_DOCKER=1
+      - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
     depends_on:
       - redis
       - postgres
@@ -69,6 +72,7 @@ services:
       - .env
     environment:
       - RUN_FROM_DOCKER=1
+      - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
     depends_on:
       - redis
       - celery-worker

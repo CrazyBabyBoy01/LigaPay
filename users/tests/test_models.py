@@ -1,11 +1,11 @@
 import uuid
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils.timezone import now
 
-from LigaPay import settings
 from users.models import EmailVerification
 
 
