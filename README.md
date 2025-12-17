@@ -14,6 +14,7 @@ LigaPay — портфолио-проект, представляющий соб
 - Продажа товаров другим пользователям
 - Внутренний кошелёк:
   - пополнение баланса
+  - заморозка средств
   - списание средств при покупке
 - Подтверждение или отклонение сделок
 - Система чатов:
@@ -88,22 +89,21 @@ pip install -r requirements.txt
 **7. Создайте файл .env в корне проекта и заполните переменные окружения**
 
 ```bash
-SECRET_KEY = 'secret-key'
-POSTGRES_DB='dbname'
-POSTGRES_USER='dbuser'
-POSTGRES_PASSWORD='dbpassword'
-POSTGRES_HOST=127.0.0.1
+SECRET_KEY=your_secret_key
+POSTGRES_DB=your_db_name
+POSTGRES_USER=your_db_user
+POSTGRES_PASSWORD=your_db_password
+POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 
-RECAPTCHA_PUBLIC_KEY = 'public-key'
-RECAPTCHA_PRIVATE_KEY = 'private-key'
+EMAIL_HOST=your_email_host
+EMAIL_PORT=465
+EMAIL_USE_SSL=True
+EMAIL_HOST_USER=your_email
+EMAIL_HOST_PASSWORD=your_email_password
 
-EMAIL_HOST_PASSWORD = 'email-password-IMAP'
-EMAIL_HOST_USER = 'email'
-
-
-REDIS_HOST = 127.0.0.1
-REDIS_PORT = 6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 **8. Примените миграции**
@@ -121,4 +121,64 @@ python manage.py runserver
 **Проект будет доступен по адресу:**
 ```bash
 http://127.0.0.1:8000/
+```
+
+## Запуск проекта через Docker (prod-like)
+
+**1. Убедитесь, что Docker и Docker Compose установлены**
+
+**2. Склонируйте репозиторий и перейдите в папку проекта**
+```bash
+git clone https://github.com/CrazyBabyBoy01/LigaPay.git
+```
+
+**3. Зайдите в рабочую директорию проекта**
+```bash
+cd LigaPay
+```
+
+**4. Создайте файл .env в корне проекта и заполните переменные окружения**
+
+```bash
+SECRET_KEY=your_secret_key
+POSTGRES_DB=your_db_name
+POSTGRES_USER=your_db_user
+POSTGRES_PASSWORD=your_db_password
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+
+EMAIL_HOST=your_email_host
+EMAIL_PORT=465
+EMAIL_USE_SSL=True
+EMAIL_HOST_USER=your_email
+EMAIL_HOST_PASSWORD=your_email_password
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+**5. Запустите Docker Desktop**
+
+**6. Соберите и запустите контейнеры**
+
+```bash
+docker-compose up --build
+```
+
+**7. Выполните миграции внутри контейнера**
+
+```bash
+docker exec -it web python manage.py migrate
+```
+
+**8. Соберите статические файлы**
+
+```bash
+docker exec -it web python manage.py collectstatic --noinput
+```
+
+**Проект будет доступен по адресу:**
+
+```bash
+http://localhost:8000/
 ```
