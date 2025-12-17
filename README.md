@@ -182,3 +182,26 @@ docker exec -it web python manage.py collectstatic --noinput
 ```bash
 http://localhost:8000/
 ```
+
+## Тестирование
+
+В проекте реализовано модульное и интеграционное тестирование.
+
+Используется стандартный `unittest` (Django TestCase), а также асинхронные тесты для WebSocket и browser-тесты.
+
+Тесты запускаются в отдельном тестовом окружении и не требуют Redis.
+
+Для этого используется файл `manage_test.py`, который подключает
+настройки `LigaPay.settings.test`.
+
+```bash
+python manage.py test
+```
+
+**Особенности тестирования:**
+
+- Redis не требуется
+- Celery работает в синхронном режиме (eager)
+- WebSocket тестируется с использованием InMemoryChannelLayer
+- Покрыта бизнес-логика, формы и WebSocket-чаты
+- Реализованы browser-тесты с использованием Selenium
