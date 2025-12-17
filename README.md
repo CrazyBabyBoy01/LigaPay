@@ -195,7 +195,7 @@ http://localhost:8000/
 настройки `LigaPay.settings.test`.
 
 ```bash
-python manage.py test
+python manage_test.py test
 ```
 
 **Особенности тестирования:**
