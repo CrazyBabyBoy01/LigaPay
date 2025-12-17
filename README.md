@@ -47,27 +47,33 @@ LigaPay — портфолио-проект, представляющий соб
 **1. Клонируйте репозиторий и перейдите в папку проекта**
 ```bash
 git clone https://github.com/CrazyBabyBoy01/LigaPay.git
+```
+
+**2. Зайдите в рабочую директорию проекта**
+```bash
 cd LigaPay
 ```
 
-**2. Создайте виртуальное окружение**
+**3. Создайте виртуальное окружение**
+
+```bash
+python -m venv venv
+```
+**3. Активируйте виртуальное окружение
+
+- Windows
 
 ```bash
 Копировать код
-python -m venv venv
-```
-3. Активируйте виртуальное окружение
-
-Windows
-
-bash
-Копировать код
 venv\Scripts\activate
-Linux / macOS
+```
 
-bash
-Копировать код
+- Linux / macOS
+
+```bash
 source venv/bin/activate
+```
+
 4. Обновите pip
 
 bash
