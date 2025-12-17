@@ -17,8 +17,6 @@ from pathlib import Path
 from dotenv import find_dotenv, load_dotenv
 
 
-print('DB:', os.environ.get('DB_HOST'), os.environ.get('DB_NAME'), os.environ.get('DB_USER'))
-
 load_dotenv(find_dotenv())
 # Build paths djs;aldj;sasdsadasdasdas
 BASE_DIR = Path(__file__).resolve().parent.parent

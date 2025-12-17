@@ -58,11 +58,11 @@ function setupModal(openBtnId, modalId) {
             };
         }
 
-        window.onclick = function (event) {
+        window.addEventListener("click", function (event) {
             if (event.target === modal) {
                 modal.style.display = "none";
             }
-        };
+        });
     } else {
         console.log("Не найдена кнопка или модалка: " + openBtnId + ", " + modalId);
     }
@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Навешиваем обработчик на форму, если она уже есть
     setupConfirmHandler();
-    // setupCancelHandler();
+    setupCancelHandler();
 
     // Обработка входящих сообщений
     chatSocket.onmessage = function (e) {
@@ -361,9 +361,33 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Received message:", data);
 
         // ✅ Новый заказ — показываем кнопку (если её ещё нет)
+        // if (data.type === "order_created") {
+        //     const container = document.querySelector("#order-button-container");
+        //     if (container && !document.getElementById("confirm-form")) {
+        //         container.innerHTML = `
+        //             <form id="confirm-form" method="post" style="margin-top: 10px;">
+        //                 <button type="submit" id="confirm-purchase-btn" class="header__btn" data-order-id="${data.order_id}">
+        //                     Подтвердить покупку
+        //                 </button>
+        //             </form>
+        //         `;
+        //         setupConfirmHandler();
+        //     }
+        //     return;
+        // }
         if (data.type === "order_created") {
+            console.log("🧪 order_created payload:", data);
             const container = document.querySelector("#order-button-container");
-            if (container && !document.getElementById("confirm-form")) {
+            if (!container) return;
+            // Получаем текущего пользователя из DOM
+            const currentUser = document.querySelector('#current-user').dataset.username;
+
+            // Выводим в консоль для проверки
+            console.log("Текущий пользователь:", currentUser);
+            console.log("Покупатель из события:", data.buyer_username);
+            console.log("Продавец из события:", data.seller_username);
+            // Показываем кнопку только нужному пользователю
+            if (currentUser === data.buyer_username && !document.getElementById("confirm-form")) {
                 container.innerHTML = `
                     <form id="confirm-form" method="post" style="margin-top: 10px;">
                         <button type="submit" id="confirm-purchase-btn" class="header__btn" data-order-id="${data.order_id}">
@@ -372,9 +396,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     </form>
                 `;
                 setupConfirmHandler();
+            } else if (currentUser === data.seller_username && !document.getElementById("cancel-form")) {
+                container.innerHTML = `
+                    <form id="cancel-form" method="post" style="margin-top: 10px;">
+                        <button type="submit" id="cancel-order-btn" class="header__btn red" data-order-id="${data.order_id}">
+                            Отменить заказ
+                        </button>
+                    </form>
+                `;
+                setupCancelHandler();
             }
             return;
         }
+
 
         // ✅ Подтверждение заказа — убираем кнопку
         if (data.type === "order_confirmed") {
@@ -388,6 +422,18 @@ document.addEventListener("DOMContentLoaded", function () {
             chatLog.appendChild(messageElement);
 
             chatLog.scrollTop = chatLog.scrollHeight;
+            // ✅ Вставляем order_id в скрытое поле формы
+            const reviewOrderInput = document.getElementById("order_id_input");
+            if (reviewOrderInput) {
+                reviewOrderInput.value = data.order_id;
+                console.log("📌 Order ID вставлен в форму отзыва:", data.order_id);
+            }
+            // ✅ Открытие модального окна с отзывом
+            const reviewModal = document.getElementById("reviewModal");
+            if (reviewModal) {
+                reviewModal.style.display = "block";
+            }
+
         }
 
         appendMessage({
@@ -425,11 +471,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // ✅ Функция для обработки подтверждения заказа
     function setupConfirmHandler() {
         const confirmForm = document.getElementById("confirm-form");
-        console.log("setupCancelHandler called, cancelForm:", cancelForm);
+        // console.log("setupCancelHandler called, cancelForm:", cancelForm);
         if (confirmForm) {
             confirmForm.addEventListener("submit", function (e) {
                 e.preventDefault();
-                console.log("Cancel form submitted!");
+                // console.log("Cancel form submitted!");
                 const orderId = confirmForm.querySelector("#confirm-purchase-btn").dataset.orderId;
 
                 fetch(`/orders/confirm/${orderId}/`, {
@@ -443,9 +489,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(json => {
                     if (json.success) {
                         alert(json.message);
-                        if (json.reload) {
+
+                        const reviewModal = document.getElementById("reviewModal");
+
+                        if (json.show_review && reviewModal) {
+                            // Показываем модалку
+                            reviewModal.style.display = "block";
+
+                            // Даём пользователю 5 секунд, потом перезагружаем
+                            setTimeout(() => {
+                                location.reload();
+                            }, 50000); // можно изменить на больше/меньше
+                        } else if (json.reload) {
+                            // Если нет модалки — просто перезагружаем
                             location.reload();
                         }
+
                     } else {
                         alert("Ошибка: " + json.message);
                     }
@@ -456,40 +515,57 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     }
-    //  // Функция для обработки отказа от заказа
-    // function setupCancelHandler() {
-    //     const cancelForm = document.getElementById("cancel-form");
-    //     if (cancelForm) {
-    //         cancelForm.addEventListener("submit", function (e) {
-    //             e.preventDefault();
-    //             const orderId = cancelForm.querySelector("#cancel-order-btn").dataset.orderId;
+     // Функция для обработки отказа от заказа
+    function setupCancelHandler() {
+        const cancelForm = document.getElementById("cancel-form");
+        console.log("cancelForm найден:", cancelForm);
+        if (cancelForm) {
+            cancelForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                const cancelBtn = cancelForm.querySelector("#cancel-order-btn");
+                const orderId = cancelBtn.dataset.orderId;
+                console.log("Кнопка отмены найдена:", cancelBtn);
 
-    //             fetch(`/orders/cancel/${orderId}/`, {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "X-CSRFToken": getCookie("csrftoken"),
-    //                     "Content-Type": "application/json"
-    //                 }
-    //             })
-    //             .then(res => res.json())
-    //             .then(json => {
-    //                 if (json.success) {
-    //                     alert(json.message);
-    //                     // Очищаем или обновляем UI — например, убираем кнопки
-    //                     const container = document.querySelector("#order-button-container");
-    //                     if (container) {
-    //                         container.innerHTML = "";
-    //                     }
-    //                 } else {
-    //                     alert("Ошибка: " + json.message);
-    //                 }
-    //             })
-    //             .catch(err => {
-    //                 console.error("Ошибка при отмене заказа:", err);
-    //             });
-    //         });
-    //     }
-    // }
+                fetch(`/orders/cancel/${orderId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.success) {
+                        alert(json.message);
+                        // Очищаем или обновляем UI — например, убираем кнопки
+                        const container = document.querySelector("#order-button-container");
+                        if (container) {
+                            container.innerHTML = "";
+                        }
+                    } else {
+                        alert("Ошибка: " + json.message);
+                    }
+                })
+                .catch(err => {
+                    console.error("Ошибка при отмене заказа:", err);
+                });
+            });
+        }
+    }
+    const reviewModal = document.getElementById("reviewModal");
+    const reviewCloseBtn = document.getElementById("reviewCloseBtn");
+
+    if (reviewCloseBtn && reviewModal) {
+        reviewCloseBtn.onclick = function () {
+            reviewModal.style.display = "none";
+        };
+    }
+
+    window.addEventListener("click", function (event) {
+        if (event.target === reviewModal) {
+            reviewModal.style.display = "none";
+        }
+    });
 });
 
 

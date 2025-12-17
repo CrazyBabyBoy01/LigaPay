@@ -1,8 +1,8 @@
 import django_filters
+from django.conf import settings
 from django.db.models import Q
 from django.utils.timezone import now, timedelta
 
-from LigaPay import settings
 from products.models import (
     AccountService,
     BattlePassService,
