@@ -160,3 +160,11 @@ LOGGING = {
     },
 }
 
+FIXTURE_DIRS = [
+    BASE_DIR / 'fixtures',
+]
+
+print('DEBUG =', os.getenv('DEBUG'))
+print('POSTGRES_HOST =', os.getenv('POSTGRES_HOST'))
+print('REDIS_HOST =', os.getenv('REDIS_HOST'))
+print('DJANGO_SETTINGS_MODULE =', os.getenv('DJANGO_SETTINGS_MODULE'))

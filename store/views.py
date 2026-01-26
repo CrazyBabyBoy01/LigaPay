@@ -31,9 +31,11 @@ class StoreSkinsView(ContextMixin, TemplateView):
                 f"с IP {request.META.get('REMOTE_ADDR')}"
             )
             return redirect('users:authorization')
+        print('===> POST DATA:', request.POST)
 
         form = SkinsOrderForm(request.POST)
         form.request = self.request
+        print('===> FORM DATA server:', form.data.get('server'))
 
         if form.is_valid():
             key = str(uuid.uuid4())

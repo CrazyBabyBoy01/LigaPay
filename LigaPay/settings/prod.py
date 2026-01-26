@@ -4,7 +4,7 @@ from .base import *
 
 
 # Production mode
-DEBUG = False
+DEBUG = True
 
 # В проде ALLOWED_HOSTS никогда не должно быть ['*']
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
@@ -62,6 +62,6 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # -------------------------------
 # Security for production
 # -------------------------------
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False  # включаем True, если будет HTTPS
