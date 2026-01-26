@@ -1815,9 +1815,8 @@ div.filter-container__lvl input {
 }
 
 
-.char1name,
-.account_name1,
-.skin1name {
+.skins_forms input,
+.skins_forms select {
     display: none;
 }
 

@@ -1,5 +1,7 @@
 .DSStore
 .env
+.env.local
+.env.docker
 .flake8
 .git
 .idea

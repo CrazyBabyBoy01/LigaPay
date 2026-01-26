@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gnupg \
     unzip \
     ca-certificates \
+    postgresql-client \
     libnss3 \
     libxss1 \
     libasound2 \
@@ -31,6 +32,9 @@ RUN wget -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chr
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY docker/backend /entrypoints
+RUN chmod +x /entrypoints/*.sh
 
 COPY . .
 

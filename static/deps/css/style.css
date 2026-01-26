@@ -1093,6 +1093,36 @@ div.filter-container__lvl input {
 
 
 /* Стили для шаблона покупок */
+.orders-scroll {
+    max-height: 65vh;
+    /* высота блока */
+    overflow-y: auto;
+    /* скролл ТОЛЬКО здесь */
+    overflow-x: hidden;
+}
+
+/* ширина скролла */
+.orders-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* фон скролла */
+.orders-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+}
+
+/* ползунок */
+.orders-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ffcc00, #ff9900);
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.4);
+}
+
+/* hover */
+.orders-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ffd84d, #ffb84d);
+}
 
 /* Основная таблица */
 .order-table {
@@ -1815,9 +1845,8 @@ div.filter-container__lvl input {
 }
 
 
-.char1name,
-.account_name1,
-.skin1name {
+.skins_forms input,
+.skins_forms select {
     display: none;
 }
 

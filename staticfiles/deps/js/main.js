@@ -334,7 +334,11 @@ if (chatIdElement &&
 
 
 // Формируем URL для WebSocket
-chatSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${roomName}/`);
+chatSocket = new WebSocket(
+  (location.protocol === "https:" ? "wss://" : "ws://")
+  + location.host
+  + `/ws/chat/${roomName}/`
+);
 
 document.addEventListener("DOMContentLoaded", function () {
     const chatLog = document.querySelector('#chat-log');
