@@ -47,7 +47,7 @@ function setupModal(openBtnId, modalId) {
             if (isAuthenticated === "True") {
                 modal.style.display = "flex";
             } else {
-                window.location.href = "/users/autorization/";
+                window.location.href = "/users/authorization/";
             }
         };
 
@@ -358,7 +358,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (data.error) {
             alert(data.error);
-            window.location.href = "/users/autorization/";
+            window.location.href = "/users/authorization/";
             return;
         }
 

@@ -29,7 +29,7 @@
                 </div>
                 <div class="details-content__item">
                     <span class="label">Подробное описание</span>
-                    <span class="value">{{ service.description }}</span>
+                    <span class="value">{{ service.description|linebreaksbr }}</span>
                 </div>
                 <form action={% url 'orders:create_order' model_name service.id %} method='post' class="details-form">
                     {% csrf_token %}
@@ -100,7 +100,7 @@
                 </div>
                 <div class="details-content__item">
                     <span class="label">Подробное описание</span>
-                    <span class="value">{{ service.description }}</span>
+                    <span class="value">{{ service.description|linebreaksbr }}</span>
                 </div>
             </div>
             <div class="details-actions">
