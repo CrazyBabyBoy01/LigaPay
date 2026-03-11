@@ -8,6 +8,7 @@ from .models import (
     BoostService,
     Category,
     DonationService,
+    GeneralService,
     OtherService,
     QualificationService,
     RPService,
@@ -22,9 +23,13 @@ class ServiceImageInline(GenericTabularInline):
 
 
 class BaseServiceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'price', 'is_active', 'seller', 'display_images')
+    list_display = ('id', 'title', 'price', 'is_active', 'seller')
     list_filter = ('is_active',)
     search_fields = ('title',)
+
+
+class ServiceWithImagesAdmin(BaseServiceAdmin):
+    list_display = (*BaseServiceAdmin.list_display, 'display_images')
     readonly_fields = ('display_images',)
     inlines = [ServiceImageInline]
 
@@ -43,13 +48,14 @@ class BaseServiceAdmin(admin.ModelAdmin):
 
 # Регистрируем все модели с этим классом
 admin.site.register(RPService, BaseServiceAdmin)
-admin.site.register(AccountService, BaseServiceAdmin)
-admin.site.register(DonationService, BaseServiceAdmin)
+admin.site.register(AccountService, ServiceWithImagesAdmin)
+admin.site.register(DonationService, ServiceWithImagesAdmin)
 admin.site.register(BoostService, BaseServiceAdmin)
 admin.site.register(TrainingService, BaseServiceAdmin)
 admin.site.register(BattlePassService, BaseServiceAdmin)
 admin.site.register(OtherService, BaseServiceAdmin)
 admin.site.register(QualificationService, BaseServiceAdmin)
+admin.site.register(GeneralService, BaseServiceAdmin)
 
 
 @admin.register(Category)
