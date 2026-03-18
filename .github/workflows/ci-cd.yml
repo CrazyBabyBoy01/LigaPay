@@ -1,17 +1,27 @@
 name: CI
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-
+on: wokflow_dispatch
 jobs:
-  docker-build:
-    runs-on: ubuntu-latest
+    print:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Print to console!
+              run: echo Hello GH Actions!
 
-    steps:
-      - name: Забрать код из репозитория
-        uses: actions/checkout@v4
 
-      - name: Собрать Docker image
-        run: docker build -t myapp .
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+
+# jobs:
+#   docker-build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Забрать код из репозитория
+#         uses: actions/checkout@v4
+
+#       - name: Собрать Docker image
+#         run: docker build -t myapp .
