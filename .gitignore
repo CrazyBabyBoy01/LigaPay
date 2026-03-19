@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.docker
+.env.prod
 .flake8
 .git
 .idea
@@ -14,9 +15,10 @@
 .nvim.lua
 pyrightconfig.json
 
+__pycache
+buffer.zip
 __pycache__/
 *.pyc
-buffer.zip
 
 db.sqlite3
 db.sqlite3-journal
