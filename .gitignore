@@ -17,7 +17,7 @@ pyrightconfig.json
 
 __pycache
 buffer.zip
-
+media/service_images/
 db.sqlite3
 db.sqlite3-journal
 
