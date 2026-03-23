@@ -7,9 +7,9 @@ from channels.testing import WebsocketCommunicator
 from django.contrib.auth import get_user_model
 from django.test import TestCase, TransactionTestCase
 
-from chat.routing import websocket_urlpatterns
 from chat.consumers import ChatConsumer
 from chat.models import ChatMessage, ChatRoom
+from chat.routing import websocket_urlpatterns
 from LigaPay.asgi import application
 from products.models import AccountService, Category
 
@@ -166,10 +166,7 @@ class ChatConsumerWebsocketTests(TransactionTestCase):
         Проверяет успешное подключение к глобальному чату.
         """
         application = AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
-        communicator = WebsocketCommunicator(
-            application,
-            '/ws/chat/global_chat/'
-        )
+        communicator = WebsocketCommunicator(application, '/ws/chat/global_chat/')
         communicator.scope['user'] = self.user
         connected, _ = await communicator.connect()
         self.assertTrue(connected)
@@ -181,15 +178,9 @@ class ChatConsumerWebsocketTests(TransactionTestCase):
         """
         Проверяет, что сообщение сохраняется и передаётся группе.
         """
-        url = f'/ws/chat/accounts/{self.service_id}/'
-        application = AuthMiddlewareStack(
-            URLRouter(websocket_urlpatterns)
-        )
+        application = AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
 
-        communicator = WebsocketCommunicator(
-            application,
-            '/ws/chat/global_chat/'
-        )
+        communicator = WebsocketCommunicator(application, '/ws/chat/global_chat/')
         communicator.scope['user'] = self.buyer
 
         connected, _ = await communicator.connect()

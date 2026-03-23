@@ -1,4 +1,3 @@
-import os
 from django.conf import settings
 
 from users.tasks import send_email_verification

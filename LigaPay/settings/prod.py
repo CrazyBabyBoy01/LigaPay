@@ -10,7 +10,7 @@ DEBUG = True
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
 
 # Домен приложения
-DOMAIN_NAME = os.getenv('DOMAIN_NAME', DOMAIN_NAME)
+DOMAIN_NAME = os.getenv('DOMAIN_NAME', DOMAIN_NAME)  # noqa: F405
 
 # -------------------------------
 # DATABASES (Docker Postgres)
