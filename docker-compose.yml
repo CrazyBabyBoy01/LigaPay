@@ -43,7 +43,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
+      - .env.docker
     environment:
       - RUN_FROM_DOCKER=1
       - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
@@ -58,7 +58,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
+      - .env.docker
     environment:
       - RUN_FROM_DOCKER=1
       - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
@@ -71,7 +71,7 @@ services:
     entrypoint: /entrypoints/celery-flower-entrypoint.sh
     command: celery -A LigaPay flower --port=5555 --broker=redis://redis:6379/0
     env_file:
-      - .env
+      - .env.docker
     environment:
       - RUN_FROM_DOCKER=1
       - DJANGO_SETTINGS_MODULE=LigaPay.settings.prod

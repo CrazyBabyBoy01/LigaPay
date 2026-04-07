@@ -1,0 +1,29 @@
+services:
+  postgres:
+    ports: []
+
+  redis:
+    ports: []
+
+  web:
+    volumes: []
+    env_file:
+      - .env
+    restart: always
+
+  celery-worker:
+    volumes: []
+    env_file:
+      - .env
+    restart: always
+
+  celery-beat:
+    volumes: []
+    env_file:
+      - .env
+    restart: always
+
+  celery-flower:
+    env_file:
+      - .env
+    restart: always
