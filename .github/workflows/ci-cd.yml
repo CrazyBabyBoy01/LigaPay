@@ -79,23 +79,26 @@ jobs:
           run: |
             cd .
             python3 manage.py test .
+    deploy:
+      needs: test
+      runs-on: ubuntu-latest
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
+      steps:
+        - name: Deploy to server
+          env:
+            SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+            SERVER_HOST: ${{ secrets.SERVER_HOST }}
+            SERVER_USER: ${{ secrets.SERVER_USER }}
+          run: |
+            mkdir -p ~/.ssh
+            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
 
-
-
-
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-
-# jobs:
-#   docker-build:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Забрать код из репозитория
-#         uses: actions/checkout@v4
-
-#       - name: Собрать Docker image
-#         run: docker build -t myapp .
+            ssh "$SERVER_USER@$SERVER_HOST" << 'EOF'
+              cd /root/LigaPay
+              git pull origin main
+              docker-compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans
+              docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+            EOF
