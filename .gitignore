@@ -26,5 +26,4 @@ mypy.ini
 pytest.ini
 redis
 venv
-
 docker-compose-postgress.yml
