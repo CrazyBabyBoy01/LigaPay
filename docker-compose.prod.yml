@@ -9,24 +9,43 @@ services:
     volumes: []
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     restart: always
 
   celery-worker:
     volumes: []
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     restart: always
 
   celery-beat:
     volumes: []
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     restart: always
 
   celery-flower:
     env_file:
       - .env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     restart: always
+
   nginx:
     image: nginx:alpine
     container_name: nginx
