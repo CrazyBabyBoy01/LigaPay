@@ -226,29 +226,33 @@ python manage_test.py test
 
 
 **Войдите на удаленный сервер с помощью SSH или FTP**
+
 linux/macOS
 
+```bash
 ssh username@server_ip
+```
+
 далее введите пароль для подключения.
 Windows
 
 Для подключения по SSH на Windows можно использовать следующее ПО, Putty или MobaXterm
 
-**Установка Docker**
+**Установите Docker**
 
 ```bash
 apt update
 apt install -y docker.io docker-compose
 ```
 
-Проверка:
+Проверьте:
 
 ```bash
 docker --version
 docker-compose --version
 ```
 
-**Клонировать проект**
+**Загрузите файлы проекта на удаленный сервер**
 
 ```bash
 git clone https://github.com/CrazyBabyBoy01/LigaPay.git
@@ -257,11 +261,9 @@ cd LigaPay
 
 **Создайте файл .env и заполните его по примеру**
 
-```bash
-nano .env
-```
 
 ```bash
+nano .env
 SECRET_KEY=
 DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
 ALLOWED_HOSTS=
