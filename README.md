@@ -213,3 +213,33 @@ python manage_test.py test
 - WebSocket тестируется с использованием InMemoryChannelLayer
 - Покрыта бизнес-логика, формы и WebSocket-чаты
 - Реализованы browser-тесты с использованием Selenium
+
+# Deployment проекта на удаленный сервер
+
+## Содержание
+
+- [Основной функционал](#основной-функционал)
+- [Стек технологий](#стек-технологий)
+- [Запуск проекта локально (dev)](#запуск-проекта-локально-dev)
+- [Запуск проекта через Docker (prod-like)](#запуск-проекта-через-docker-prod-like)
+- [Тестирование](#тестирование)
+
+
+**Войдите на удаленный сервер с помощью SSH или FTP**
+linux/macOS
+
+ssh username@server_ip
+далее введите пароль для подключения.
+Windows
+
+Для подключения по SSH на Windows можно использовать следующее ПО, Putty или MobaXterm
+
+**Установить Docker**
+
+apt update
+apt install -y docker.io docker-compose-plugin
+
+Проверка:
+
+docker --version
+docker compose version
