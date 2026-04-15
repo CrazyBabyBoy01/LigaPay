@@ -234,16 +234,78 @@ Windows
 
 Для подключения по SSH на Windows можно использовать следующее ПО, Putty или MobaXterm
 
-**Установить Docker**
+**Установка Docker**
 
 ```bash
 apt update
-apt install -y docker.io docker-compose-plugin
+apt install -y docker.io docker-compose
 ```
 
 Проверка:
 
 ```bash
 docker --version
-docker compose version
+docker-compose --version
+```
+
+**Клонировать проект**
+
+```bash
+git clone https://github.com/CrazyBabyBoy01/LigaPay.git
+cd LigaPay
+```
+
+**Создайте файл .env и заполните его по примеру**
+
+```bash
+nano .env
+```
+
+```bash
+SECRET_KEY=
+DJANGO_SETTINGS_MODULE=LigaPay.settings.prod
+ALLOWED_HOSTS=
+
+# Postgres
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
+
+# Redis
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+
+# Email
+EMAIL_HOST=smtp.yandex.ru
+EMAIL_PORT=465
+EMAIL_USE_SSL=True
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+```
+
+**Запуск**
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+**Проверка**
+
+```bash
+docker exec -it web printenv | grep POSTGRES
+```
+
+нужно увидеть:
+
+```bash
+POSTGRES_HOST=postgres
+```
+
+Потом сразу, проверяем сайт:
+
+
+```bash
+http://ТВОЙ_IP:8000
 ```
