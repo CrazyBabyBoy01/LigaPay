@@ -236,10 +236,14 @@ Windows
 
 **Установить Docker**
 
+```bash
 apt update
 apt install -y docker.io docker-compose-plugin
+```
 
 Проверка:
 
+```bash
 docker --version
 docker compose version
+```
