@@ -330,40 +330,38 @@ http://ВАШ_IP:8000
     apt update
     ```
 
-    **2. Установите snapd**
-    **Snap — это менеджер пакетов.**
-    **Через него удобнее ставить свежий certbot.**
+    **2. Установите snapd.Snap — это менеджер пакетов.Через него удобнее ставить свежий certbot.**
 
     ```
-    certbot --version
+    apt install -y snapd
     ```
 
-    **3. Убедитесь, что конфигурация `nginx` в порядке**
+    **3. Установите базовый пакет core для snap**
 
     ```
-    sudo nginx -t
+    snap install core
     ```
 
-    **4. Удалите `HTTP` порт из входящего трафика**
+    **4. Установите certbot.Certbot нужен, чтобы получить SSL-сертификат от Let’s Encrypt.--classic = дать ему обычный доступ, как полноценной программе.**
 
     ```
-    sudo ufw delete allow 'Nginx HTTP'
+    snap install --classic certbot
     ```
 
-    **5. Получите `SSL-сертификат`**
+    **5. Останавливаем nginx**
 
     ```
-    sudo certbot --nginx -d <domain> -d www.<domain>
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml stop nginx
     ```
 
-    **6. Проверьте состояние службы `certbot.timer`**
+    **6. Получите SSL-сертификат**
 
     ```
-    sudo systemctl status certbot.timer
+    certbot certonly --standalone -d <domain> -d www.<domain>.ru
     ```
 
-    **7. Протестируйте процесс обновления**
+    **7. Проверьте адресс**
 
     ```
-    sudo certbot renew --dry-run
+    https://<domain>.ru
     ```

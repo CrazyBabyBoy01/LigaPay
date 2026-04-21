@@ -4,10 +4,15 @@ from .base import *
 
 
 # Production mode
-DEBUG = True
+DEBUG = False
 
 # В проде ALLOWED_HOSTS никогда не должно быть ['*']
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+
+CSRF_TRUSTED_ORIGINS = (
+    os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Домен приложения
 DOMAIN_NAME = os.getenv('DOMAIN_NAME', DOMAIN_NAME)  # noqa: F405
@@ -62,6 +67,6 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # -------------------------------
 # Security for production
 # -------------------------------
-CSRF_COOKIE_SECURE = False
-SESSION_COOKIE_SECURE = False
-SECURE_SSL_REDIRECT = False  # включаем True, если будет HTTPS
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True  # включаем True, если будет HTTPS
