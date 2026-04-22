@@ -1,12 +1,12 @@
 services:
   postgres:
-    ports: null
+    ports: []
 
   redis:
-    ports: null
+    ports: []
 
   web:
-    volumes: null
+    volumes: []
     env_file:
       - .env
     environment:
