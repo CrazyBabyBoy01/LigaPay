@@ -82,6 +82,13 @@
                         </div>
                     {% endfor %}
                 </div>
+                <div style="background: yellow; padding: 10px; color: black;">
+                    user.id = {{ user.id }} | {{ user.username }}<br>
+                    pending_order.id = {{ pending_order.id }}<br>
+                    pending_order.user.id = {{ pending_order.user.id }} | {{ pending_order.user.username }}<br>
+                    pending_order.seller.id = {{ pending_order.seller.id }} | {{ pending_order.seller.username }}<br>
+                    pending_order.status = {{ pending_order.status }}
+                </div>
                 <div id="order-button-container">
                     {% if pending_order %}
                         {% if user == pending_order.user %}
@@ -89,6 +96,7 @@
                             <form id="confirm-form" method="post" style="margin-top: 10px;" action="{% url 'orders:confirm_order' pending_order.id %}">
                                 {% csrf_token %}
                                 <button
+                                    id="confirm-purchase-btn"
                                     type="submit"
                                     class="header__btn"
                                     data-order-id="{{ pending_order.id }}"
@@ -106,7 +114,7 @@
                                     class="header__btn header__btn--danger"
                                     data-order-id="{{ pending_order.id }}"
                                 >
-                                    Отклонить заказ
+                                    Отклонить заказpppp
                                 </button>
                             </form>
                         {% endif %}

@@ -34,7 +34,7 @@ class OrderService:
                 buyer_wallet = Wallet.objects.get(user=order.user)
             except Wallet.DoesNotExist:
                 raise WalletNotFound('У пользователя нет кошелька')  # noqa: B904
-            total_price = order.price * order.amount
+            total_price = order.price
             buyer_wallet.hold(total_price)
             order.status = 'pending'
             order.save()
@@ -53,7 +53,7 @@ class OrderService:
                 seller_wallet = Wallet.objects.get(user=order.seller)
             except Wallet.DoesNotExist:
                 raise WalletNotFound('У пользователя нет кошелька')  # noqa: B904
-            total_price = order.price * order.amount
+            total_price = order.price
             buyer_wallet.release_to(total_price, seller_wallet)
             order.status = 'paid'
             order.save()

@@ -4,7 +4,7 @@ from celery import Celery
 
 
 # Укажите название проекта
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LigaPay.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'LigaPay.settings.dev')
 
 app = Celery('LigaPay')
 

@@ -6,6 +6,7 @@ from django.views import View
 
 from chat.mixin import GroupedMessagesMixin
 from chat.models import ChatMessage, ChatRoom
+from orders.models import Order
 
 from .utils import get_unread_message_count
 
@@ -75,7 +76,15 @@ class DialogDetailView(LoginRequiredMixin, GroupedMessagesMixin, View):
 
         messages = chat.messages.all().order_by('timestamp')
         interlocutor = chat.seller if request.user == chat.buyer else chat.buyer
-        pending_order = None
+        pending_order = (
+            Order.objects.filter(
+                user=chat.buyer,
+                seller=chat.seller,
+                status='pending',
+            )
+            .order_by('-created_at')
+            .first()
+        )
         grouped_messages = self.group_messages(messages)
         return render(
             request,

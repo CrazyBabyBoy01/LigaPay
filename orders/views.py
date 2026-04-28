@@ -137,7 +137,7 @@ class CreateOrderView(LoginRequiredMixin, View):
             return JsonResponse({'success': False, 'message': 'Произошла ошибка при оформлении заказа!'})
 
 
-class ConfirmOrderView(View):
+class ConfirmOrderView(LoginRequiredMixin, View):
     """Подтверждение оплаты заказа"""
 
     def post(self, request, order_id):
@@ -255,6 +255,10 @@ class CancelOrderView(LoginRequiredMixin, View):
 
                 try:
                     order.refund()
+                    product = order.product
+                    if hasattr(product, 'quantity'):
+                        product.quantity += order.amount
+                        product.save(update_fields=['quantity'])
                     logger.info(
                         'Заказ отменен и деньги возвращены покупателю. '
                         'Продавец=%s, покупатель=%s, order_id=%s',
