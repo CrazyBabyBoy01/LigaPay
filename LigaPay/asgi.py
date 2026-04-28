@@ -18,15 +18,6 @@ django.setup()
 
 # Получаем стандартное ASGI-приложение Django
 django_asgi_app = get_asgi_application()
-from django.apps import apps
-from django.conf import settings
-
-print("ASGI FILE LOADED")
-print("DJANGO_SETTINGS_MODULE =", os.environ.get("DJANGO_SETTINGS_MODULE"))
-print('SETTINGS_MODULE =', os.environ.get('DJANGO_SETTINGS_MODULE'))
-print('apps.ready =', apps.ready)
-print('contenttypes in INSTALLED_APPS =', 'django.contrib.contenttypes' in settings.INSTALLED_APPS)
-print('INSTALLED_APPS size =', len(settings.INSTALLED_APPS))
 
 
 from channels.auth import AuthMiddlewareStack
