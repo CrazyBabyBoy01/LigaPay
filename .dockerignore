@@ -1,8 +1,12 @@
 .git
 .gitignore
 venv
+.venv
 __pycache__
 *.pyc
+*.py[cod]
 .env
+.env.*
 media
 staticfiles
+static/deps
