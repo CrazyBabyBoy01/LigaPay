@@ -15,7 +15,7 @@
 .nvim.lua
 pyrightconfig.json
 
-__pycache
+__pycache__/
 buffer.zip
 media/service_images/
 db.sqlite3

@@ -245,9 +245,18 @@ class BaseServiceListView(CategoryMixin, ChatMixin, ContextMixin, PaginateMixin,
     create_form_class = None
 
     def get_queryset(self):
-        queryset = self.model.objects.filter(is_active=True).select_related('seller', 'category')
-        if any(f.name == 'images' for f in self.model._meta.get_fields()):
+        queryset = self.model.objects.filter(is_active=True)
+
+        model_fields = {field.name for field in self.model._meta.get_fields()}
+
+        if 'quantity' in model_fields:
+            queryset = queryset.filter(quantity__gt=0)
+
+        queryset = queryset.select_related('seller', 'category')
+
+        if 'images' in model_fields:
             queryset = queryset.prefetch_related('images')
+
         queryset = queryset.order_by('id')
 
         user = self.request.user
