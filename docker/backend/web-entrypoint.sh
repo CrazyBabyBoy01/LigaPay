@@ -13,10 +13,15 @@ python manage.py migrate --noinput
 echo "▶ Collect static..."
 python manage.py collectstatic --noinput
 
-if [ ! -f /tmp/fixtures_loaded ] && [ -d fixtures ] && [ "$(ls -A fixtures)" ]; then
-  echo "📦 Loading fixtures..."
-  python manage.py loaddata fixtures/*
-  touch /tmp/fixtures_loaded
+if [ -d fixtures ] && [ "$(ls -A fixtures)" ]; then
+  FIXTURES_NEEDED=$(python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print('yes' if not User.objects.exists() else 'no')")
+
+  if [ "$FIXTURES_NEEDED" = "yes" ]; then
+    echo "📦 Loading fixtures..."
+    python manage.py loaddata fixtures/*
+  else
+    echo "✔ Fixtures already loaded, skipping"
+  fi
 fi
 
 echo "▶ Initial news parsing..."
