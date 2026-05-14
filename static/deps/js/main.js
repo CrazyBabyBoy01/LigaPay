@@ -13,31 +13,6 @@ if (authElement) {
     console.warn("Элемент с id='isAuthenticated' не найден на этой странице.");
 }
 
-
-
-
-
-
-// // Открываем модальное окно для создания карточки при клике на кнопку
-// var openModalBtn = document.getElementById("openModalBtn");
-
-// if (openModalBtn) {  // Проверка, существует ли элемент
-//     openModalBtn.onclick = function() {
-//         console.log("Кнопка нажата");
-//         console.log("isAuthenticated:", isAuthenticated);
-
-//         if (isAuthenticated === "True") {
-//             console.log("Пользователь авторизован");
-//             modal.style.display = "flex";
-//         } else {
-//             console.log("Пользователь не авторизован");
-//             window.location.href = "/users/autorization/"; // Убедитесь, что URL верный
-//         }
-//     };
-// } else {
-//     console.log("Кнопка не найдена на странице");
-// }
-
 function setupModal(openBtnId, modalId) {
     var openBtn = document.getElementById(openBtnId);
     var modal = document.getElementById(modalId);

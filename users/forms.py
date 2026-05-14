@@ -6,11 +6,11 @@ from django.contrib.auth.forms import (
     UserChangeForm,
     UserCreationForm,
 )
-from django.db import transaction
+from django.core.mail import send_mail as django_send_mail
+from django.template.loader import render_to_string
 
 from users.models import User
 from users.orchestrators import send_verification_email
-from users.tasks import send_reset_email
 
 
 class UserLoginForm(AuthenticationForm):
@@ -105,17 +105,25 @@ class CustomPasswordResetForm(PasswordResetForm):
             raise forms.ValidationError('Пользователь с таким логином или email не найден.')
         return user.email
 
-    def save(self, *args, **kwargs):
-        """
-        Переопределённый метод save для кастомной логики отправки письма.
-        """
-        user_email = self.cleaned_data['email']
-        subject = 'Сброс пароля'
-        message = 'Мы получили запрос на сброс пароля. Перейдите по ссылке, чтобы изменить пароль.'
-        recipient_list = [user_email]
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        subject = 'Сброс пароля на LigaPay'
+        message = render_to_string(email_template_name, context)
 
-        transaction.on_commit(lambda: send_reset_email.delay(subject, message, recipient_list))
-        super().save(*args, **kwargs)
+        django_send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=[to_email],
+            fail_silently=False,
+        )
 
 
 class EmailChangeForm(forms.ModelForm):

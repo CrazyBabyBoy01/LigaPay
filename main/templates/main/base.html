@@ -87,9 +87,6 @@
                       {% endif %}
                   </a>
                 </li>
-                <li>
-                  <a href="#">Финансы</a>
-                </li>
                 {% if user.is_superuser or user.is_staff %}
                   <li>
                     <a href="{% url "admin:index" %}">Админ-панель</a>

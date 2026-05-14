@@ -30,17 +30,11 @@
       </a>
     </div>
   </form>
-  {% if messages or form.non_field_errors %}
-    <div id="error-message" class="alert alert-danger {% if messages %}alert-success {% else %} alert-warning{% endif %}">
-      {% if messages %}
-        {% for message in messages %}
-          <p>{{ message }}</p>
-        {% endfor %}
-      {% else %}
-        {% for error in form.non_field_errors %}
-          <p>{{ error }}</p>
-        {% endfor %}
-      {% endif %}
+  {% if form.non_field_errors %}
+    <div id="error-message" class="alert alert-danger">
+      {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+      {% endfor %}
     </div>
   {% endif %}
 
